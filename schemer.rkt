@@ -635,9 +635,6 @@
 (define seqS (lambda (new old l) (cons new l)))
 (define subst_ (insert-g seqS))  
 
-;; The Tenth Commandment
-;; Build funtioncs to collect more than one value at a time.
-
 
 (define atom-to-function
   (lambda (x)
@@ -660,3 +657,84 @@
         ((atom-to-function (operator nexp))
          (value_ (1st-sub-expr nexp))
          (value_ (2ed-sub-expr nexp)))))))
+
+(define eq-tuna (eq?-c 'tuna))
+
+;; pass a partial func
+(define multiremberT
+  (lambda (test? lat)
+    (cond
+      ((null? lat) '())
+      ((test? (car lat))
+       (multiremberT test? (cdr lat)))
+      (else
+        (cons (car lat)
+              (multiremberT test? (cdr lat)))))))
+
+
+;; The Tenth Commandment
+;; Build funtioncs to collect more than one value at a time.
+
+
+;; collector/continuation.
+; first call (multirember&co 'a '(b c a))
+; in last layer, (multirember&co 'a '())
+;
+; replaced with value: 
+; (multirember&co 'a '(b c a) col)
+; (multirember&co 'a '(c a) (lambda col))
+; (multirember&co 'a '(a) (lambda (lambda col)))
+; (multirember&co 'a '() (lambda (lambda (lambda (col)))))
+;   ((lambda (n s)                        ;last recur layer
+;     ((lambda (n s)                      
+;        ((lambda (n s)                   ;first recur layer
+;           (col (cons (car lat) n) s))  ;;lat='(b c a) ;n: (c d), s: (a)
+;         (cons (car lat) n) s))         ;;lat='(c a)   ;n: (c),   s: (a)
+;      n (cons (car lat) s))) '() '())   ;;lat='(a)     ;n: (),    s: (a)
+
+(define multirember&co
+  (lambda (a lat col)
+    (cond
+      ((null? lat) (col '() '()))
+      ((eq? (car lat) a) 
+       (multirember&co a 
+         (cdr lat)
+         (lambda (newlat seen) 
+           (col newlat (cons (car lat) seen)))))
+      (else
+        (multirember&co a 
+          (cdr lat) 
+          (lambda (newlat seen)
+            (col (cons (car lat) newlat) seen)))))))
+
+;; examples of collector.
+(define rm (lambda (x y) x))
+(define contain? (lambda (x y) (null? y)))
+(define count? (lambda (x y) (length y)))
+; (multirember&co 'a '(b c) contain?)
+; (multirember&co 'a '(b c a d e a) count?)
+; (multirember&co 'a '(b c a d e a) rm)
+
+(define multiinsertLR&co 
+  (lambda (new oldL oldR lat col)
+    (cond
+      ((null? lat) (col '() 0 0))  
+      ((eq? (car lat) oldL)
+       (multiinsertLR&co new oldL oldR (cdr lat)
+                         (lambda (newlat L R)
+                           (col (cons new
+                                      (cons oldL newlat))
+                                (add1 L) R))))
+      ((eq? (car lat) oldR)
+       (multiinsertLR&co new oldL oldR (cdr lat)
+                         (lambda (newlat L R)
+                           (col (cons oldR
+                                      (cons new newlat))
+                                L (add1 R)))))
+      (else
+        (multiinsertLR&co new oldL oldR (cdr lat)
+                          (lambda (newlat L R)
+                            (col (cons (car lat) newlat)
+                                 L R)))))))
+
+
