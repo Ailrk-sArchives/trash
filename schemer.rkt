@@ -737,4 +737,215 @@
                             (col (cons (car lat) newlat)
                                  L R)))))))
 
+(define evens-only*
+  (lambda (l)
+    (cond
+      ((null? l) '())
+      ((atom? (car l))
+       (cond
+         ((even? (car l))
+          (cons (car l) (evens-only* (cdr l))))
+         (else (evens-only* (cdr l)))))
+      (else (cons (evens-only* (car l))
+                  (evens-only* (cdr l)))))))
+
+; 1. pass a list and a colletor func
+; 2. base case of collector is ('() 1 0). 
+; 3. stands for list of all even number, product of evens, sum of pluses.
+; 4. if (car l) is atom and is even, recur with new lambda 
+;    the lambda will cons (car l) into '(), and time (car l) with 1.(in base case)
+; 5. if (car l) is atom but not even, just plus (car l) with 0 (in base case)
+; 6. if (car l) is a list
+;    it call itself with (car l) // a list as l, and create a huge collector.
+;    the collector use evens-only*&co as col to vist (cdr l)
+;    and there is another collector in this collector, we call it subcollector.
+;    the subcollector will cons the result of (car l) with (cdr l).
+
+(define evens-only*&co
+  (lambda (l col)
+    (cond
+      ((null? l) (col '() 1 0))
+      ((atom? (car l))
+       (cond
+         ((even? (car l))
+          (evens-only*&co (cdr l)
+                          (lambda (newl p s)
+                            (col (cons (car l) newl)
+                                 (* (car l) p) s))))
+         (else 
+           (evens-only*&co (cdr l)
+                           (lambda (newl p s)
+                             (col newl
+                                  p (+ (car l) s)))))))
+      (else 
+        (evens-only*&co (car l)
+                        (lambda (al ap as)
+                          (evens-only*&co (cdr l)
+                                          (lambda (dl dp ds)
+                                            (col (cons al dl)
+                                                 (* ap dp)
+                                                 (+ as ds))))))))))
+(define get-result
+  (lambda (newl product sum)
+    (cons
+      (cons
+        product
+        (cons
+          sum '())) newl)))
+; (evens-only*&co '((10 9 1 2) 3 10 (9 9) 7 98) get-result)
+
+;
+; unnatrual recursion 
+;
+(define looking
+  (lambda (a lat)
+    (keep-looking a (pick_ 1 lat) lat)))
+
+(define keep-looking
+  (lambda (a sorn lat)
+    (cond
+      ((number? sorn)
+       (keep-looking a (pick_ sorn lat) lat))
+      (else (eq? sorn a)))))
+
+; partial recusrive function and total recursive function
+(define eternity
+  (lambda (x)
+    (eternity x)))
+
+; take a pair with first component is a pair, it shift the (car (cdr ) first pair)
+; into the second component.
+(define shift
+  (lambda (pair)
+    (build (first (first pair))
+           (build (second (first pair))
+                  (second pair)))))
+
+; each recursion change its parameters, and it cannot garantee it apporach the goal.
+; it is a total recursive func, every para has a value.
+(define align
+  (lambda (pora)
+    (cond
+      ((atom? pora) pora)
+      ((a-pair? (first pora))
+       (align (shift pora)))
+      (else (build (first pora)
+                   (align (second pora)))))))
+
+
+; wrong. first argument gets simpiler but second get more complicated.
+(define pora-length*
+  (lambda (pora)
+    (cond
+      ((atom? pora) 1)
+      (else
+        (+ (pora-length* (first pora))
+           (pora-length* (second pora)))))))
+
+; pay 'twice' attention to first component, arguments get simpler. 
+(define pora-weight*
+  (lambda (pora)
+    (cond
+      ((atom? pora) 1)
+      (else
+        (+ (* (pora-weight* (first pora) 2))
+           (pora-weight* (second pora)))))))
+
+; it is not a total recursive func.
+(define shuffle
+  (lambda (pora)
+    (cond
+      ((atom? pora) pora)
+      ((a-pair? (first pora))
+       (shuffle (revpair pora)))
+      (else (build (first pora)
+                   (shuffle (second pora)))))))
+
+; not a total function.
+; Lothar Collatz.
+; It is only known that it is undefined when n=0
+(define C
+  (lambda (n)
+    (cond
+      ((one? n) 1)
+      (else
+        (cond
+          ((even? n) (C (/ n 2)))
+          (else (C (add1 (* 3 n)))))))))
+
+
+; Ackermann  // unnatrual recursion, total function.
+(define A
+  (lambda (n m)
+    (cond
+      ((zero? n) (add1 m))
+      ((zero? m) (A (sub1 n) 1))
+      (else (A (sub1 n)
+               (A n (sub1 m)))))))
+
+; (A 4 3) take forever.
+
+
+;; Version 1 ;;
+; (lambda (l)
+;   (cond
+;     ((null? l) 0)
+;     (else 
+;       (add1
+;         ((lambda (l)
+;            (cond 
+;              ((null? l) 0)
+;              (else (add1
+;                      (eternity (cdr l))))))
+;          (cdr l)))))) 
+
+;; Version 2 ;;
+; ((lambda (f)
+;    (lambda (l)
+;      (cond
+;        ((null? l) 0)
+;        (else (add1 (f (cdr l)))))))
+;  ((lambda (g)
+;     (lambda (l)
+;       (cond
+;         ((null? l) 0)
+;         (else (add1 (g cdr l))))))
+;   eternity))
+
+;; Version 3 ;;
+; ((lambda (mk-length)
+;    (mk-length 
+;      (mk-length eternity)))
+;  (lambda (len)
+;    (lambda (l)
+;      (cond
+;        ((null? l) 0)
+;        (else (add1 (len (cdr l))))))))
+; Using arguments to abstract, same as define.
+
+; RECURSIVE DEFINITION.
+
+; create a func, pass a lambda as argument to it
+; 
+;Version 4
+; ((lambda (mk-length)
+;    (mk-length mk-length))   ;engine 1
+;  (lambda (mk-length)        ;recur 
+;    (lambda (l)              ;primitive
+;      (cond
+;        ((null? l) 0)
+;        (else (add1 
+;                ((mk-length mk-length)  ;engine 2
+;                 (cdr l))))))))
+
+; Version 5 wrong! 
+; ((lambda (mk-length)
+;    (mk-length mk-length))
+;  (lambda (mk-length)
+;    ((lambda (len)    ; this abstraction make the func 
+;       (lambda (l)       ; returned not the func
+;         (cond              ; apply to l anymore.
+;           ((null? l) 0)
+;           (else (add1 (len (cdr l))))))) 
+;     (mk-length mk-length))))
 
