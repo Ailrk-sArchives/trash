@@ -885,6 +885,7 @@
 
 ; (A 4 3) take forever.
 
+; HOW TO MAKE A Y COMBINATOR
 
 ;; Version 1 ;;
 ; (lambda (l)
@@ -938,14 +939,75 @@
 ;                ((mk-length mk-length)  ;engine 2
 ;                 (cdr l))))))))
 
-; Version 5 wrong! 
-; ((lambda (mk-length)
-;    (mk-length mk-length))
-;  (lambda (mk-length)
-;    ((lambda (len)    ; this abstraction make the func 
-;       (lambda (l)       ; returned not the func
-;         (cond              ; apply to l anymore.
-;           ((null? l) 0)
-;           (else (add1 (len (cdr l))))))) 
-;     (mk-length mk-length))))
+; Version 6 *
+((lambda (mk-length)
+   (mk-length mk-length))
+ (lambda (mk-length)
+   ((lambda (len)                       ; (lambda (x) f x)
+      (lambda (l)                       ; also return a 
+        (cond                           ; function with one
+          ((null? l) 0)                 ; argument.
+          (else                         ;
+            (add1 (len (cdr l)))))))    ;
+    (lambda (x)
+      ((mk-length mk-length) x)))))
 
+; version 7 move the comment part in version 6 out since 
+; doesn't depends on mk-length at all.
+((lambda (le)
+   ((lambda (mk-length)
+      (mk-length mk-length))
+    (lambda (mk-length)
+      (le (lambda (x)
+            ((mk-length mk-length) x))))))
+ (lambda (len)
+   (lambda (l)
+     (cond
+       ((null? l) 0)
+       (else (add1 (len cdr l)))))))
+
+; applicative-order Y combinator:
+(define Y
+  (lambda (g)
+    ((lambda (f) (f f))
+     (lambda (f) (g (lambda (x) ((f f) x)))))))
+
+;
+; Y combinator recursive nature prove. 
+;
+; Y := λf.(λx.(f (x x)) λx.(f (x x)))
+; Y g = λf.(λx.(f (x x)) λx.(f (x x)))g
+;     = λx.(g (x x)) λx.(g (x x))
+;     = λy.(g (y y)) λx.(g (x x))
+;     = g (λx.(g (x x)) λx.(g (x x)))
+; 
+; Meanwhile, 
+; g(Y g) = g (λf.(λx.(f (x x)) λx.(f (x x)))g)
+;        = g (λx.(g (x x)) λx.(g (x x))) 
+;        = (Y g)
+; Thus, (Y g) = (g (Y g)) = ... = (g(g ... (g (Y g) ...)))
+; any of them works the same as Y.
+
+;
+; applicative Y combinator, the versoin we write.
+;
+; Y := λg.(λf.(f f) λf.g(λx.((f f) x)))
+; Y h = λg.(λf.(f f) λf.g(λx.((f f) x)))h
+;     = λf.h(λx.((f f) x)) λf.h(λx.((f f) x))
+;     = h( λx.((λf.h(λx.((f f) x))  λf.h(λx.((f f) x))) x) ) 
+;     let F = λx.((λf.h(λx.((f f) x))
+; then
+;     = h((F F) x)
+;     = h(h ((F F) x)) = ...
+
+; omega combinator: apply a func to itself.
+; (lambda (o) (o o))
+
+; apply to Y to achieve generic recursion.
+; ((Y (lambda (len)
+;      (lambda (l)
+;        (cond
+;          ((null? l) 0)
+;          (else
+;            (add1 (len (cdr l))))))))
+;  '(1 2 3 9 9 9 9 9 9 9 9 9 9 9 9 9 9))
