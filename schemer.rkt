@@ -434,28 +434,28 @@
 ;; Use help functions to abstract from representations.
 
 
-(define value
-  (lambda (nexp)
-    (define 1st-sub-expr (lambda (aexp) (car (cdr aexp))))
-    (define 2ed-sub-expr (lambda (aexp) (car (cdr (cdr aexp)))))
-    (define operator (lambda (aexp) (car aexp)))
-    (cond
-      ((atom? nexp) nexp)
-      ((eq? (operator nexp) 'plus)
-       (plus (value (1st-sub-expr nexp))
-             (value (2ed-sub-expr nexp))))
-      ((eq? (operator nexp) 'minus)
-       (minus (value (1st-sub-expr nexp))
-              (value (2ed-sub-expr nexp))))
-      ((eq? (operator nexp) 'mul)
-       (mul (value (1st-sub-expr nexp))
-              (value (2ed-sub-expr nexp))))
-      ((eq? (operator nexp) 'quotient_)
-       (quotient_ (value (1st-sub-expr nexp))
-              (value (2ed-sub-expr nexp))))
-      (else
-        (exp_ (value (1st-sub-expr nexp))
-              (value (2ed-sub-expr nexp)))))))
+; (define value
+;   (lambda (nexp)
+;     (define 1st-sub-expr (lambda (aexp) (car (cdr aexp))))
+;     (define 2ed-sub-expr (lambda (aexp) (car (cdr (cdr aexp)))))
+;     (define operator (lambda (aexp) (car aexp)))
+;     (cond
+;       ((atom? nexp) nexp)
+;       ((eq? (operator nexp) 'plus)
+;        (plus (value (1st-sub-expr nexp))
+;              (value (2ed-sub-expr nexp))))
+;       ((eq? (operator nexp) 'minus)
+;        (minus (value (1st-sub-expr nexp))
+;               (value (2ed-sub-expr nexp))))
+;       ((eq? (operator nexp) 'mul)
+;        (mul (value (1st-sub-expr nexp))
+;               (value (2ed-sub-expr nexp))))
+;       ((eq? (operator nexp) 'quotient_)
+;        (quotient_ (value (1st-sub-expr nexp))
+;               (value (2ed-sub-expr nexp))))
+;       (else
+;         (exp_ (value (1st-sub-expr nexp))
+;               (value (2ed-sub-expr nexp)))))))
 
 ;; new number representation: () -> 0 (()) -> 1 ...
 (define sero?  (lambda (n) (null? n)))
@@ -636,6 +636,7 @@
 (define subst_ (insert-g seqS))  
 
 
+; a prototype of eval.
 (define atom-to-function
   (lambda (x)
     (cond
@@ -1011,3 +1012,271 @@
 ;          (else
 ;            (add1 (len (cdr l))))))))
 ;  '(1 2 3 9 9 9 9 9 9 9 9 9 9 9 9 9 9))
+
+;
+; EVAL 
+;
+
+; entry: a pair of set and list with same length
+(define entry?
+  (lambda (e)
+    (and (set? (first e))
+         (eq? (length (first e)) (length (second e))))))
+
+(define new-entry
+  (lambda (set lst)
+    (cond
+      ((or (and (null? set) (null? lst)) 
+           (not (and (set? set) (eq? (length set) (length lst)))))
+       '(() ()))
+      (else
+        (cons set (cons lst '())))))) 
+
+
+(define lookup-in-entry
+  (lambda (name entry entry-f)
+    (define lookup-in-entry-help
+      (lambda (name names vals entry-f)
+        (cond
+          ((null? names) (entry-f name))
+          ((eq? name (car names))
+           (car vals))
+          (else
+            (lookup-in-entry-help name
+                                  (cdr names)
+                                  (cdr vals)
+                                  entry-f)))))
+    (lookup-in-entry-help name
+                          (first entry)
+                          (second entry)
+                          entry-f)))
+
+; (lookup-in-entry 'a
+;                  (new-entry '(b e a i f) '(1 2 3 4 5)) 
+;                  (lambda (n) 'no-val-for-key))
+
+
+; define table/environment: a list of entries.
+
+(define extend-table
+  (lambda (new-e old-table)
+    (cond
+      ((not (entry? new-e)) old-table)
+      (else
+        (cons new-e old-table)))))
+
+; (extend-table (new-entry '(b c d) '(1 2 3))
+;               (cons (new-entry '(A B C) '(0 9 8))
+;                     (cons (new-entry '(@ * $) '(5 6 7))
+;                           '())))
+
+; used continuation.
+(define lookup-in-table
+  (lambda (name table table-f)
+    (cond
+      ((null? table) (table-f name))
+      (else 
+        (lookup-in-entry name 
+                         (car table) 
+                         (lambda (name) 
+                           (lookup-in-table name 
+                                            (cdr table)
+                                            table-f)))))))
+
+; lisp types:
+;     *const
+;     *quote
+;     *identifier
+;     *lambda
+;     *cond
+;     *application
+
+; value: find out the type of the expression and invoke 
+; associated function(also called action here).
+
+
+(define expression-to-action
+  (lambda (e)
+    (cond
+      ((atom? e) (expression-to-action e))
+      (else (list-to-action e)))))
+
+(define atom-to-action
+  (lambda (e)
+    (cond
+      ((number? e) *const)
+      ((eq? e #t) *const)
+      ((eq? e #f) *const)
+      ((eq? e 'cons) *const)
+      ((eq? e 'car) *const)
+      ((eq? e 'cdr) *const)
+      ((eq? e 'null?) *const)
+      ((eq? e 'eq?) *const)
+      ((eq? e 'atom?) *const)
+      ((eq? e 'zero?) *const)
+      ((eq? e 'add1) *const)
+      ((eq? e 'sub1) *const)
+      ((eq? e 'number?) *const)
+      (else *identifier))))
+
+(define list-to-action
+  (lambda (e)
+    (cond
+      ((atom? (car e))
+       (cond
+         ((eq? (car e) 'quote)
+          *quote)
+         ((eq? (car e) 'lambda)
+          *lambda)
+         ((eq? (car e) 'cond)
+          *application)))
+      (else *application))))
+
+; interpreter...
+(define value
+  (lambda (e)
+    (meaning e (quote ()))))
+(define meaning
+  (lambda (e table)
+    ((expression-to-action e) e table)))
+
+; actions
+(define *const
+  (lambda (e table)
+    (cond
+      ((number? e) e)
+      ((eq? e #t) #t)
+      ((eq? e #f) #f)
+      (else (build (quote primitive) e)))))
+
+(define text-of cdr)
+(define *quote
+  (lambda (e table) 
+    (text-of e)))
+; (*quote '(quote a b c) '())
+
+(define *identifier
+  (lambda (e table)
+    (lookup-in-table e table (lambda (name)
+                               (car (quote ()))))))
+
+(define *lambda 
+  (lambda (e table)
+    (build (quote non-primitive)
+           (cons table (cdr e)))))
+
+(define table-of
+  (lambda (lambda-expr)
+    (first (second lambda-expr))))
+
+(define formals-of
+  (lambda (lambda-expr)
+    (second (second lambda-expr))))
+
+(define body-of
+  (lambda (lambda-expr)
+    (third (second lambda-expr))))
+
+
+(table-of (*lambda '(lambda (x) x) '((a b c) (1 2 3))))
+(formals-of (*lambda '(lambda (x) x) '((a b c) (1 2 3))))
+(body-of (*lambda '(lambda (x) x) '((a b c) (1 2 3))))
+
+
+(define evcon
+  (lambda (lines table)
+    (define else?
+      (lambda (x)
+        (cond
+          ((atom? x) (eq? x 'else))
+          (else #f))))
+    (define question-of first)
+    (define answer-of second)
+    (cond 
+      ((else? (question-of (car lines)))
+       (meaning (answer-of (car lines)) table))
+      ((meaning (question-of (car lines)) table)
+       (meaning (answer-of (car lines)) table))
+      (else (evcon (cdr lines) table)))))
+
+(define *cond 
+  (lambda (e table)
+    (define cond-lines-of cdr)
+    (evcon (cond-lines-of e) table)))
+
+(define evlis  ; eval list
+  (lambda (args table)
+    (cond
+      ((null? args) '())
+      (else
+        (cons (meaning (car args) table)
+              (evlis (cdr args) table))))))
+
+(define :atom?
+  (lambda (x)
+    (cond
+      ((atom? x) #t)
+      ((null? x) #f)
+      ((eq? (car x) 'primitive) #t)
+      ((eq? (car x) 'non-primitive) #t)
+      (else #f))))
+
+(define *application 
+  (lambda (e table)
+    (define function-of car)
+    (define arguments-of cdr)
+    (define primitive?
+      (lambda (l)
+        (eq? (frist l) 'primitive))) 
+    (define non-primitive?
+      (lambda (l)
+        (eq? (first l) 'non-primitive)))
+    (define apply_
+      (lambda (fun vals)
+        (cond
+          ((primitive? fun)
+           (apply-primitive
+             (second fun) vals))
+          ((non-primitive? fun)
+           (apply-closure 
+             (second fun) vals)))))
+    (define apply-primitive
+      (lambda (name vals)
+        (cond
+          ((eq? name 'cons)
+           (cons (first vals) (second vals)))
+          ((eq? name 'car)
+           (car (frist vals)))
+          ((eq? name 'cdr)
+           (cdr (first vals)))
+          ((eq? name 'null?)
+           (null? (first vals)))
+          ((eq? name 'eq?)
+           (eq? (first vals)))
+          ((eq? name 'atom?)
+           (:atom? (first vals))) ; use atom? directly?
+          ((eq? name 'zero?)
+           (zero? (first vals)))
+          ((eq? name 'add1)
+           (add1 (first vals)))
+          ((eq? name 'sub1)
+           (sub1 (first vals)))
+          ((eq? name 'number?)
+           (number? (first vals))))))
+    (define apply-closure 
+      (lambda (closure vals)         ; closure: lambda expr
+        (meaning (body-of closure)
+                 (extend-table
+                   (new-entry        ; args
+                     (formals-of closure)
+                     vals)
+                   (table-of closure)))))
+    (apply_
+      (meaning (function-of e) table)
+      (evlis (arguments-of e) table))))
+
+; example of closure
+; (((u v w) (1 2 3)) ((x y z) (4 5 6)) (x y) (cons z x))
+; example of vals
+; ((a b c)(d e f))
+
