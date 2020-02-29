@@ -4,7 +4,7 @@
 #|  Define a procedure that takes three numbers |#
 #| as arguments and returns the sum of the squares of the two |#
 #| larger numbers. |#
-(module e1.3 racket/base
+(module basic racket/base
   (provide sum-large-two)
   (define (square x) (* x x))
   (define (sum-square a b) (+ (square a) (square b)))
@@ -12,7 +12,6 @@
     (cond [(and (> a c) (> b c)) (sum-square a b )]
           [(and (> a b) (> c b)) (sum-square a c)]
           [(and (> b a) (> c a)) (sum-square b c)])))
-
 
 
 #| Exercise 1.5: |#
@@ -32,7 +31,7 @@
 #| What behavior will Ben observe with an interpreter that |#
 #| uses applicative-order evaluation? |#
 ;; Ans:
-(module e1.5 racket/base
+(module application-order racket/base
   (provide test)
   (define (p) (p))
   (define (test x y)
@@ -111,9 +110,8 @@
 #| ogous to the square-root procedure. (In Section 1.3.4 we will |#
 #| see how to implement Newton’s method in general as an |#
 #| abstraction of these square-root and cube-root procedures.) |#
-(module e1.8 racket/base
-  (require 'newtons-method)
-  (provide cubic-root)
+(module better-approximation-cube-root racket/base
+  (require 'newtons-method) (provide cubic-root)
   (define (cubic x) (* x x x))
   (define (cubic-improve guess x)
     (average (/ x (square guess)) guess guess))
@@ -168,3 +166,38 @@
 (define (k n) (* 5 n n))
 #| Give concise mathematical definitions for the functions com- |#
 #| puted by the procedures f , g , and h for positive i |#
+
+; fixed point algorithms.
+
+(module fixed-point racket/base
+  (provide fixed-point
+           average-damping
+           cubic-root)
+  (define tolerance 0.0001)
+
+  (define (average a b) (/ 2 (+ a b)))
+  (define (square x) (* x x))
+
+  (define (fixed-point f first-guess)
+    (define (close-enough? v1 v2)
+      (< (abs (- v1 v2))
+         tolerance))
+    (define (try guess)
+      (let [(next (f guess))]
+        (if (close-enough? guess next)
+          next
+          (try next))))
+    (try first-guess))
+
+
+  ; average damping method
+  (define (average-damping f)
+    (lambda (x) (average x (f x))))
+
+  ;to find sqrt
+  (define (cube-root x)
+    (fixed-point
+      (average-damping
+        (lambda (y) (/ x (square y)))
+        0.1))))
+
