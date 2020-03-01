@@ -102,14 +102,101 @@
              (* sub factor)))
          tree))
 
-  (define (square-tree tree factor)
+  (define (square-tree tree)
     (map (lambda (sub)
            (if (pair? sub)
-             (square-tree sub factor)
-             (* sub factor)))
+             (square-tree sub)
+             (* sub sub)))
          tree))
 
+  (define (tree-map proc tree)
+    (map (lambda (sub)
+           (if (pair? sub)
+             (tree-map proc sub)
+             (proc sub)))
+         tree))
 
+  ; use let with recursion. Very concise.
+  ; logic here is split the powerset into
+  ; power set without the first element and the
+  ; power set with the first element.
+  (define (powerset s)
+    (if (null? s)
+      (list '())
+      (let ((rest- (powerset (cdr s))))
+        (append rest-
+                (map (lambda (x)
+                       (cons (car s) x))
+                     rest-)))))
   )
 
+(module sequence-interface racket
+  (define (acc op ini seq)
+    (if (null? seq)
+      ini
+      (op (car seq)
+          (acc op ini (cdr seq)))))
+
+  (define (sieve pred seq)
+    (cond ((null? seq) '())
+          ((pred (car seq))
+           (cons (car seq)
+                 (sieve pred (cdr seq))))
+          (else (sieve pred (cdr seq)))))
+
+  (define (xrange low high)
+    (if (>= low high)
+      '()
+      (cons low (xrange (+ 1 low) high))))
+
+  ; an optimization algorithm for eval polynomial.
+  ; it is proved that evaluation of any polynomial
+  ; take at least the same amount of additions and
+  ; multiplication as horner-eval do.
+  (define (horner-eval x coeff-seq)
+    (acc
+      (lambda (coeff higher-term)
+        (+ coeff (* x higher-term)))
+      0
+      coeff-seq))
+  )
+
+(module matrices racket
+  (define (vec . z) (apply list z))
+
+  ; map used as zip.
+  (define (acc-n op ini seqs)
+    (if (null? (car seqs))
+      '()
+      (cons (foldr op ini
+                   (map car seqs))
+            (acc-n op ini
+                   (map cdr seqs)))))
+
+  (define (dot-product v w)
+    (foldr + 0 (map * v w)))
+
+  (define (matrix-*-vector m v)
+    (map (lambda (x)
+           (dot-product v x))
+         m))
+
+  (define (transpose mat)
+    (acc-n cons '() mat))
+
+  (define (matrix-*-matrix m n)
+    (let ((cols (transpose n)))
+      (map (lambda (v)
+             (matrix-*-vector cols v))
+           m)))
+
+  (define (foldleft op ini seq)
+    (define (iter res rest-)
+      (if (null? rest-)
+        res
+        (iter (op res (car rest-))
+              (cdr rest-))))
+    (iter ini seq))
+
+  )
 
