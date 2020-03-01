@@ -1,4 +1,4 @@
-#lang racket/base
+#lang racket
 
 ; closure property:
 ;   The results of combining things with a
@@ -31,9 +31,11 @@
       (_last-pair (cdr items))))
 
   (define (_reverse items)
-    (if (null? items)
-      items
-      (cons (car (_last-pair items)) (cdr items))))
+    (define (rev-stack res items)
+      (if (null? items) res
+        (rev-stack (cons (car items) res)
+                   (cdr items))))
+    (rev-stack '() items))
 
   (define (same-parity . z)
     (define parity?
@@ -66,6 +68,48 @@
           ((not (pair? x)) 1)
           (else (+ (count-leaves (car x))
                    (count-leaves (cdr x))))))
+
+  (define (deep-reverse items)
+    (if (pair? items)
+      (_reverse (map deep-reverse items)) items))
+
+  (define (fringe tree)
+    (cond ((null? tree) '())
+          ((not (pair? tree)) (list tree))
+          (else (append
+                  (fringe (car tree))
+                  (fringe (cdr tree))))))
+
+  ; for nested tree structure
+  ; there are base case null and
+  ; flatened case where we reached the elements
+  ; stored in tree.
+  (define (scale-tree-nomap tree factor)
+    (cond ((null? tree) '())
+          ((not (pair? tree) (* factor tree)))
+          (else
+            (cons
+              (scale-tree-nomap (car tree) factor)
+              (scale-tree-nomap (cdr tree) factor))
+            )))
+
+  ; tree is a list too, so map can be a
+  ; very powerful auxiliary for help.
+  (define (scale-tree tree factor)
+    (map (lambda (sub)
+           (if (pair? sub)
+             (scale-tree sub factor)
+             (* sub factor)))
+         tree))
+
+  (define (square-tree tree factor)
+    (map (lambda (sub)
+           (if (pair? sub)
+             (square-tree sub factor)
+             (* sub factor)))
+         tree))
+
+
   )
 
 
