@@ -30,7 +30,7 @@
       items
       (_last-pair (cdr items))))
 
-  ; use parameter res as a stack.
+  ; NOTE use parameter res as a stack.
   (define (_reverse items)
     (define (rev-stack res items)
       (if (null? items) res
@@ -118,7 +118,7 @@
              (proc sub)))
          tree))
 
-  ; use let with recursion. Very concise.
+  ; NOTE let with recursion. Very concise.
   ; logic here is split the powerset into
   ; power set without the first element and the
   ; power set with the first element.
@@ -147,7 +147,7 @@
           (else (sieve pred (cdr seq)))))
 
 
-  ; an optimization algorithm for eval polynomial.
+  ; NOTE an optimization algorithm for eval polynomial.
   ; it is proved that evaluation of any polynomial
   ; take at least the same amount of additions and
   ; multiplication as horner-eval do.
@@ -221,7 +221,9 @@
     (prime? (+ (car pair) (cadr pair))))
 
   ; nested sequence.
-  ; fold the result of map into a empty list.
+  ; map proc to seq then collect results
+  ; into the empty list to flaten it.
+  ; NOTE: map here is a zip since seq is nested.
   (define (flatmap proc seq)
     (foldr append '() (map proc seq)))
 
@@ -242,10 +244,36 @@
                    (xrange 1 n)))))
 
   ; deeply nested sequence.
+  ; recursively generate S - x
+  ; then adjoing x to the front of each one.
   (define (permutations s)
     (if (null? s) (list '())
       (flatmap (lambda (x)
                  (map (lambda (p) (cons x p))
                       (permutations (remove x s))))
                s)))
+
+  (define (unique-pairs n)
+    (flatmap (lambda (i)
+               (map (lambda (j)
+                      (list i j))
+                    (xrange 1 (+ 1 i))))
+             (xrange 1 (+ 1 n))))
+
+  ; ordered-triples the sum = s
+  (define (ordered-triples n s)
+    (let ((interval (xrange 1 (+ n 1)))
+          (is-sum? (lambda (trp) (= s (apply + trp)))))
+      (filter is-sum?
+              (flatmap (lambda (i)
+                         (flatmap (lambda (j)
+                                    (map (lambda (k)
+                                           (list i j k))
+                                         interval))
+                                  interval))
+                       interval))))
+  )
+
+(module eight-queens racket
+
   )

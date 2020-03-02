@@ -177,7 +177,7 @@ joge
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (printf "Fucntions\n\n")
 (lambda () "hello")
-(define world (λ () "world"))
+(define world (lambda () "world"))
 
 (: hello-world (-> String))
 (define hello-world

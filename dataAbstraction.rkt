@@ -59,8 +59,8 @@
               (* (denom x) (numer y)))))
 
 (module different-cons racket/base
-  ;; Ver 1.
-  ; As long as the upper layer of abstraction
+  ; Ver 1.
+  ; NOTE  As long as the upper layer of abstraction
   ; barrier can access all the interface the
   ; data structure provides, then it is a valid
   ; data abstraction.
@@ -89,9 +89,10 @@
   (displayln (car-local-var pair1))
 
 
-  ;; Ver 2. Support all procudures for cons
-  ;; thus the implementation is an acceptable
-  ;; cons.
+  ; Ver 2.
+  ; NOTE Support all procudures for cons
+  ; thus the implementation is an acceptable
+  ; cons.
   (define (cons-callback-choose x y)
     (lambda (m) (m x y)))
 

@@ -167,7 +167,7 @@
 #| Give concise mathematical definitions for the functions com- |#
 #| puted by the procedures f , g , and h for positive i |#
 
-; fixed point algorithms.
+; NOTE fixed point algorithms.
 
 (module fixed-point racket/base
   (provide fixed-point
@@ -194,7 +194,8 @@
   (define (average-damping f)
     (lambda (x) (average x (f x))))
 
-  ;to find sqrt
+  ; NOTE use abstractions defined previously
+  ; to find sqrt
   (define (cube-root x)
     (fixed-point
       (average-damping
