@@ -30,6 +30,7 @@
       items
       (_last-pair (cdr items))))
 
+  ; use parameter res as a stack.
   (define (_reverse items)
     (define (rev-stack res items)
       (if (null? items) res
@@ -109,6 +110,7 @@
              (* sub sub)))
          tree))
 
+  ; some abstraction here
   (define (tree-map proc tree)
     (map (lambda (sub)
            (if (pair? sub)
@@ -144,10 +146,6 @@
                  (sieve pred (cdr seq))))
           (else (sieve pred (cdr seq)))))
 
-  (define (xrange low high)
-    (if (>= low high)
-      '()
-      (cons low (xrange (+ 1 low) high))))
 
   ; an optimization algorithm for eval polynomial.
   ; it is proved that evaluation of any polynomial
@@ -190,6 +188,9 @@
              (matrix-*-vector cols v))
            m)))
 
+  ; use an extra parameter as stack
+  ; very common technic when you want to
+  ; reverse the order of enumerate over lists.
   (define (foldleft op ini seq)
     (define (iter res rest-)
       (if (null? rest-)
@@ -197,6 +198,54 @@
         (iter (op res (car rest-))
               (cdr rest-))))
     (iter ini seq))
-
   )
 
+(module pair-sum-prime racket
+
+  (define (xrange low high)
+    (if (>= low high)
+      '()
+      (cons low (xrange (+ 1 low) high))))
+
+  (define (prime? x)
+    (define (prime-iter x v)
+      (cond ((or (zero? (remainder x v)) (< x 2))
+             #f)
+            ((< x (* v v))
+             #t)
+            (else
+              (prime-iter x (+ 1 v)))))
+    (prime-iter x 2))
+
+  (define (prime-sum? pair)
+    (prime? (+ (car pair) (cadr pair))))
+
+  ; nested sequence.
+  ; fold the result of map into a empty list.
+  (define (flatmap proc seq)
+    (foldr append '() (map proc seq)))
+
+  (define (make-pair-sum pair)
+    (list (car pair) (cadr pair)
+          (+ (car pair)
+             (cadr pair))))
+
+  ; nested map with flat map.
+  (define (prime-sum-pairs n)
+    (map make-pair-sum
+         (filter prime-sum?
+                 (flatmap
+                   (lambda (i)
+                     (map (lambda (j)
+                            (list i j))
+                          (xrange 1 (- i 1))))
+                   (xrange 1 n)))))
+
+  ; deeply nested sequence.
+  (define (permutations s)
+    (if (null? s) (list '())
+      (flatmap (lambda (x)
+                 (map (lambda (p) (cons x p))
+                      (permutations (remove x s))))
+               s)))
+  )
