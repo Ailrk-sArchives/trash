@@ -19,37 +19,48 @@ isval term =
     TmSucc _ -> True
     _        -> False
 
+-- single evaluation
 eval1 :: Term -> Term
 
-eval1 term@(TmIf t1 t2 t3)
-  | not $ isval t1 = TmIf (eval1 t1) t2 t3
-  | otherwise =
-      case term of
-        TmIf TmTrue t2 t3  -> t2
-        TmIf TmFalse t2 t3 -> t3
+-- if true then t2 else t3 -> t2
+-- if false then t2 else t3 -> t3
+--                t1 -> t1'
+-- -------------------------------------------------
+--  if t1 then t2 else t3 -> if t1' then t2 else t3
+eval1 (TmIf t1 t2 t3) | not $ isval t1 = TmIf (eval1 t1) t2 t3
+eval1 (TmIf TmTrue t2 t3) = t2
+eval1 (TmIf TmFalse t2 t3) = t3
 
+--       t1 -> t1'
+-- ---------------------
+--   succ t1 -> succ t1'
 eval1 (TmSucc t1)
   | not $ isval t1 = TmSucc $ eval1 t1
   | otherwise = TmSucc t1
 
-eval1 term@(TmPred t1)
-  | not $ isval t1 = TmPred $ eval1 t1
-  | otherwise =
-      case term of
-        TmPred TmZero     -> TmZero
-        TmPred (TmSucc v) -> v
+-- pred 0 -> 0
+-- pred (succ v) -> v
+--       t1 -> t1'
+-- ---------------------
+--   pred t1 -> pred t1'
+eval1 (TmPred t1) | not $ isval t1 = TmPred $ eval1 t1
+eval1 (TmPred TmZero) = TmZero
+eval1 (TmPred (TmSucc v)) = v
 
-eval1 term@(TmIsZero t1)
-  | not $ isval t1 = TmIsZero $ eval1 t1
-  | otherwise =
-      case term of
-        TmIsZero TmZero     -> TmTrue
-        TmIsZero (TmSucc _) -> TmFalse
+-- iszero 0 -> true
+-- iszero (succ v) -> false
+--       t1 -> t1'
+-- ---------------------
+--   iszero t1 -> iszero t1'
+eval1 (TmIsZero t1) | not $ isval t1 = TmIsZero $ eval1 t1
+eval1 (TmIsZero TmZero) = TmTrue
+eval1 (TmIsZero (TmSucc _)) = TmTrue
 
+-- const(t)
 eval1 n | isval n = n
 
 eval1 _ = error "Unknown term"
 
+-- eval motor
 eval :: Term -> Term
-eval t = let t' = eval1 t
-          in eval t'
+eval t = let t' = eval1 t in if isval t' then t' else eval t'
