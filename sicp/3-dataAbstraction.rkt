@@ -177,7 +177,6 @@
                (< (lower-bound y) 0))
         (error "divide interval that across zero")
         (make-interval (/ 1.0 (upper-bound y))
-                       (/ 1.0 (lower-bound y))))))
-  )
+                       (/ 1.0 (lower-bound y)))))))
 
 
