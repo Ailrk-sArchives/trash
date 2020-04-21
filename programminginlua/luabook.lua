@@ -53,7 +53,7 @@ Ch2EightQueen = {
         local function addqueen (a, n)
             if n > N then
                 printsolution(a)
-                os.exit()
+                do return end
             else
                 for c=1, N do
                     if isplaceok(a, n, c) then
@@ -130,11 +130,11 @@ Ch5Table = {
             list1[i] = io.read()
         end
 
-        local printlist = (function (list)
+        local printlist = function (list)
             for i=1, #list do
                 print(list[i])
             end
-        end)
+        end
         printlist(list1)
 
         local t = {10, print, x=12, k="hi"}
@@ -413,3 +413,253 @@ Ch8Gaps = {
 
 
 -- Part II
+
+Ch9Closure {
+
+    trysort = function()
+        local network = {
+            {name="grauna", Ip="210.26.30.34"},
+            {name="arraial", Ip="210.26.30.23"},
+            {name="lua", Ip="210.26.30.12"},
+            {name="derain", Ip="210.26.23.20"},
+        }
+        table.sort(network, function (a, b) return a.name > b.name end)
+        return network
+    end,
+
+     derivate = function (f, delta)
+        delta = delta or 1e-4
+        return function (x) return (f(x + delta) - f(x)) / delta end
+    end,
+
+    lib = function()
+        local Lib = {}
+        Lib.foo = function (x, y) return x + y end
+        Lib.bar = function (x, y) return x - y end
+        print(Lib.foo(1,2))
+        print(Lib.bar(1,2))
+    end,
+
+    localfunction = function()
+        local fact  -- declare local first, so it is defined in recursive call.
+        fact = function(n)
+            if n == 0 then return 1
+            else return n * fact (n - 1)
+            end
+        end
+        print(fact(10))
+    end,
+
+    closure = function()
+        local function newCounter()
+            local count = 0
+            return function()
+                count = count + 1
+                return count
+            end
+        end
+        local c1 = newCounter()  -- two different closures.
+        local c2 = newCounter()
+        print("c2")
+        print(c2())
+        print(c2())
+        print(c2())
+        print(c2())
+        print("c1")
+        print(c1())
+        print("c2")
+        print(c2())
+    end,
+
+    redefine = function ()
+        do
+            local oldsin = math.sin
+            local k = math.pi / 180  -- degree to rad
+            math.sin = function(x) return oldsin(x / k) end
+            -- run
+            local thetadegree = 90
+            local thetarad = thetadegree * k
+            print(math.sin(thetarad))  -- rad sin
+            math.sin = oldsin
+            print(math.sin(thetadegree)) -- degree sin
+        end
+    end,
+
+    secureenv = function() -- varify the access to file system.
+        do
+            local oldopen = io.open
+            local accessok = function(filename, mode)
+                return true  --fake check.
+            end
+            io.open = function (filename, mode)  -- sandbox open
+                if accessok(filename, mode) then
+                    return oldopen(filename, mode)
+                else return nil, "access denies"
+                end
+            end
+        end
+    end,
+
+    Geosystem = {
+        shape = {
+            disk = function (cx, cy, r)
+                return function(x, y)
+                    return (x - cx) ^ 2 + (y - cy) ^ 2 <= r^2
+                end
+            end,
+
+            rect = function (l, r, b, t)
+                return function (x, y)
+                    return l <= x and x <= r and y <= t and b <= y
+                end
+            end
+        },
+
+        op = {
+
+            complement = function (r)
+                return function(x, y)
+                    return not r(x, y)
+                end
+            end,
+
+            union = function(r1, r2)
+                return function (x, y)
+                    return r1(x, y) or r2(x, y)
+                end
+            end,
+
+            inserect = function (r1, r2)
+                return function(x, y)
+                    return r1(x, y) and r2(x, y)
+                end
+            end,
+
+            difference = function (r1, r2)
+                return function(x, y)
+                    return r1(x, y) and not r2(x, y)
+                end
+            end,
+
+            translate = function (r, dx, dy)
+                return function (x, y)
+                    return r(x - dx, y - dx)
+                end
+            end
+        },
+
+        plot = function(r, m, n)  -- portable bitmap.
+            io.write("P1\n", m, " ", n, "\n")
+            for i=1, n do
+                local y = (n - i * 2) / n
+                for j = 1, m do
+                    local x = (j * 2 - m) / m
+                    io.write(r(x, y) and "1" or "0")
+                end
+                io.write("\n")
+            end
+        end
+    }
+}
+
+Ch10PatternMatching = {
+
+    findsub = function()
+        local str = "good morning =="
+        print(string.sub(str, string.find(str, "morning")))
+    end,
+
+    gs = function ()
+        local s = string.gsub("Lua is cute", "cute", "great")
+        print(s)
+        s = string.gsub("Lua lua lua is cute", "lua", "Lua", 1)
+        print(s)
+    end,
+
+    gm = function()
+        local s = "some string"
+        local words = {}
+        for w in string.gmatch(s, "%a+") do
+            words[#words + 1] = w
+        end
+        print(table.concat(words, ", "))
+    end,
+
+    matchdate = function()
+        local date = "Today is 20/4/2020"
+        local d = string.match(date, "%d+/%d+/%d+")
+        print(d)
+    end,
+
+    charset = function()
+        local text = "I think to myself, what a wonderful world"
+        local nvowtext, nvow = string.gsub(text, "[AEIOUaeiou]", "*")
+        print(nvowtext)
+        print(nvow)
+    end,
+
+    matchlispparen = function()
+        local lisp = "(define a (+(((((lisp)))))))"
+        local function foo(str)
+            if str == nil then return end
+            print(str)
+            print(":::::::::::::")
+            local res = str:match("%((.*)%)")
+            local parenopen = res:find("%(")
+            local a, parenclose = res:find(".*".."%)".."()")
+            print(parenopen, parenclose)
+            if parenopen and parenclose then foo(res:sub(parenopen, parenclose)) end
+        end
+        foo(lisp)
+    end,
+
+    capture1 = function()
+        local pair = "name = Anna"
+        local key, value = string.match(pair, "(%a+)%s=%s*(%a+)")
+        print(key, value)
+    end,
+
+    capture2 = function()
+        local date = "Today is 18/7/1020"
+        local day, mon, year = string.match(date, "(%d+)/(%d+)/(%d+)")
+        print(day, mon, year)
+    end,
+
+    capture3 = function()
+        local s = [[Then he said: "It's all right!"]]
+        local _, quotedPart = string.match(s, "([\"'])(.-)%1")  -- - lazy verison of *
+        print(quotedPart)
+    end,
+
+}
+
+Ch11MostFrequentWords = {
+
+    mfw = function (filename, n)
+        local counter = {}
+        io.input(filename)
+        for line in io.lines() do
+            for word in string.gmatch(line, "%w+") do
+                counter[word] = (counter[word] or 0) + 1
+            end
+        end
+        local words = {}
+        for w in pairs(counter) do
+            words[#words + 1] = w
+        end
+        table.sort(words, function(w1, w2)
+            return counter[w1] > counter[w2]
+                   or counter[w1] == counter[w2]
+                   and w1 < w2
+        end)
+        for i=1, n do
+            io.write(words[i], "\t", counter[words[i]], "\n")
+        end
+    end
+
+}
+
+
+Ch12Datetime {
+
+}
