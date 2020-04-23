@@ -661,5 +661,201 @@ Ch11MostFrequentWords = {
 
 
 Ch12Datetime {
+    time = function()
+        print(os.time())
+    end,
 
+    date = function()
+        print(os.date("%d/%m/%Y", os.time()))
+    end,
+
+    datealgebra = function()
+        local t = os.date("*t")
+        print(os.date("%Y/%m/%d", os.time(t)))
+        t.day = t.day + 40
+        print(os.date("%Y/%m/%d", os.time(t)))
+    end,
+
+    datediff = function ()
+        local t1 = os.time({year=2020, month=1, day=12})
+        local t2 = os.time({year=2020, month=4, day=11})
+        local d = os.difftime(t2, t1)
+        print(d // (24 * 3600))
+    end
+}
+
+
+Ch13BitsandBytes {
+
+    bitwise = function ()
+        print(string.format("%x", 0xff & 0xabcd))
+        print(string.format("%x", 0xff | 0xabcd))
+        print(string.format("%x", 0xaaaa ~ -1))
+        print(string.format("%x", ~2^8))
+        print(string.format("%x", -1))
+        print(string.format("%x", 0xff << 12))
+        print(string.format("%x",  0xff >> -12))
+    end,
+
+    udiv = function (n, d)
+        if d < 0 then                       -- if d > 2^63
+            if math.ult(n, d) then
+                return 0
+            else return 1 end
+        end
+        local q = ((n >> 1) // d) << 1
+        local r = n - q * d
+        if not math.ult(r, d) then q = q + 1 end
+        return q
+    end
+
+}
+
+Ch14Datastructure {
+
+    matrix1 = function(m, n)
+        local mt = {}
+        for i = 1, n do
+            local row = {}
+            mt[i] = row
+            for j = 1, m do
+                row[j] = 0
+            end
+        end
+        return mt
+    end,
+
+    matrix2 = function(m, n)
+        local mt = {}
+        for i = 1, n do
+            local aux = (i - 1) * m
+            for j = 1, m do
+                mt[aux + j] = 0
+            end
+        end
+        return mt
+    end,
+
+    sprasematirix = function(a, b)
+        local c = {}
+        for i = 1, #a do
+            local resultline = {}
+            for k, va in pairs(a[i]) do   -- nil will not be visited.
+                for j, vb in pairs(b[k]) do
+                    local res = (resultline[j] or 0) + va * vb
+                    resultline[j] = (res ~= 0) and res or nil
+                end
+                c[i] = resultline
+            end
+        end
+        return c
+    end,
+
+    linkedlist = function()
+        local push = function(li, val)
+            if li == nil then return {next=nil, value=val} end
+            local res = {next = li, value = val}
+            return res
+        end
+        local list = nil
+        for i = 1, 100 do
+            list = push(list, i)
+        end
+        local head = list
+        while head ~= nil do
+            print(head.value)
+            head = head.next
+        end
+    end,
+
+    deque = function()
+        local function listNew()
+            return {first=0, last=-1}
+        end
+        local function pushl(list, val)
+            local first = list.first - 1
+            list[first] = val
+        end
+        local function pushr(list, val)
+            local last = list.last + 1
+            list[last] = val
+        end
+        local function popl(list)
+            local first = list.first
+            if first > list.last then error("list is empty") end
+            local value = list[first]
+            list.first = first + 1
+            return value
+        end
+        local function popr(list)
+            local last = list.last
+            if last < list.first then error("list is empty") end
+            local value = list[last]
+            list.last = last - 1
+            return value
+        end
+    end,
+
+    setsandbags = function()
+        local function Set(list)
+            local set = {}
+            for _, l in ipairs(list) do set[l] = true end
+            return set
+        end
+        local reserved = Set{"while", "end", "function", "local",}
+        print("is def a reserved word?: ", reserved["def"])
+    end,
+
+    stringbuffer = function()
+        local buffer = {}
+        for line in io.lines() do
+            buffer[#buffer + 1] = line .. "\n"
+        end
+        local s = table.concat(buffer)
+        print(s)
+    end,
+
+    graphs = function()
+        local function name2node(graph, name)
+            local node = graph[name]
+            if not node then
+                node = {name = name, adj = {}}
+                graph[name] = node
+            end
+            return node
+        end
+
+        local function readgraph()
+            local graph = {}
+            for line in io.lines() do
+                local namefrom, nameto = string.match(line, "(%S+)%s+(%S+)")
+                local from = name2node(graph, namefrom)
+                local to = name2node(graph, nameto)
+                from.adj[to] = true
+            end
+            return graph
+        end
+
+        local function findpath(curr, to, path, visited)
+            path = path or {}
+            visited = visited or {}
+            if visited[curr] then return nil end
+            visited[curr] = true
+            path[#path + 1] = curr
+            if curr == to then return path end
+            for node in pairs(curr.adj) do
+                local p = findpath(node, to, path, visited)
+                if p then return p end
+            end
+            table.remove(path)
+        end
+    end
+
+}
+
+Ch15DataFilesAndSerialization {
+
+    dof = function ()
+        do end
+    end
 }
