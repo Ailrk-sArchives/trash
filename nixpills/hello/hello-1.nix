@@ -11,6 +11,6 @@ derivation {
     coreutils
     gawkgunsed
     gungrep ];
-    src = ./hello-2.10.tar.gz;
+    src = fetchTarball http://ftp.gnu.org/gnu/hello/hello-2.10.tar.gz;
     system = builtins.currentSystem;
 }
