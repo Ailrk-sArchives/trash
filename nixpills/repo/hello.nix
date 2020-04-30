@@ -1,5 +1,9 @@
+# 2020-04-29
 # easy description of the package dependecies
-# based on generic autotools.
+# using input pattern, somewhat like render props in react.
+# your parameter mkDerivation is truely 'polymorphic' in some sense.
+# the functionality of it depends on the caller.
+#
 { mkDerivation }:
 mkDerivation {
   name = "hello";

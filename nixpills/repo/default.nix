@@ -1,6 +1,10 @@
 let
   nixpgs = import <nixpkgs> {};
   allpkgs = nixpkgs // pkgs;
+  # 2020-04-29
+  # callPackage pattern
+  # to match matchable attributes from set to parameter.
+  #
   callPackage = path: overrides:
     with builtins;
       let f = import path;
