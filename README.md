@@ -1,8 +1,12 @@
-# Books I read. 2020-04-29
+# Books I read.
 
-Here is a little repository for some books examples and exercises I walked through. I've read a lot of books, but sometimes I feel just reading is not enough. There're several problems I have encounterd that really get on the way of get the most out of reading.
+### 2020-04-29
 
-First problem is shallow understanding. You might've read a lot, but it is hard to verify if you really understand what you've read. When I'm reading, for most of the time I just scanning big words and made a rought picture. There is no in depth practice and discussions, which leads to a shaky fundation in knowledge. For instance, I was learning haskell and heard the word `monad`. I looked into some examples of implementations of different monads and known that there are some algebraic law a monad holds. But a week later, I ask myself what are the monads algebraic laws and why you want your monad satisfy those properties. Guess what, I felt hard to anwser.
+Here is a little repository for some books examples and exercises I walked through.
+
+I have some problems while reading books:
+
+First is shallow understanding. You might've read a lot, but it is hard to verify if you really understand what you've read. When I'm reading, for most of the time I just scanning big words and made a rought picture. There is no in depth practice and discussions, which leads to a shaky fundation in knowledge. For instance, I was learning haskell and heard the word `monad`. I looked into some examples of implementations of different monads and known that there are some algebraic law a monad holds. But a week later, I ask myself what are the monads algebraic laws and why you want your monad satisfy those properties. Guess what, I felt hard to anwser.
 
 It is hard to reference what I learned quickly. You need to read a lot of book, each of them have some 500 pages. How can you quickly retrive information from what you have already read without jump into thousands and thousands of pages? I read about nodejs event loop structure in one book, and later heard about reactor model in another. Subconciously you feel they are the same thing, but how do you verify the connection? I need a way to old knowledge up on the table with the newer one to compare them.
 
