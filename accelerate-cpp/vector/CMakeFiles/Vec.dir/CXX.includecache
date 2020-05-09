@@ -1,0 +1,16 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/jimmy/pj/cpp/accCpp/vector/src/main.cc
+vec.hpp
+/home/jimmy/pj/cpp/accCpp/vector/src/vec.hpp
+str.hpp
+/home/jimmy/pj/cpp/accCpp/vector/src/str.hpp
+iostream
+-
+
