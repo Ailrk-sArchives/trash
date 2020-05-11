@@ -10,6 +10,7 @@ from contextlib import contextmanager
 import multiprocessing
 from functools import partial
 import random
+import time
 
 Matrix = Sequence[Sequence]
 
@@ -74,15 +75,35 @@ class MatrixMultiplyTask(Task):
 
     def send(self, msg: Tuple[Matrix, Matrix]) -> Matrix:
         m1, m2 = msg
-        return self.mul(m1, m2)
-
-    def mul(self, m1: Matrix, m2: Matrix) -> Matrix:
         if len(m1[0]) != len(m2):
             raise TypeError("invalid matrix shape")
 
-        with multiprocessing.Pool(4) as pool:
-            res = [pool.map(partial(self.dot, v1), zip(*m2)) for v1 in m1]
-            __import__('pprint').pprint(res)
+        start = time.time()
+        res1 = self.mul(m1, m2)
+        print('time for parallel: ', time.time() - start)
+
+        start = time.time()
+        self.mul1(m1, m2)
+        print('time for sequential: ', time.time() - start)
+
+        return res1
+
+    def mul(self, m1: Matrix, m2: Matrix) -> Matrix:
+        res = []
+        with multiprocessing.Pool(7) as pool:
+            for v in m1:
+                dotonv = partial(self.dot, v)
+                vout = pool.map(dotonv, zip(*m2))
+                res.append(vout)
+        return res
+
+    def mul1(self, m1: Matrix, m2: Matrix) -> Matrix:
+        """ sequential """
+        res = []
+        for v in m1:
+            dotonv = partial(self.dot, v)
+            vout = map(dotonv, zip(*m2))
+            res.append(list(vout))
         return res
 
     @staticmethod
@@ -90,22 +111,27 @@ class MatrixMultiplyTask(Task):
         return sum(map(lambda vtup: vtup[0] * vtup[1], zip(v1, v2)))
 
 
+def init_square_matrix(nrow) -> Tuple[Matrix, Matrix]:
+    m1 = [[random.randint(0, 10) for _ in range(nrow)]
+          for _ in range(nrow)]
+    m2 = [[(15 if i == j else 0) for j in range(nrow)]
+          for i in range(nrow)]
+    print('finished initialization')
+
+    return m1, m2
+
+
 if __name__ == "__main__":
     exc = get_exchange('name')
     matexc = get_exchange('matrix')
 
-    task1 = DisplayMessageTask()
-    task2 = DisplayMessageTask()
-    with exc.subscribe(task1, task2):
-        exc.send("msg1")
-        exc.send("msg2")
+#     task1 = DisplayMessageTask()
+#     task2 = DisplayMessageTask()
+#     with exc.subscribe(task1, task2):
+#         exc.send("msg1")
+#         exc.send("msg2")
 
     task3 = MatrixMultiplyTask()
     with matexc.subscribe(task3):
-        m1 = [[random.randint(0, 10) for _ in range(15)]
-              for _ in range(15)]
-        __import__('pprint').pprint(m1)
-        m2 = [[(15 if i == j else 0) for j in range(15)]
-              for i in range(15)]
-        __import__('pprint').pprint(m2)
-        matexc.send((m1, m2))
+        matexc.send(init_square_matrix(400))
+
