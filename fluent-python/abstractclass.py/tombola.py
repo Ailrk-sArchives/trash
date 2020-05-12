@@ -38,3 +38,13 @@ class Tombola(ABC, Generic[T]):
                 break
         self.load(items)
         return tuple(sorted(items))
+
+    @classmethod
+    def __subclasshook__(cls, c):
+        methods = ("__load__", "pick", "loaded", "inspect")
+        if cls is Tombola:
+            if any(method in b.__dict__
+                    for b in c.__mro__
+                    for method in methods):
+                return True
+        return NotImplemented

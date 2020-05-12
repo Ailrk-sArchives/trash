@@ -1,0 +1,3 @@
+### python cookbook
+
+This book has such a high reputation that it almost makes you feel bad for being a python user and not reading it. Examples are very informative and in detailed, but I found there is many overlapps between what it presents and what I already known. Gonna pick some interesting chapters to practice. Lot of people treat it as a reference book, but I think it is better to just read the whole thing. Examples provided are pretty generic, by read the whole thing you get a better idea about how small idioms are built up together to solve particular problems. One of the author David Beazley is a very funny guy, and I learnt a lot from his talks on Pycon.
