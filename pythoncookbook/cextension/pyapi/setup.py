@@ -4,10 +4,11 @@ from distutils.core import setup, Extension
 setup(name="sample",
       ext_modules=[
           Extension("sample",
-                    ["pysample.c"],
-                    include_dirs=["/some/dir"],
+                    sources=["pysample.c"],
+                    include_dirs=["./"],
                     define_macros=[("FOO", "1")],
                     undef_macros=["BAR"],
-                    library_dirs=["/usr/local/lib"],
+                    library_dirs=["./"],
                     libraries=["sample"])
       ])
+
