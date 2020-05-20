@@ -64,7 +64,7 @@ typedef struct token {
   char string[MAXTOKENLEN];
 } Token;
 
-static int top=-1;
+static int top = -1;
 static Token stack[MAXTOKENS];
 static Token self;
 
@@ -110,10 +110,10 @@ void gettoken() {
   while ((*p = getchar()) == ' ')
     ;
   if (isalnum(*p)) {
-    while (isalnum(*++p=getchar()))
+    while (isalnum(*++p = getchar()))
       ;
     ungetc(*p, stdin);
-    *p  = '\0';
+    *p = '\0';
     self.type = classify_string();
     return;
   }
@@ -140,7 +140,7 @@ void read_to_first_identifier() {
 }
 
 void decarrays() {
-  while (self.type=='[') {
+  while (self.type == '[') {
     printf("array ");
     gettoken();
     if (isdigit(self.string[0])) {
@@ -168,12 +168,12 @@ void decpointers() {
 
 void declarator() {
   switch (self.type) {
-    case '[':
-      decarrays();
-      break;
-    case '(':
-      decfunctionargs();
-      break;
+  case '[':
+    decarrays();
+    break;
+  case '(':
+    decfunctionargs();
+    break;
   }
   decpointers();
 
@@ -195,5 +195,34 @@ void cdecl() {
 }
 #undef MAXTOKENS
 #undef MAXTOKENLEN
+
+/* differences between array and ptr addressing  */
+void ptr_array() {
+  char array[] = { 1, 2, 3 };
+  char *p = NULL;
+
+  /* 1. get address from array symbol
+   * 2. plus offset to address
+   * 3. get content of the address
+   * array[3]:
+   * array
+   *   |
+   *   v --- v
+   *   1 2 3 4
+   * */
+  array[1];
+
+  /* 1. get address1 from p symbol
+   * 2. get address2 from where content of addess1 point to
+   * 3. plus offset to address
+   * 4. get content
+   * p[3]:
+   * p -> *ptr
+   *       |
+   *       v --- v
+   *       1 2 3 4
+   * */
+  p[1];
+}
 
 int main(void) { return 0; }
