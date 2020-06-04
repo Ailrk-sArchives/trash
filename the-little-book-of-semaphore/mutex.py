@@ -1,5 +1,14 @@
 from threading import Thread, Semaphore
 
+"""
+the problem is Symmetric because all threads run the same code.
+easier to generalize compare with Asymmetric code.
+
+In this case the mutex can sync arbitrary amount of concurrency.
+
+Code be protected is called critical section.
+"""
+
 
 def worker1(sem: Semaphore):
     global count
