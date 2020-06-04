@@ -18,9 +18,11 @@ def worker1(sema: Semaphore, semb: Semaphore):
         ...
     print('[a] a1', sema._value, semb._value)
 
-    sema.release()
-    semb.acquire()
+    sema.release()  # +
+    semb.acquire()  # -
 
+    for i in range(30000000):
+        ...
     print('[a] a2', sema._value, semb._value)
 
 
@@ -29,8 +31,8 @@ def worker2(sema: Semaphore, semb: Semaphore):
         ...
     print('[b] b1', sema._value, semb._value)
 
-    semb.release()
-    sema.acquire()
+    semb.release()  # +
+    sema.acquire()  # -
 
     print('[b] b2', sema._value, semb._value)
 
