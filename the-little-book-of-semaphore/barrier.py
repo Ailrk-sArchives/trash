@@ -32,22 +32,25 @@ class Barrier:
         # use mutex to protect the counter.
         self._mutex.acquire()
         self._n_arrived += 1
+        if self._n_arrived == self._n:
+            self._barrier.release()
         self._mutex.release()
 
         # when all thread passed, the last one make the first release
         # after that other threads will starts release their own acquire.
-        if self._n_arrived == self._n:
-            self._barrier.release()
 
-        self._turnsile()
+        self._turnstile()
+        self._rewind()
 
     def _rewind(self):
         """ lock again after all threads passed. """
         self._mutex.acquire()
         self._n_arrived -= 1
-        self._mutex.acquire()
+        if self._n_arrived == 0:
+            self._barrier.acquire()
+        self._mutex.release()
 
-    def _turnsile(self):
+    def _turnstile(self):
         """ each thread will lock in turnstil until a first release """
         # acquire and release in rapid succession.
         # lock at the very beginning.
@@ -59,7 +62,7 @@ class Barrier:
 
 def worker(barrier: Barrier):
     print("rendezvous")
-    sleep(randint(0, 3))
+    sleep(randint(0, 1))
     barrier.wait()
 
     print("critical")
@@ -69,7 +72,7 @@ if __name__ == "__main__":
 
     barrier = Barrier(thread_num)
 
-    for idx in range(3):
+    for idx in range(100):
         print(idx, "============")
         threads = []
         for i in range(thread_num):
