@@ -23,7 +23,6 @@ pub fn show_trait() {
     let f = 2.71;
     let i_show = i.show();
     let f_show = f.show();
-
     println!("values: {} {}", i, f);
     println!("show: {} {}", i_show, f_show);
 }

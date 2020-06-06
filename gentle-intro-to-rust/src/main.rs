@@ -123,12 +123,9 @@ fn main() {
     let s: &str = lifetime::longest_with_an_announcement("a", "asd", "good");
     println!("{}", s);
 
-
     let fib = fib_iter::Fibnacci::new();
     for (i, f) in fib.take(80).enumerate() {
         println!("fib {}-> {} or\n {:#b}\n or {:#x}\n", i, f, f, f);
         println!("==================================>");
     }
-
-
 }

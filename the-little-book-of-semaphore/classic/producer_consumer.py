@@ -66,6 +66,7 @@ def consumer(buf: Buffer):
         print(f"[consumer] {tid} consuming ...")
         data = buf.get()
         if data is BufferEnd:
+            buf.add(BufferEnd)
             break
         print(data)
 
@@ -73,19 +74,16 @@ def consumer(buf: Buffer):
 if __name__ == "__main__":
     buf = Buffer()
     p1 = Thread(target=producer, args=(buf,))
-    p2 = Thread(target=producer, args=(buf,))
     c1 = Thread(target=consumer, args=(buf,))
     c2 = Thread(target=consumer, args=(buf,))
     c3 = Thread(target=consumer, args=(buf,))
 
     p1.start()
-    p2.start()
     c1.start()
     c2.start()
     c3.start()
 
     p1.join()
-    p2.join()
     c1.join()
     c2.join()
     c3.join()

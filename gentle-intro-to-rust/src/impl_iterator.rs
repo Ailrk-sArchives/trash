@@ -19,7 +19,6 @@ impl fmt::Debug for PRange {
 // typeclass
 impl Iterator for PRange {
     type Item = f64;
-
     fn next(&mut self) -> Option<Self::Item> {
         let res = self.start;
         if res > self.end {

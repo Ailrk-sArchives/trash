@@ -5,10 +5,8 @@ pub fn hello_world() {
 
     // print is a macro
     print!("hello");
-
     // val are immutable by default.
     let value = 42;
-
     // assert is a macro
     assert_eq!(value, 42);
 }
@@ -22,7 +20,6 @@ pub fn looping_if() {
             println!("odd {}", i);
         }
     }
-
     for i in 0..5 {
         // if as expression
         let even_odd = if i % 2 == 0 { "even" } else { "odd" };
@@ -36,7 +33,6 @@ pub fn adding_thigns_up() {
     for i in 0..5 {
         sum += i as f64;
     }
-
     print!("sum is {}", sum);
 }
 
@@ -82,12 +78,10 @@ pub fn function_types() {
     let res = sqr(clamp(abs(-0.9), 0.1, 1.4));
     println!("square is {}", res);
     println!("factorial is {}", factorial(10));
-
     let i = 10;
     let res1 = by_ref(&i);
     let res2 = by_ref(&31);
     println!("{} {}", res1, res2);
-
     let mut j = 1.0;
     modifies(&mut j as &mut f64);
     print!("{} ", j);
@@ -97,7 +91,6 @@ pub fn find_the_ropes() {
     fn pi1() {
         let pi: f64 = 3.1415;
         let x = pi / 2.0;
-
         let cosine = x.cos();
         print!("cosine {}", cosine);
     }
@@ -105,10 +98,8 @@ pub fn find_the_ropes() {
     fn pi2() {
         let x = 2.0 * consts::PI;
         let abs_difference = (x.cos() - 1.0).abs();
-
         assert!(abs_difference < 1e-10);
     }
-
     pi1();
     pi2();
 }
@@ -132,7 +123,6 @@ pub fn array_and_slices() {
         println!("[{}] = {}", i, arr[i]);
     }
     print!("length {}", arr.len());
-
     println!("sum {}", res);
 
     // slice

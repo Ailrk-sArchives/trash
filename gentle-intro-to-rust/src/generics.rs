@@ -3,13 +3,11 @@ where
     T: PartialOrd + Copy,
 {
     let mut largest = list[0];
-
     for &item in list.iter() {
         if item > largest {
             largest = item;
         }
     }
-
     largest
 }
 
@@ -51,9 +49,7 @@ pub fn use_point() {
         y: 10,
     };
     let p = Point::<i32> { x: 10, y: 20 };
-
     println!("{:?}", p.x());
     let hp2 = hp.mixup(HeterPoint::<u32, u32> { x: 100, y: 100 });
-
     println!("{:?}", hp2.x);
 }
