@@ -33,6 +33,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import aliased
 from sqlalchemy import func
+from sqlalchemy import relationship
 
 
 Base = declarative_base()
@@ -621,3 +622,32 @@ def orm_fn4():
              .outerjoin(subq, User.id == subq.c.user_id)
              .all())
     print(query)
+
+
+"""
+many-to-many
+"""
+
+
+class Employee(Base):
+    __tablename__ = 'employee'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(30))
+
+    projects = relationship(
+        'Project',
+        secondary=Table(
+            'employee_project',
+            Base.metadata,
+            Column('employee_id', Integer, ForeignKey('employee.id'),
+                   primary_key=True),
+            Column('employee_id', Integer, ForeignKey('employee.id'),
+                   primary_key=True)),
+        backref='employees')
+
+
+class Project(Base):
+    __tablename__ = 'project'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(30))
