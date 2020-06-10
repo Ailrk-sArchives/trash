@@ -1,0 +1,119 @@
+                                  Haskell Typeclass relationships, definition and intuitions
+
+          Functor          ~Apply......................Semigroup
+            |                                              |
+            |                                              |
+    +-------+---------+                                    V
+    |       |         |        ..........................Monoid .....................Catgegory
+    |       |     .Applicative .   .                       .                            |
+    |       |     .      |         .                       .                            |
+    |       |     .      +------------------------+        .                            |
+    |       |     .      |         .              |        .                            |
+    |       |     .      |   .......              |        .............................|......................
+    |       |     .      |   .     .              |        .                            |                     .
+    V       |     .      V   .     .              V        .                            V                     .
+~Comonad    |     .  Alternative Folable        Monad.......         +----------------Arrow -> ArrowZero -> ArrowPlus
+            |     .                 |              |    .            |                  |
+            |     .                 |       +------+-----------+     |                  +---------------+
+            |     .                 |       |      |    .      |     |                  |               |
+            V     .                 |       V      V    .      =     V                  V               V
+        Traversable <---------------+    MonadMix MonadPlus ArrowApply              ArrowChoice     ArrowLoop
+
+
+- Solid arrows point from the general to specific.
+- Dotted lines indicatte some other relationship.
+- Monad and ArrowApply are equivalent.
+- Apply and Comonad are greyed out since they are not actually in the standard hasekell libraries.
+
+# Functor #
+- represent container.
+- fmap apply function uniformly into elements in the container
+- container represent some context.
+
+### definition
+class Functor f where
+  fmap :: (a -> b) -> f a -> f b
+
+  (<$) :: a -> f b -> f a
+  (<$) = fmap . const
+
+- f is higher kinded type. f :: * -> *
+- Maybe is * -> *, it is not concret type by itself.
+
+- as container, fmap map function into the container
+- as context, fmap map into container without altering it.
+- (<$) simply replace the value in a container with a different value.
+- const :: a -> b -> a return a no matter what b is. It's helpful in general to forcibly replace a value.
+
+### Instance
+instance Functor [] where
+  fmap :: (a -> b) -> [a] -> [b]
+  fmap _ [] = []
+  fap g (x:xs) = g s : fmap g xs
+
+instance Functor Maybe where
+  fmap :: (a -> b) -> Maybe a -> Maybe b
+  fmap _ Nothing = Nothing
+  fmap g (Just a) = Just $ g a
+
+- in terms of container, value get mapped with g
+- in terms of context, list functor represent a context of
+  nondeterministic choice. (a list is like a single value that
+  is choosen from among several possibilities)
+  maybe functor represent a context with possible failure.
+
+- examples of other functors
+  1.  Either e is a functor. like maybe, it represent a possible failure but
+      with a extra error e.
+  2.  ((,) e) is a partially applied two tuple. It can hold another value. to
+      form a concrete type.
+  3.  ((->) e) is a functor take type of e as parameter. (e -> a) represent the final
+      concrete type. As a container think it as set of values of a that indexed by
+      e. As context, type of e can be accessed in a read-only fashion.
+      Note: ((->) e) is also referred to as a reader monad.
+  4.  IO is a functor. IO a represent a computation producing a value of type a which
+      may have IO effects.
+      if m produce value x with some IO effects, `fmap g x` produce `g x` with the same
+      IO effect.
+  5.  Standard containers like Tree, Map, Sequence....
+  6.  Note: Set is not a functor in haskell. there is an Ord constrain on Set's elements, like
+      (Ord a) => Set a. But functor should be applicable to any types.
+
+##### Exercise:
+- Functor for Either e, and ((->) e)
+instance Functor (Either e) where
+  fmap _ (Left e) = Left e
+  fmap g (Right a) = Right $ g a
+
+instance Functor ((->) e)
+  fmap :: (a -> b) -> ((->) e a) -> ((->) e b)
+  fmap g f = \e -> g (f e)
+
+in the type level, the function (a -> b) is eventually applied into functor f a.  in terms of container, this two Functor both modify the internal element without change the structure.  But in terms of context they serves very different purpose. Either e is straight forward since it either apply g into value a if it is Right a or shortcuit the computation.  ((->) e a) functor will construct a new functor with the same parameter, and apply g the result of f e. It's function composition.
+
+Function composition can be thought as a specific application since functor is a more general concept.
+
+- Functor for ((,) e)  and Pair
+data Pair a = Pair a a
+instance Functor ((,) e) where
+  fmap g (a, b) = (a, g b)
+
+instance Functor (Pair a) where
+  fmap g $ Pair a b = Pair a $ g b
+
+They are the same thing.
+
+- Functor for ITree.
+data ITree a = Leaf (Int -> a)
+             | Node (ITree a)
+
+instance Functor ITree where
+  fmap g $ Leaf f = Leaf $ \int -> g $ f int
+  fmap g $ Node t = Node $ fmap g t
+
+- an example of a type of kind * -> * which cannot be made an instance of Functor
+
+
+- The composition of two Functor is also a Functor is
+
+
