@@ -1,3 +1,20 @@
+"""
+Cooperative multitasking vs Preemptive multitasking:
+    coroutines hands out control voluntarily, while threads
+    can preempt other threads at the middle of the execution.
+
+    coroutines need a even loop to schedule their execution, while
+    threads are scheduled by operating system scheduler.
+
+    Thus:
+        - if one coroutine runs for too long it will block the
+          entire program.
+        - as a concequence one can control the access of shared
+          resource and avoid using lock.
+        -
+
+"""
+
 import asyncio
 import time
 import random

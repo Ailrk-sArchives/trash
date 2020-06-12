@@ -31,11 +31,13 @@
 - container represent some context.
 
 ### definition
+```haskell
 class Functor f where
   fmap :: (a -> b) -> f a -> f b
 
   (<$) :: a -> f b -> f a
   (<$) = fmap . const
+```
 
 - f is higher kinded type. f :: * -> *
 - Maybe is * -> *, it is not concret type by itself.
@@ -46,6 +48,7 @@ class Functor f where
 - const :: a -> b -> a return a no matter what b is. It's helpful in general to forcibly replace a value.
 
 ### Instance
+```haskell
 instance Functor [] where
   fmap :: (a -> b) -> [a] -> [b]
   fmap _ [] = []
@@ -55,6 +58,7 @@ instance Functor Maybe where
   fmap :: (a -> b) -> Maybe a -> Maybe b
   fmap _ Nothing = Nothing
   fmap g (Just a) = Just $ g a
+```
 
 - in terms of container, value get mapped with g
 - in terms of context, list functor represent a context of
@@ -80,6 +84,7 @@ instance Functor Maybe where
       (Ord a) => Set a. But functor should be applicable to any types.
 
 ##### Exercise:
+``` haskell
 - Functor for Either e, and ((->) e)
 instance Functor (Either e) where
   fmap _ (Left e) = Left e
@@ -88,31 +93,45 @@ instance Functor (Either e) where
 instance Functor ((->) e)
   fmap :: (a -> b) -> ((->) e a) -> ((->) e b)
   fmap g f = \e -> g (f e)
+```
 
 in the type level, the function (a -> b) is eventually applied into functor f a.  in terms of container, this two Functor both modify the internal element without change the structure.  But in terms of context they serves very different purpose. Either e is straight forward since it either apply g into value a if it is Right a or shortcuit the computation.  ((->) e a) functor will construct a new functor with the same parameter, and apply g the result of f e. It's function composition.
 
 Function composition can be thought as a specific application since functor is a more general concept.
 
 - Functor for ((,) e)  and Pair
+``` haskell
 data Pair a = Pair a a
 instance Functor ((,) e) where
   fmap g (a, b) = (a, g b)
 
 instance Functor (Pair a) where
   fmap g $ Pair a b = Pair a $ g b
+```
 
 They are the same thing.
 
 - Functor for ITree.
+``` haskell
 data ITree a = Leaf (Int -> a)
              | Node (ITree a)
+```
 
 instance Functor ITree where
+``` haskell
   fmap g $ Leaf f = Leaf $ \int -> g $ f int
   fmap g $ Node t = Node $ fmap g t
+```
 
 - an example of a type of kind * -> * which cannot be made an instance of Functor
+newtype T a = T (a -> Int)
 
+you can make a contravariant functor rather than covariant functor out of it.
+difference:
+``` haskell
+fmap :: Functor f => (a -> b) -> f a -> f b
+contramap :: Contravariant f => (a -> b) -> f b -> f a
+```
 
 - The composition of two Functor is also a Functor is
 

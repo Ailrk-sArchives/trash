@@ -10,7 +10,7 @@ shiftChar :: Char -> Int
 shiftChar key = (ord key) - 97
 
 align :: Int -> Int -> Int
-align strIdx keyLen = mod strIdx keyLen
+align strIdx keyLen = strIdx `mod` keyLen
 
 encodeVingenere :: String -> String -> String
 encodeVingenere key (x:xs) = go key (x:xs) 0

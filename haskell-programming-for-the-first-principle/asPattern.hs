@@ -19,4 +19,3 @@ captializeWords s =
                   | otherwise = go as (a : acc)
         tuplize = map (\a -> (a, capHead a))
      in Just (tuplize . tokenize $ s)
-
