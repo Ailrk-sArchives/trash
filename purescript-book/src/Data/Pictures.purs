@@ -2,9 +2,6 @@ module Data.Pictures where
 
 import Prelude
 
-import Data.Foldable (foldl)
-import Global as Global
-import Math as Math
 import Partial.Unsafe (unsafePartial)
 
 
