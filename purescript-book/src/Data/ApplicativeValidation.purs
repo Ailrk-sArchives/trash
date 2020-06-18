@@ -3,6 +3,7 @@ module Data.ValidationApplicative where
 import Control.Apply (lift2)
 import Data.AddressBook (Address, Person, PhoneType(..), address, person, phoneNumber, PhoneNumber(..))
 import Data.BooleanAlgebra ((&&))
+import Data.Bounded (Ordering(..))
 import Data.Either (Either(..))
 import Data.Eq (class Eq, eq)
 import Data.Foldable (class Foldable, foldMap, foldr, foldl)
@@ -13,7 +14,7 @@ import Data.Show (class Show)
 import Data.String as S
 import Data.String.Regex as R
 import Data.String.Regex.Flags (noFlags)
-import Data.Traversable (class Traversable, traverse)
+import Data.Traversable (class Traversable, sequence, traverse)
 import Data.Validation.Semigroup (V, invalid)
 import Partial.Unsafe (unsafePartial)
 import Prelude (class Applicative, class Functor, class Semiring, Unit, apply, identity, map, pure, show, unit, (*>), (+), (/=), (<$>), (<*>), (<>))
@@ -28,6 +29,8 @@ import Prelude (class Applicative, class Functor, class Semiring, Unit, apply, i
 -- if `f` represents some larger programming language with side
 -- effects, the `Apply` and `Applicative` allows to lift value
 -- from purescipt into the larger language.
+-- applicative generalize the notion of function application to
+-- type constuctor.
 
 -- if a value cannot be expressed as pure x for some x, then it
 -- represent a term only exists in the larger language.
@@ -176,9 +179,9 @@ instance functorTree :: Functor Tree where
 -- foldl :: (b -> a -> b) -> b -> f a -> f b
 -- foldMap :: (a -> m) -> f a ->  m
 instance foldableTree :: Foldable Tree where
-    foldr _ x Leaf = Leaf
+    foldr _ x Leaf = x
     foldr f x (Branch tl val tr) = foldr f (f val (foldr f x tr)) tl
-    foldl _ x Leaf = Leaf
+    foldl _ x Leaf = x
     foldl f x (Branch tl val tr) = foldl f (f (foldl f x tl) val) tr
     foldMap _ Leaf = mempty
     foldMap f (Branch tl val tr) = foldMap f tl <> f val <> foldMap f tr
@@ -187,14 +190,24 @@ instance foldableTree :: Foldable Tree where
 --             (a -> m b) -> t a -> m (t b)
 -- sequence :: forall m t a b. (Traversable t) => (Applicative m)
 --             t (m a) -> m (t a)
-instance traverable :: Traversable Tree where
+instance inorderTraversableTree :: Traversable Tree where
     traverse _ Leaf = pure Leaf
     traverse f (Branch tl val tr) = Branch <$> traverse f tl <*> f val <*> traverse f tr
     sequence = traverse identity
 
-
-{-- instance inorderTraverseTree :: Traversable Tree where --}
-{--     traverse _ Leaf = pure Leaf --}
-{--     traverse f (Branch tl val tr) = Branch <$> traverse f tl <*> f val <*> traverse f tr --}
-{--     sequence = traverse identity --}
-
+tree1 :: Tree String
+tree1 = Branch
+    (Branch
+        (Branch Leaf "1" Leaf)
+        "2"
+        (Branch
+            Leaf
+            "3"
+            (Branch
+                Leaf
+                "4"
+                (Branch
+                    Leaf
+                        "5" Leaf))))
+    "6"
+    (Branch Leaf "7" Leaf)

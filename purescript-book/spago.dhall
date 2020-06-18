@@ -10,6 +10,7 @@ You can edit this file as you like.
   , "lists"
   , "math"
   , "psci-support"
+  , "random"
   , "strings"
   , "validation"
   ]
