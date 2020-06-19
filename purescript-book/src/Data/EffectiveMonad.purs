@@ -2,14 +2,25 @@ module Data.EffectiveMonad where
 
 import Data.Eq
 
-import Data.Functor ((<$>))
 import Control.Alternative (empty)
 import Control.Applicative ((<*>))
 import Control.Monad (ap)
+import Control.Monad.ST (for, run)
+import Control.Monad.ST.Ref (new, modify, read)
 import Data.Array (foldM, nub, sort, (..))
+import Data.Either (Either(..))
+import Data.Functor ((<$>))
 import Data.List (List(..), fromFoldable, head, tail, (:))
 import Data.Maybe (Maybe(..))
-import Prelude (class Monad, bind, pure, (&&), (+), (/), (<<<), (==), (>>=))
+import Data.Monoid ((<>))
+import Effect (Effect)
+import Effect.Aff (error)
+import Effect.Class.Console (log, logShow)
+import Effect.Exception (message, throwException, try)
+import Effect.Random (random)
+import Node.Encoding (Encoding(..))
+import Node.FS.Sync (readTextFile)
+import Prelude (class Monad, Unit, bind, pure, (&&), (+), (/), (<<<), (==), (>>=), ($), (*), (-), discard)
 
 
 countThrows :: Int -> Array (Array Int)
@@ -82,5 +93,55 @@ mapMonad :: forall m a b. (Monad m) => (a -> b) -> m a -> m b
 mapMonad f a = do
     x <- a
     pure (f x)
+
+-- Native Effects.
+-- some exampes: console IO, random number generation, exception rw mut state.
+--               DOM, XMLHttpRequest, websocket, rw local storage.
+
+main1 :: Effect Unit
+main1 = do
+    n <- random
+    logShow n
+
+-- handle exception gracefully.
+main2 :: Effect Unit
+main2 = do
+    result <- try $ readTextFile UTF8 "iDoNotExist.md"
+    case result of
+         Right lines -> log $ "Content: \n" <> lines
+         Left error ->  log $ "Couldn't open file. Error: " <> message error
+
+-- haskell style head, throw exceptions directly.
+exceptionHead :: List Int -> Effect Int
+exceptionHead l = case l of
+    x : _ -> pure x
+    Nil -> throwException $ error "empty list"
+
+-- mutable state
+-- ST effect. restrict sharing mutatble state in such a way that
+-- only safe local mutation is allowed.
+--
+-- simulate the movement of a particle falling under gravity
+-- ST r a = ST r a
+-- a is value stored in the cell.
+-- r is called a Region kind, which the compiler will make sure
+-- the reference cell is not going to escape its scope. and
+-- can safely turn ref into value.
+--
+-- new :: forall a r. a -> ST r (STRef r a)
+-- read :: forall a r. STRef r a -> ST r a
+-- write :: forall a r. a -> STRef r a -> ST r a
+-- modify :: forall r a. (a -> a) -> STRef r a -> ST r a
+
+simulate :: Number -> Number -> Int -> Number
+simulate x0 v0 time = run do
+    ref' <- new { x: x0, v: v0 }
+    for 0 (time * 1000) \_ ->
+        modify ( \o ->
+            { v: o.v - 9.81 * 0.001
+            , x: o.x + o.v * 0.001 })
+            ref'
+    final <- read ref'
+    pure final.x
 
 

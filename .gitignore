@@ -346,3 +346,21 @@ Cargo.lock
 
 # End of https://www.gitignore.io/api/c,lua,c++,agda,rust,java,ocaml,python,racket,scheme,haskell,commonlisp
 
+
+# Created by https://www.toptal.com/developers/gitignore/api/purescript
+# Edit at https://www.toptal.com/developers/gitignore?templates=purescript
+
+### PureScript ###
+# Dependencies
+.psci_modules
+.spago
+bower_components
+node_modules
+
+# Generated files
+.sci
+output
+out
+
+# End of https://www.toptal.com/developers/gitignore/api/purescript
+p

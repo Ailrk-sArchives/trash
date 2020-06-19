@@ -33,6 +33,7 @@ class MonadTrans' t where
 class Semigroup' a where
     mappend' :: a -> a -> a
 
+-- *
 class Semigroup' a <= Monoid' a where
     mempty' :: a
     mconcat' :: List a -> a
@@ -47,6 +48,7 @@ class Monad' m <= MonadPlus' m where
     mzero' :: forall a. m a
     mplus' :: forall a. m a -> m a -> m a
 
+-- * -> *
 class Foldable' t where
     foldr' :: forall a b. (a -> b -> b) -> b -> t a -> b
     foldl' :: forall a b. (b -> a -> b) -> b -> t a -> b
@@ -58,9 +60,30 @@ class Foldable' t where
     maximum' :: forall a. (Ord a) =>  t a -> a
     minimum' :: forall a. (Ord a) =>  t a -> a
 
+-- * -> *
 class (Functor' t, Foldable' t) <= Traversable' t where
     traverse :: forall a b f. Applicative' f => (a -> f b) -> t a -> f (t b)
     sequenceA :: forall a f. Applicative' f => t (f a) -> f (t a)
+
+-- * -> * -> *
+class Bifunctor' p where
+    bimap' :: forall a b c d. (a -> b) -> (c -> d) -> p a c -> p b d
+    bifirst' :: forall a b c. (a -> b) -> p a c -> p b c
+    bisecond' :: forall a b c. (b -> c) -> p a b -> p a c
+
+-- * -> * -> *
+class Category' arr where
+    id' :: forall a. arr a a
+    cdot :: forall a b c. arr b c -> arr a b -> arr a c
+
+class Category' arr <= Arrow' arr where
+    arr' :: forall b c. (b -> c) -> (arr b c)
+    arrfirst' :: forall b c d. (arr b c) -> (arr (Tuple b d) (Tuple c d))
+    arrsecond' :: forall b c d. (arr b c) -> (arr (Tuple d b) (Tuple d c))
+    arrddd' :: forall b c b' c'. (arr b c) -> (arr b' c')
+            -> (arr (Tuple b b') (Tuple c c'))
+    arraaa' :: forall b c b' c'. (arr b c) -> (arr b' c')
+            -> (arr b (Tuple c c'))
 
 zip' :: forall a b. List a -> List b -> List (Tuple a b)
 zip' = unsafeCoerce unit
@@ -79,3 +102,6 @@ compose' = unsafeCoerce unit
 
 dollar' :: forall a b. (a -> b) -> a -> b
 dollar' = unsafeCoerce unit
+
+nub' :: forall a. List a -> List a
+nub' = unsafeCoerce unit

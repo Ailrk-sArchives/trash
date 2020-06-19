@@ -9,8 +9,10 @@ You can edit this file as you like.
   , "globals"
   , "lists"
   , "math"
+  , "node-fs"
   , "psci-support"
   , "random"
+  , "react-basic-hooks"
   , "strings"
   , "validation"
   ]
