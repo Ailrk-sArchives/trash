@@ -1,12 +1,19 @@
 #include <assert.h>
 #include <cstddef>
+#include <execution>
+#include <forward_list>
+#include <fstream>
 #include <iostream>
+#include <list>
 #include <memory>
+#include <mutex>
 #include <regex>
+#include <set>
 #include <string>
 #include <thread>
 #include <unordered_map>
 #include <vector>
+#include <variant>
 
 class Complex {
   double re, im;
@@ -191,7 +198,6 @@ public:
 // resource management
 
 class Some {
-
 public:
   Some() {
     std::thread t;
@@ -303,6 +309,219 @@ void regex_iter() {
 // vals  -> ostream -> stream buffer -> somewhere.
 // vals  <- ostream <- stream buffer <- somewhere.
 
+// containers
+struct Entry {
+  std::string name;
+  unsigned int number;
+  bool operator<(const Entry &other);
+};
+
+std::vector<Entry> phone_book = { // using initializer_list
+    {"David Hume", 123456},
+    {"Karl Popper", 234567},
+    {"Bertrand Arthur", 345678}};
+
+auto movev(std::vector<Entry> &&en) -> std::vector<Entry> {
+  std::vector<Entry> phone_book = {// using initializer_list
+                                   {"POO", 123456},
+                                   {"PEE", 234567},
+                                   {"PAA", 345678}};
+  for (Entry e : phone_book) {
+    en.push_back(e);
+  }
+  en.reserve(en.size() * 2); // double the size
+
+  // make a mess.
+  try {
+    phone_book[phone_book.size()] = {"Joe", 9999};
+  } catch (std::out_of_range &) {
+    std::cerr << "range error\n";
+  }
+  return en;
+}
+
+// push_back will push a copy.
+// when needs pointer just push back pointer.
+auto dov(std::vector<Entry> &&phone_book) -> std::vector<Entry> {
+  // vector can be thought as a kind of smart pointer.
+
+  for (Entry e : phone_book) {
+    std::cout << e.name << e.number << std::endl;
+  }
+  std::cout << phone_book.capacity() << std::endl;
+  std::cout << phone_book.size() << std::endl;
+
+  phone_book = movev(std::move(phone_book));
+  return phone_book;
+}
+
+// list is by default double linked list
+// single linked list is called forward list.
+auto lf(std::vector<Entry> &&phone_book, const Entry &ee,
+        std::vector<Entry>::iterator p, std::vector<Entry>::iterator q) {
+  phone_book.insert(p, ee);
+  phone_book.erase(q);
+  return [&]() -> std::forward_list<Entry> {
+    std::forward_list<Entry> fl;
+    for (const auto e : phone_book) {
+      std::copy(phone_book.begin(), phone_book.end(), fl.begin());
+    }
+    return fl;
+  };
+}
+
+bool Entry::operator<(const Entry &y) { return name < y.name; }
+
+// algorithms.
+// based on iterator. use begin and end to specify a range.
+auto vsort(std::vector<Entry> &vec, std::list<Entry> &lst) -> std::list<Entry> {
+  std::list<Entry> res;
+  std::sort(vec.begin(), vec.end());
+  std::unique_copy(vec.begin(), vec.end(),
+                   lst.begin()); // lst.size() >= unique_copy of vec.
+  std::unique_copy(vec.begin(), vec.end(),
+                   std::back_inserter(res)); // back_inserter will init res.
+  return res;
+}
+
+static inline auto has_c(const std::string &s, char c) -> bool {
+  return std::find(s.begin(), s.end(), c) != s.end();
+}
+
+template <typename T> using Iterator = typename T::iterator;
+
+template <typename C, typename V>
+auto find_all(C &c, V v) -> std::vector<typename C::iterator> {
+  std::vector<Iterator<C>> res;
+  for (auto p = c.begin(); p != c.end(); ++p) {
+    if (*p == v)
+      res.push_back(p);
+  }
+  return res;
+}
+
+// stream iterator.
+// ios_base <-- ios <-- istream <-- ifstream
+namespace StreamIterator {
+static std::ostream_iterator<std::string>
+    oo(std::cout); // write string to cout.
+static std::istream_iterator<std::string> ii{std::cin};
+
+// ifstream is a istream that can be attached to a file.
+auto someio() -> void {
+  std::string filename = "somename";
+  double d = 3.14;
+  // play with exception
+  try {
+    std::ofstream(filename, std::ios::binary)
+            .write(reinterpret_cast<char *>(&d), sizeof(d))
+        << 123 << "abc";
+  } catch (std::exception &err) {
+    std::cerr << err.what() << std::endl;
+  }
+
+  // just throw
+  std::ifstream istrm(filename, std::ios::binary);
+  if (!istrm.is_open()) {
+    throw std::runtime_error("file not found");
+  }
+  istrm.read(reinterpret_cast<char *>(&d), sizeof(d));
+  int n;
+  std::string s;
+  if (istrm >> n >> s)
+    std::cout << "read back from file" << d << ' ' << n << ' ' << std::endl;
+}
+
+auto ffind() {
+  const std::map<std::string, int> &m{
+      {"good", 12},
+      {"bad", 2},
+      {"happy", 59},
+      {"sad", 90},
+  };
+  auto greater_than = [](const std::pair<std::string, int> &r) {
+    return r.second > 42;
+  };
+  return std::find_if(m.begin(), m.end(), greater_than);
+}
+
+auto paraf() {
+  std::vector<std::string> v{"a", "b", "dd", "aa", "aaa"};
+  std::sort(std::execution::par, v.begin(), v.end());
+}
+
+} // namespace StreamIterator
+
+namespace Utilities {
+std::mutex m;
+std::vector<int> shared{1, 2, 3, 4, 5};
+
+auto threadf() -> void {
+  {
+    // acquire here.
+    std::scoped_lock<std::mutex> lck{m};
+    std::for_each(shared.begin(), shared.end(), [](int a) { return a + 1; });
+    // release here.
+  }
+}
+
+auto uniqp(std::unique_ptr<std::string> str) -> std::unique_ptr<std::string> {
+  str->append("good");
+  {
+    std::unique_ptr<std::string> str1 =
+        std::make_unique<std::string>(str); // moved!
+    if (str == nullptr) {
+      std::cout << "null" << std::endl; // now str is null.
+    }
+    // str1 get released.
+  }
+  return str; // this is an error since str is moved.
+}
+
+// use move to safe space when swapping.
+template <typename T> auto mswap(T &a, T &b) {
+  T tmp{std::move(a)};
+  a = std::move(b);
+  b = std::move(tmp);
+}
+
+template <typename T, typename... Args>
+auto mkunique(Args &&... args) -> std::unique_ptr<T> {
+  return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
+auto arrayf() {
+  std::array<int, 4> arr = {1, 2, 3, 4};
+  // c interface
+  auto to_vec = [&arr](int* p, int sz) -> std::vector<int> {
+    std::vector<int> v;
+    std::copy(arr.begin(), arr.end(), std::back_inserter(v));
+    return v;
+  };
+  return to_vec(&arr[0], arr.size());
+}
+
+auto bsetf() -> std::array<std::bitset<10>, 5> {
+  std::bitset<10> bs {"11100011"};
+  std::bitset<10> bs1 = ~bs;
+  std::bitset<10> bs2 = bs & bs1;
+  std::bitset<10> bs3 = bs << 2;
+  std::bitset<10> bs4 = bs | bs2;
+
+  return std::array {bs, bs1, bs2, bs3, bs4};
+}
+
+auto ptuple() -> std::string {
+  std::tuple<std::string, int, double> t1 {"Shark", 12, 2.14};
+  auto t2 = std::make_tuple(std::string{"good"}, 3, 1.2);
+  std::tuple t3 {"Cod", 20, 9.9};
+  std::string s = std::get<0>(t1);
+  return s;
+}
+
+} // namespace Utilities
 
 
+namespace Concurrency {
 
+}
