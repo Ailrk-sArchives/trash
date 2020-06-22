@@ -1,9 +1,10 @@
 // scan images, lookup tables and time measurement
 #include <array>
 #include <iostream>
-#include <opencv4/opencv2/core.hpp>
-#include <opencv4/opencv2/imgcodecs.hpp>
+#include <opencv2/core.hpp>
+#include <opencv2/imgcodecs.hpp>
 #include <string_view>
+#include "../common.h"
 
 // 1. color space reduction.
 // (255, 255, 255) scheme for color pixel sometimes can be hard to compute,
@@ -39,19 +40,6 @@ static inline auto tableLoopUp(int divideWidth) -> std::array<uchar, 256> {
   return table;
 }
 
-static inline void benchmark(const int times, std::function<void()> &&f,
-                             const std::string_view report) {
-  // benchmarak
-  double t;
-  t = (double)cv::getTickCount();
-  for (int i = 0; i < times; ++i) {
-    f();
-  }
-  t = 1000 * ((double)cv::getTickCount() - t) / cv::getTickFrequency();
-  t /= times; // get sec.
-  std::cout << report << ": " << t << " ms." << std::endl;
-}
-
 int main(int argc, char *argv[]) {
   help();
   if (argc < 3) {
@@ -78,7 +66,6 @@ int main(int argc, char *argv[]) {
   std::array<uchar, 256> table = tableLoopUp(divideWidth);
 
   // benchmarking.
-  //
   benchmark(
       100,
       [&I, &J, &table]() {
