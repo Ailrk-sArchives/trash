@@ -1,8 +1,8 @@
 -- # Naturals are inductive datatype #
 -- definition of natural number in agda
 data ℕ : Set where
-    zero_ : ℕ
-    suc_ : ℕ → ℕ
+    zero : ℕ
+    suc : ℕ → ℕ
 
 -- here zero and suc are constructors of the datatype.
 -- ! Inductive definition:
@@ -22,25 +22,27 @@ data ℕ : Set where
 
 {-# BUILTIN NATURAL ℕ  #-}
 
-
 -- # import #
---
-import Relation.Binary.PropostionalEquality as Eq   -- brings std equality into the scope
-open Eq using (_≡_; refl)                           -- open the module (add names specified in using)
+
+import Relation.Binary.PropositionalEquality as Eq
+-- open the module (add names specified in using)
+open Eq using (_≡_; refl)
 open Eq.≡-Reasoning using (begin_; _≡⟨⟩_; _∎)
 
 -- # Operations on natruals are recursive functions #
 -- we use pattern matching when constructors appear on the left hand side of an equation.
-_add_ : ℕ -> ℕ -> ℕ
-zero add n = n
-(suc m) add n = suc (m add n)
+_+_ : ℕ → ℕ → ℕ
+zero + n = n
+(suc m) + n = suc (m + n)
 -- the definition of addition is recursive, because
 --  add is defined based on definition of add.
 --  because the inductive definition of natrual number circularity is not a problem.
 --  Larger numbers are defined in terms of smaller numbers (such definition is called well founded).
 
+-- ! Try type hole!
+
 --  dummy case name _ can be reused
-_ : 2 add 3 ≡ 5  -- after : is a type.
+_ : 2 + 3 ≡ 5  -- after : is a type.
 _ =
     begin
         2 + 3
@@ -57,22 +59,24 @@ _ =
     ∎
 
 -- in compact form
-_ : 2 add 3 ≡ 5
+_ : 2 + 3 ≡ 5
 _ =
     begin
-        2 add 3
+        2 + 3
     ≡⟨⟩
-        suc (1 add 3)
+        suc (1 + 3)
     ≡⟨⟩
-        suc (suc (0 add 3))
+        suc (suc (0 + 3))
     ≡⟨⟩
         suc (suc 3)
     ≡⟨⟩
         5
     ∎
 
--- check reflexive (a binary relation is reflexive if every value relates to itself)
-_ : 2 add 3 ≡ 5
+-- check reflexive
+-- agda compute 2 + 3 and compare the value with 5 immediately
+-- (a binary relation is reflexive if every value relates to itself)
+_ : 2 + 3 ≡ 5
 _ = refl
 
 -- ! How does agda run these code?
@@ -87,23 +91,93 @@ _ = refl
 -- ! This duality is central to how we formalize concepts in Agda.
 
 -- Exercise 3 add 4
-_ : 3 add 4 ≡ 7
+_ : 3 + 4 ≡ 7
 _ =
     begin
-        3 add 4
+        3 + 4
     ≡⟨⟩
-        (suc 2) add (suc 3)
+        (suc 2) + (suc 3)
     ≡⟨⟩
-        suc (2 add (suc 3))
+        suc (2 + (suc 3))
     ≡⟨⟩
-        suc ((suc 1) add (suc 3))
+        suc ((suc 1) + (suc 3))
     ≡⟨⟩
-        suc (suc (1 add (suc 3)))
+        suc (suc (1 + (suc 3)))
     ≡⟨⟩
-        suc (suc (suc (0 add (suc 3))))
+        suc (suc (suc (0 + (suc 3))))
     ≡⟨⟩
         suc (suc (suc (suc 3)))
     ≡⟨⟩
         7
 
 -- # Multiplication #
+_*_ : ℕ → ℕ → ℕ
+zero * n = n
+(suc m) * n = n + (m * n)
+
+_^_ : ℕ → ℕ → ℕ
+m ^ zero = 1
+m ^ (suc n) = n * (m ^ n)
+
+-- # Monus #
+_∸_ : ℕ → ℕ → ℕ
+m ∸ zero = m
+zero ∸ suc n = zero
+suc m ∸ suc n = m ∸ n
+
+-- # Precedence #
+-- provide specific precedence for operators.
+--
+infixl 6 _+_  _∸_
+infixl 7 _*_
+
+-- ! Exercise: Bin
+-- A more efficient representation of natural numbers uses a binary rather than
+-- a unary system.
+
+data Bin : Set where
+    ⟨⟩ : Bin
+    _O : Bin → Bin
+    _I : Bin → Bin
+
+-- 1001 can be represented as  ⟨⟩ I O O I
+inc : Bin -> Bin
+inc (⟨⟩) = ⟨⟩ I
+inc (n O) = n I
+inc (n I) = (inc n) O
+
+-- you can proof this kind of equivalence with refl
+-- but it's better to do more practice
+inc-case0 : inc (⟨⟩ O) ≡ ⟨⟩ I
+inc-case0 = refl
+
+inc-case1 : inc (⟨⟩ I) ≡ ⟨⟩ I O
+inc-case1 =
+    begin
+        inc (⟨⟩ I)
+    ≡⟨⟩
+        (inc ⟨⟩) O
+    ≡⟨⟩
+        I O
+
+inc-case2 : inc (⟨⟩ I O) ≡ ⟨⟩ I I
+inc-case2 =
+    begin
+        inc (⟨⟩ I O)
+    ≡⟨⟩
+        (inc ⟨⟩ I) O
+    ≡⟨⟩
+        ⟨⟩ I I
+
+inc-case3 : inc (⟨⟩ I I) ≡ ⟨⟩ I O O
+inc-case3 =
+    begin
+        inc (⟨⟩ I I)
+    ≡⟨⟩
+        (inc ⟨⟩ I) O
+    ≡⟨⟩
+        (inc ⟨⟩) O O
+    ≡⟨⟩
+        ⟨⟩ I O O
+
+
