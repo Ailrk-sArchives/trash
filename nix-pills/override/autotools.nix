@@ -1,3 +1,4 @@
+# add dependecies of autotools into the final derivation.
 pkgs: attrs:
   with pkgs;
   let defaultAttrs = {

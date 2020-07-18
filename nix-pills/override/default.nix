@@ -1,7 +1,8 @@
+# use call package pattern
 let
-  nixpkgs = import <nixpkgs> {};
-  allpkgs = nixpkgs // pkgs;
-  overridelib = import ./overridelib.nix;
+  nixpkgs = import <nixpkgs> {};    # import nixpkgs
+  allpkgs = nixpkgs // pkgs;        # pkg is what the expression return. Rec define
+  overridelib = import ./overridelib.nix;  #
   callPackage = path: overrides:
     with builtins // overridelib;
     let

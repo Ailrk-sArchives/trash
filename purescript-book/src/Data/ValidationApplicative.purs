@@ -3,7 +3,6 @@ module Data.ValidationApplicative where
 import Control.Apply (lift2)
 import Data.AddressBook (Address, Person, PhoneType(..), address, person, phoneNumber, PhoneNumber(..))
 import Data.BooleanAlgebra ((&&))
-import Data.Bounded (Ordering(..))
 import Data.Either (Either(..))
 import Data.Eq (class Eq, eq)
 import Data.Foldable (class Foldable, foldMap, foldr, foldl)
@@ -14,7 +13,7 @@ import Data.Show (class Show)
 import Data.String as S
 import Data.String.Regex as R
 import Data.String.Regex.Flags (noFlags)
-import Data.Traversable (class Traversable, sequence, traverse)
+import Data.Traversable (class Traversable, traverse)
 import Data.Validation.Semigroup (V, invalid)
 import Partial.Unsafe (unsafePartial)
 import Prelude (class Applicative, class Functor, class Semiring, Unit, apply, identity, map, pure, show, unit, (*>), (+), (/=), (<$>), (<*>), (<>))
@@ -195,19 +194,19 @@ instance inorderTraversableTree :: Traversable Tree where
     traverse f (Branch tl val tr) = Branch <$> traverse f tl <*> f val <*> traverse f tr
     sequence = traverse identity
 
-tree1 :: Tree String
-tree1 = Branch
-    (Branch
-        (Branch Leaf "1" Leaf)
-        "2"
-        (Branch
-            Leaf
-            "3"
-            (Branch
-                Leaf
-                "4"
-                (Branch
-                    Leaf
-                        "5" Leaf))))
-    "6"
-    (Branch Leaf "7" Leaf)
+{-- tree1 :: Tree String --}
+{-- tree1 = Branch --}
+{--     (Branch --}
+{--         (Branch Leaf "1" Leaf) --}
+{--         "2" --}
+{--         (Branch --}
+{--             Leaf --}
+{--             "3" --}
+{--             (Branch --}
+{--                 Leaf --}
+{--                 "4" --}
+{--                 (Branch --}
+{--                     Leaf --}
+{--                         "5" Leaf)))) --}
+{--     "6" --}
+{--     (Branch Leaf "7" Leaf) --}

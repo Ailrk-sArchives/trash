@@ -5,6 +5,7 @@
 ### Agda ###
 *.agdai
 MAlonzo/**
+.*.vim
 
 ### C ###
 # Prerequisites

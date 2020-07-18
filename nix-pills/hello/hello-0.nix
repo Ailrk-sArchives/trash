@@ -1,3 +1,6 @@
+# the simplest version
+# the whole expression return a derivation
+# all dependencies are written out explicitly.
 with import <nixpkgs> {};
 derivation {
   name = "hello1";
@@ -8,3 +11,5 @@ derivation {
   src = ./hello-2.10.tar.gz;
   system = builtins.currentSystem;
 }
+
+# inherit can be used to copy variables from the surrounding lexical scope.

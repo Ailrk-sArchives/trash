@@ -3,7 +3,7 @@
 
 let
   pkgs = import <nixpkgs> {};
-  mkDerivation = import ./autotools.nix pkgs;
+  mkDerivation = import ./autotools.nix pkgs; # partially apply
 in
   mkDerivation {
     name = "hello";

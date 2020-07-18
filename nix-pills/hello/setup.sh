@@ -1,4 +1,5 @@
 unset PATH      # clean path
+# set up avaiable path parameter.
 Inputs=${baseInputs}${baseInputs}
 Inputs=(`echo ${Inputs}`)
 

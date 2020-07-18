@@ -6,6 +6,7 @@ module Data.AddressBook
     , address
     , person
     , phoneNumber
+    , examplePerson
     ) where
 
 import Prelude

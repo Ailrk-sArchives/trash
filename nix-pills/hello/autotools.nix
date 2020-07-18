@@ -3,13 +3,14 @@
 # and the main purpose is to describe essential
 # dependecies for generic_builder.sh
 
+# builder and args can be seem as the IO of this expression
 pkgs: attrs:
-  with pkgs;
+  with pkgs;    # with bring the name into the scope. like using in cpp
   let defaultAttrs = {
-    builder = "${bash}/bin/bash";
+    builder = "${bash}/bin/bash"; # IO, for nix-build
     args = [ ./builder.sh ];
-    setup = ./setup.sh;
-    baseInputs = [
+    setup = ./setup.sh;           # setup environment. for nix-shell
+    baseInputs = [  # you can also put everything into buildInputs
       gnutar
       gzip
       gnumake
@@ -21,7 +22,7 @@ pkgs: attrs:
       gnugrep
     ];
     buildInputs = [];
-    system = builtins.currentSystem;
+    system = builtins.currentSystem; # linux
   };
   in
   derivation (defaultAttrs // attrs)
