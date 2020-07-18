@@ -97,7 +97,7 @@ open import Data.Nat using (ℕ; zero; suc; _+_; _*_; _∸_)
 +-comm m zero =
     begin
         m + zero
-    ≡⟨ +-identity m ⟩
+    ≡⟨ +-identityτ m ⟩
         m
     ≡⟨⟩
         zero + m
@@ -114,7 +114,41 @@ open import Data.Nat using (ℕ; zero; suc; _+_; _*_; _∸_)
         suc n + m
     ∎
 
--- # rearranging corollary #
--- proof the first corollary
+-- ! rearranging corollary
+-- proof our first corollary
+-- sym stands for symmetric, is used to shift the side of an equation.
+-- (e → x ≡ y) → (sym e → y ≡ x)
++-rearrange : ∀ (m n p q : ℕ) → (m + n) + (p + q) ≡ m + (n + p) + q
++-rearrange m n p q =
+    begin
+        (m + n) + (p + q)
+    ≡⟨ +-assoc m n (p + q) ⟩
+        m + (n + (p + q))
+    ≡⟨ cong (m +_) (sym (+-assoc n p q)) ⟩
+        m + ((n + p) + q)
+    ≡⟨ sym (+-assoc m (n + p) q) ⟩
+        (m + (n + p)) + q
+    ∎
 
+-- ! Associativity with rewrite
++-assoc' : ∀ (m n p : ℕ) → (m + n) + p ≡ m + (n + p)
++-assoc' zero n p = refl
++-assoc' (suc m) n p rewrite +-assoc' m n p = refl
+-- refl: the proof taht a term is equal to itself.
+
+-- ! Commutativity with rewrite
++-identity' : ∀ (n : ℕ) → n + zero ≡ n
++-identity' zero = refl
++-identity' (suc n) rewrite +-identity' n = refl
+
++-suc' : ∀ (m n : ℕ) → m + suc n ≡ suc (m + n)
++-suc' zero n = refl
++-suc' (suc m) n rewrite +-suc' m n = refl
+
++-comm' : ∀ (m n : ℕ) → m + n ≡ n + m
++-comm' m zero rewrite +-identity' m = refl
++-comm' m (suc n) rewrite +-suc' m n | +- comm' m n = refl      -- rewrite with two equations
+
+-- ! Exerceises
+-- +-swap : ∀ (m n p: ℕ) → m + (n + p) ≡ n + (m + p)
 

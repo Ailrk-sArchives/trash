@@ -1,5 +1,6 @@
 module plfa.p1.Naturals where
 
+
 -- # Naturals are inductive datatype #
 -- definition of natural number in agda
 data ℕ : Set where
