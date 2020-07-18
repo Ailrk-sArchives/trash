@@ -1,3 +1,5 @@
+module plfa.p1.Naturals where
+
 -- # Naturals are inductive datatype #
 -- definition of natural number in agda
 data ℕ : Set where
@@ -22,7 +24,6 @@ data ℕ : Set where
 
 {-# BUILTIN NATURAL ℕ  #-}
 
--- # import #
 
 import Relation.Binary.PropositionalEquality as Eq
 -- open the module (add names specified in using)
@@ -96,19 +97,14 @@ _ =
     begin
         3 + 4
     ≡⟨⟩
-        (suc 2) + (suc 3)
+        suc (2 + 4)
     ≡⟨⟩
-        suc (2 + (suc 3))
+        suc (suc 1 + 4)
     ≡⟨⟩
-        suc ((suc 1) + (suc 3))
-    ≡⟨⟩
-        suc (suc (1 + (suc 3)))
-    ≡⟨⟩
-        suc (suc (suc (0 + (suc 3))))
-    ≡⟨⟩
-        suc (suc (suc (suc 3)))
+        suc (suc (suc 0 + 4))
     ≡⟨⟩
         7
+    ∎
 
 -- # Multiplication #
 _*_ : ℕ → ℕ → ℕ
@@ -158,26 +154,32 @@ inc-case1 =
     ≡⟨⟩
         (inc ⟨⟩) O
     ≡⟨⟩
-        I O
+        ⟨⟩ I O
+    ∎
 
 inc-case2 : inc (⟨⟩ I O) ≡ ⟨⟩ I I
 inc-case2 =
     begin
         inc (⟨⟩ I O)
     ≡⟨⟩
-        (inc ⟨⟩ I) O
-    ≡⟨⟩
         ⟨⟩ I I
+    ∎
 
 inc-case3 : inc (⟨⟩ I I) ≡ ⟨⟩ I O O
 inc-case3 =
     begin
         inc (⟨⟩ I I)
     ≡⟨⟩
-        (inc ⟨⟩ I) O
-    ≡⟨⟩
-        (inc ⟨⟩) O O
+        (inc (⟨⟩ I)) O
     ≡⟨⟩
         ⟨⟩ I O O
+    ∎
 
+to : ℕ → Bin
+to 0 = ⟨⟩ O
+to (suc n) = inc (to n)
 
+from : Bin → ℕ
+from (⟨⟩) = 0
+from (n O) = 2 * from n
+from (n I) = suc (2 * from n)
