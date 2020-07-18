@@ -109,7 +109,7 @@ _ =
 
 -- # Multiplication #
 _*_ : ℕ → ℕ → ℕ
-zero * n = n
+zero * n = zero
 (suc m) * n = n + (m * n)
 
 _^_ : ℕ → ℕ → ℕ

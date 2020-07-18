@@ -7,6 +7,7 @@ import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; cong; sym)
 open Eq.≡-Reasoning using (begin_; _≡⟨⟩_; _≡⟨_⟩_; _∎)
 open import Data.Nat using (ℕ; zero; suc; _+_; _*_; _∸_)
+open import Function using (_∘_)
 
 -- # Properties of operators
 
@@ -147,8 +148,113 @@ open import Data.Nat using (ℕ; zero; suc; _+_; _*_; _∸_)
 
 +-comm' : ∀ (m n : ℕ) → m + n ≡ n + m
 +-comm' m zero rewrite +-identity' m = refl
-+-comm' m (suc n) rewrite +-suc' m n | +- comm' m n = refl      -- rewrite with two equations
++-comm' m (suc n) rewrite +-suc' m n | +-comm' m n = refl      -- rewrite with two equations
 
 -- ! Exerceises
--- +-swap : ∀ (m n p: ℕ) → m + (n + p) ≡ n + (m + p)
+-- this can be proved directly
++-swap : ∀ (m n p : ℕ) → m + (n + p) ≡ n + (m + p)
++-swap m n p =
+    begin
+        m + (n + p)
+    ≡⟨ sym (+-assoc m n p) ⟩
+        (m + n) + p
+    ≡⟨ cong (_+ p) (+-comm m n) ⟩  -- NOTE
+        (n + m) + p
+    ≡⟨ +-assoc n m p ⟩
+        n + (m + p)
+    ∎
+
+*-distrib-+ : ∀ (m n p : ℕ) → (m + n) * p ≡ m * p + n * p
+*-distrib-+ zero n p =
+    begin
+        (zero + n) * p
+    ≡⟨⟩
+        n * p
+    ≡⟨⟩
+        zero * p + n * p
+    ∎
+
+*-distrib-+ (suc m) n p =
+    begin
+        (suc m + n) * p
+    ≡⟨⟩
+        (suc (m + n)) * p
+    ≡⟨⟩
+        p + ((m + n) * p)
+    ≡⟨ cong (p +_) (*-distrib-+ m n p) ⟩
+        p + (m * p + n * p)
+    ≡⟨ sym (+-assoc p (m * p) (n * p)) ⟩
+        (p + m * p) + n * p
+    ≡⟨⟩
+        (suc m) * p + n * p
+    ∎
+
+*-assoc : ∀ (m n p : ℕ) → (m * n) * p ≡ m * (n * p)
+*-assoc zero n p = refl
+*-assoc (suc m) n p rewrite
+      *-distrib-+ n (m * n) p | *-assoc m n p = refl
+
+-- proof small lemmas
+n*0≡0 : ∀ (n : ℕ) → n * zero ≡ zero
+n*0≡0 zero = refl
+n*0≡0 (suc n) = n*0≡0 n
+
+n+n*m≡n*[1+m] : ∀ (n m : ℕ) → n + n * m ≡ n * suc m
+n+n*m≡n*[1+m] zero m =
+    begin
+        zero + zero * m
+    ≡⟨⟩
+        zero
+    ≡⟨⟩
+        zero * suc m
+    ∎
+n+n*m≡n*[1+m] (suc n) m =
+    begin
+        suc n + suc n * m
+    ≡⟨⟩
+        suc (n + suc n * m)
+    ≡⟨⟩
+        suc (n + (m + n * m))
+    ≡⟨ cong suc (+-swap n m (n * m)) ⟩
+        suc (m + (n + n * m))
+    ≡⟨ cong (suc ∘ _+_ m) (n+n*m≡n*[1+m] n m) ⟩
+        suc (m + (n * suc m))
+    ≡⟨⟩
+        suc m + n * suc m
+    ≡⟨⟩
+        suc n * suc m
+    ∎
+
+*-comm : ∀ (m n : ℕ) → m * n ≡ n * m
+*-comm zero n = sym (n*0≡0 n)
+*-comm (suc m) n =
+    begin
+        (suc m) * n
+    ≡⟨⟩
+        n + m * n
+    ≡⟨ cong (_+_ n) (*-comm m n) ⟩
+        n + n * m
+    ≡⟨ n+n*m≡n*[1+m] n m ⟩
+        n * (suc m)
+    ∎
+
+0∸n≡0 : ∀ (n : ℕ) → zero ∸ n ≡ zero
+0∸n≡0 zero = refl
+0∸n≡0 (suc n) = refl
+
+∸-+-assoc : ∀ (m n p : ℕ) → m ∸ n ∸ p ≡ m ∸ (n + p)
+∸-+-assoc zero n p =
+    begin
+        zero ∸ n ∸ p
+    ≡⟨⟩
+        zero
+    ≡⟨⟩
+        zero ∸ (n + p)
+    ∎
+∸-+-assoc (suc m) n p =
+    begin
+        (suc m) ∸ n ∸ p
+    ≡⟨⟩
+    ∎
+
 
