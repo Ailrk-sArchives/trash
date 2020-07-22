@@ -1,3 +1,4 @@
+{-# LANGUAGE QuasiQuotes #-}
 module Main where
 
 main :: IO ()
