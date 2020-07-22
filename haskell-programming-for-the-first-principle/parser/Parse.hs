@@ -1,6 +1,6 @@
 module Parse where
 
-import Control.Applicative
+import Control.Applicative hiding (some, many)
 import Control.Monad
 import Data.Char
 
@@ -13,21 +13,26 @@ runParser m s =
     [(_, rs)] -> error "Not consume the entire stream"
     _ -> error "Parse failed"
 
-char :: Parser Char
-char = Parser $ \s ->
+item :: Parser Char
+item = Parser $ \s ->
   case s of
     [] -> []
     (c : cs) -> [(c, cs)]
 
 bind :: Parser a -> (a -> Parser b) -> Parser b
-bind p f = Parser $ \s -> concatMap (\(a, s') -> parse (f a) s') $ parse p s
+bind p f =
+  Parser $ \s ->
+    concatMap (\(a, s') -> parse (f a) s') $
+      parse p s
 
 unit :: a -> Parser a
-unit a = Parser (\s -> [(a, s)])
+unit a = Parser $
+  \s -> [(a, s)]
 
 instance Functor Parser where
-  fmap f (Parser cs) = Parser $
-    \s -> [(f a, b) | (a, b) <- cs s]
+  fmap f (Parser cs) =
+    Parser $
+      \s -> [(f a, b) | (a, b) <- cs s]
 
 instance Applicative Parser where
   pure = return
@@ -75,10 +80,59 @@ many v = many_v
     some_v = (:) <$> v <*> many_v
 
 satisfy :: (Char -> Bool) -> Parser Char
-satisfy p = do
-  c <- char
-  if p c
-    then pure c
-    else Parser $ \cs -> []
+satisfy p = item >>= \c -> if p c then pure c else failure
 
+oneOf :: [Char] -> Parser Char
+oneOf s = satisfy (flip elem s)
 
+chainl :: Parser a -> Parser (a -> a -> a) -> a -> Parser a
+chainl p op a = (p `chainl1` op) <|> return a
+
+chainl1 :: Parser a -> Parser (a -> a -> a) -> Parser a
+p `chainl1` op = p >>= \a -> rest a
+  where
+    rest a =
+      ( do
+          f <- op
+          b <- p
+          rest (f a b)
+      )
+        <|> return a
+
+char :: Char -> Parser Char
+char c = satisfy (c ==)
+
+natural :: Parser Integer
+natural = read <$> some (satisfy isDigit)
+
+string :: String -> Parser String
+string [] = pure []
+string (c : cs) = char c >> string cs >> pure (c : cs)
+
+token :: Parser a -> Parser a
+token p = do
+  a <- p
+  spaces
+  pure a
+
+reserved :: String -> Parser String
+reserved = token . string
+
+spaces :: Parser String
+spaces = many $ oneOf " \n\r"
+
+digit :: Parser Char
+digit = satisfy isDigit
+
+number :: Parser Int
+number = do
+  s <- string "-" <|> pure []
+  cs <- some digit
+  pure $ read (s ++ cs)
+
+parens :: Parser a -> Parser a
+parens m = do
+  reserved "("
+  n <- m
+  reserved ")"
+  pure n

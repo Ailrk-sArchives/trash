@@ -7,7 +7,7 @@ import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; cong; sym)
 open Eq.≡-Reasoning using (begin_; _≡⟨⟩_; _≡⟨_⟩_; _∎)
 open import Data.Nat using (ℕ; zero; suc; _+_; _*_; _∸_)
-open import Function using (_∘_)
+open import Function using (_∘_; flip)
 
 -- # Properties of operators
 
@@ -246,15 +246,13 @@ n+n*m≡n*[1+m] (suc n) m =
 ∸-+-assoc zero n p =
     begin
         zero ∸ n ∸ p
-    ≡⟨⟩
+    ≡⟨ cong (flip _∸_ p) (0∸n≡0 n)⟩
+        zero ∸ p
+    ≡⟨ 0∸n≡0 p ⟩
         zero
-    ≡⟨⟩
+    ≡⟨ sym (0∸n≡0 (n + p)) ⟩
         zero ∸ (n + p)
     ∎
-∸-+-assoc (suc m) n p =
-    begin
-        (suc m) ∸ n ∸ p
-    ≡⟨⟩
-    ∎
-
+∸-+-assoc (suc m) zero p = refl
+∸-+-assoc (suc m) (suc n) p = ∸-+-assoc m n p
 
