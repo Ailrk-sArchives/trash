@@ -62,6 +62,9 @@ quicksort arr = runSTArray $ do
   quicksortHelper min (max + 1) stArr
   return stArr
 
+quicksort1 arr = runSTArray
+
+
 -- a randome array for testing.
 randomArray :: IO (Array Int Int)
 randomArray = do

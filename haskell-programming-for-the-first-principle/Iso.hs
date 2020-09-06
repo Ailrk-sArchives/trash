@@ -9,3 +9,4 @@ newtype Sum a = Sum {getSum :: a}
 
 isoCheck ::  Iso a (Sum a)
 isoCheck = (Sum, getSum)
+
