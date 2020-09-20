@@ -55,5 +55,3 @@ evalList' strat (x : xs) = do
   x' <- strat x
   xs' <- evalList' strat xs
   return $ x' : xs'
-
-
