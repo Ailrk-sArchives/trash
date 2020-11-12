@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9d9d6bb5b9204ceef90298b0a7c5424f99c464d831748546fd396ec21025154c
+-- hash: 4f10c84fed350d670f1a2befeed0e936f8ec403614d1b7a1b0a266a0e2d0a05e
 
 name:           haskellwikibook
 version:        0.1.0.0
@@ -29,6 +29,9 @@ library
   exposed-modules:
       AlternativeandMonadPlus
       MonadTransformer
+      ReadFile
+      Ptrs
+      LiquidHs
   other-modules:
       Paths_haskellwikibook
   hs-source-dirs:
@@ -36,6 +39,7 @@ library
   build-depends:
       base >=4.7 && <5
     , mtl
+    , mmap
   default-language: Haskell2010
 
 executable haskellwikibook-exe

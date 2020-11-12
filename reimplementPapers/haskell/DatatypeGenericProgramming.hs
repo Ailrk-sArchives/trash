@@ -1,5 +1,6 @@
-{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE KindSignatures #-}
 
 {-
    2020-09-19
@@ -341,13 +342,59 @@ reverseL xs = buildL (\n c -> foldL id (\x g -> g . c x) xs n)
 buildT :: (forall b. b -> (a -> b -> b -> b) -> b) -> Tree a
 buildT g = g Empty Node
 
-
 -- 3.6 Datatype genericity
 
 {-------------------------------------------------------------------------
    - Origami Patterns
+     Since program structures is determined by data structures, it makes
+     sense to abstract from the determining shape, leaving only what programs
+     differet shape have in common.
 
 -}
+
+-- Let's look at fix as a function first.
+-- this function repeat recursively apply f to another f.
+-- Say fix (1:)
+-- we get
+-- let (x = (1:) x) in x
+-- let (x = (1:) x) in (1:) x
+-- let (x = (1:) x) in (1:) ((1:) x)
+-- ...
+fix :: (a -> a) -> a
+fix f = let x = f x in x
+
+-- For list and tree, they are both recursive data structure.
+-- When we want to abstract over recursive data type, we use Fix
+-- s: shape type. It's a higher kinded type
+-- a: the data
+data Fix (s :: * -> * -> *) a = In {out :: (s a (Fix s a))}
+
+-- note another way to define fix
+data Fix' (f :: *) = Fix' f (Fix' f)
+
+-- For instance, for list
+--   Fix ListF a
+-- = ListF a (Fix ListF a)
+-- = ListF a (ListF a (Fix ListF a))
+-- ...
+
+-- Let's use Fix to make list and tree.
+
+data ListF s a = NilF | ConsF s a
+
+data TreeF s a = EmptyF | NodeF s a a
+
+data BTreeF s a = TipF s | BinF s a a
+
+type ListFix a = Fix ListF a
+
+type TreeFix a = Fix TreeF a
+
+type BTreeFix a = Fix BTreeF a
+
+-- 3.7 bifunctors
+class Bifunctor s where
+  bimap :: (a -> c) -> (b -> d) -> (s a b -> s c d)
 
 {-------------------------------------------------------------------------
    - Essense of the iterator pattern

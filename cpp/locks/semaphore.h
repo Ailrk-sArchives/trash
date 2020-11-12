@@ -4,6 +4,14 @@
 #include <condition_variable>
 #include <mutex>
 
+/* Cons of semaphore:
+ *  1. global variable in nature.
+ *  2. no linguistic connection with data.
+ *  3. access can come from anywhere
+ *  4. overloaded purposes: mutual exclusion and scheduling constraints.
+ *  5. hard to use
+ */
+
 class Semaphore {
   const size_t num_premissions;
   size_t avail;

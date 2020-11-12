@@ -1,11 +1,22 @@
 #lang typed/racket
+(require (for-syntax racket/match))
+(require (for-syntax racket/syntax))
 
-; A quick overview of racket
+;----------------------------------------
+; Report on A quick overview of racket
+; This report is not based on one particular paper, but rather a conclusion of
+; multiple sources.
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Basics
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; https://stackoverflow.com/questions/49669142/what-is-difference-between-datum-syntax-and-syntax-in-define-syntax-body#:~:text=However%2C%20datum%2D%3Esyntax%20is,the%20input%20to%20the%20macro.
+; http://www.greghendershott.com/fear-of-macros/Robust_macros__syntax-parse.html
+;----------------------------------------
+
+;----------------------------------------
+; Basics
+;----------------------------------------
 ; Boolean & conditions
+; Use square bracket is more friendly to color blind people than
+; rainbow bracketes :3
 (: condition : Integer -> (U Symbol Void)) ; U is Sum type
 (define (condition n)
   (if (< n 50)
@@ -23,9 +34,9 @@
                             [_ (when (= n 9) 'eq9)])])]))
     'gt50)) ; Symbol
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;----------------------------------------
 ; list
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;----------------------------------------
 (: list-fun (Listof (U Symbol Number (Listof Any))))
 (define list-fun
   ((lambda ()
@@ -36,9 +47,9 @@
            [listss '((1 2 3) (a b c))]) ; naming convention. s for nested level
        (append listss list2 list1)))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;----------------------------------------
 ; quasiquote
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;----------------------------------------
 ; You have list and quote. between this two is quasiquote
 ; you can make a quasiquote with (`) and unquote a value with (,) prefix
 ; In this case you inject x=10 into the quasiquote
@@ -54,9 +65,9 @@
         [ys (stack n)])
     `(1 2 ,x ,@xs ,@ys 3)))  ; @ spread list into the quote (unquote splicing)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Module, contract and mutation
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;----------------------------------------
+; Module, contract and mutation
+;----------------------------------------
 ; You can define multiple modules in the same file.
 ; it's like restricted namespace, you don't define same module in
 ; different files.
@@ -67,8 +78,7 @@
            [balance (-> positive?)]))
   (define amount 0)
   (define (deposit a) (set! amount (+ amount a)))   ; mutation with set!
-  (define (balance) amount)
-  )
+  (define (balance) amount))
 ; the need of contract can be eliminated with proper types
 ; this module shows how to require untyped module in typed racket.
 (module use-bank-account typed/racket
@@ -80,15 +90,21 @@
     (deposit 5))
   )
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Macros
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;----------------------------------------
+; Macros
+;----------------------------------------
 ; Make dsl easy!
 ; Because lisp syntax is so easy, the code your macro expand to is
 ; just lisp code itself! (instaed of string like in c)
 ; Some examples of macros
 
-;; Basics ;;
+; ** hygenic macro **
+; Basic idea is that your macros will not have name conlision with macros
+; defined by someone else even when they have the same identifier.
+; To achieve this, when expanding the macro racket macro expender will
+; "color" the syntax object with the scope they live in.
+
+; Basics ;
 ; A ** syntax transformer ** is a function takes syntax and return syntax.
 ; This is an example that ignore the input syntax and transform a string.
 ; the synax is the constructor of syntax object, and you can write the
@@ -119,13 +135,17 @@
 
 ; ** datum ** is the type to represent s-expression.
 ; cdr is to get rid of 'reverse-me in the syntax
+; ps: with datum->syntax you can even make syntax object on the fly (
+; make syntax object that doesn't exist in the argument stx).
+; The reason why we need datum->syntax is to color the synatx object so
+; so macro system is hygenic.
 (define-syntax (reverse-me stx)
   (datum->syntax stx (reverse (cdr (syntax->datum stx)))))
 (: reverse-me-driver (Listof Symbol))
 ; this will transform the syntax into (list 'v 'a "1")
 (define reverse-me-driver (reverse-me 'x 'a 'v list))
 
-;; if macro example ;;
+; if macro example ;
 ; Classic (if) example. This in haskell can be achieve by function
 ; because of the lazy evaluation, but because racket evaluate eagerly,
 ; you need macro to avoid evaluate all parameters together.
@@ -138,7 +158,6 @@
 ; there is only racket/base available. To use other functionalities
 ; you need to require with ** for-syntax **. For instance, here we imported
 ; pattern matching.
-(require (for-syntax racket/match))
 (define-syntax (new-if2 stx)
   (match (syntax->list stx)
     [(list _ condition true-expr false-expr)
@@ -161,7 +180,7 @@
 (define-syntax-rule (new-if4 condition true-expr false-expr)
   (cond [condition true-expr] [else false-expr]))
 
-;; hyphen macro Examples ;;
+; hyphen macro Examples ;
 ; (hyphen-define a b (args) body) -> (define (a-b args) body)
 
 ; ** define-for-syntax ** allows you to define helper functions in
@@ -197,6 +216,14 @@
      (with-syntax ([name (datum->syntax #'a (stitch-name #'a #'b))])
        #'(define (name args ...) body0 body ...))]))
 
+; ** with-syntax* ** is the self referential version.
+(define-syntax (foo stx)
+  (syntax-case stx ()
+    [(_ a)
+     (with-syntax* ([b #'a]   ; force to use pattern a in template
+                    [c #'b])
+                   #'c)]))
+
 ; short-circuiting or
 ; evaluate a first, stop the evaluation if it's true.
 ; If you want to implement or with function you must evaluate both a and b,
@@ -218,9 +245,9 @@
     (set! y tmp)))
 ; actual macro
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Types
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;----------------------------------------
+; Types
+;----------------------------------------
 ; Typed tree
 (define-type Tree (U leaf node))
 (struct leaf ([val : Number]))
@@ -251,7 +278,7 @@
 
 ; polymorphic functions
 ; All is the quantifier.
-(: list-len (All (A) (-> (Listof A) Integer)))
+(: list-len (All (a) (-> (Listof a) Integer)))
 (define (list-len l)
   (if (null? l)
     0
@@ -261,3 +288,93 @@
 (: sumNumbers (-> Number * Number))
 (define (sumNumbers . xs)
   (if (null? xs) 0 (+ (car xs) (apply sumNumbers (cdr xs)))))
+
+;----------------------------------------
+; Exceptions
+;----------------------------------------
+; racket also has exception system.
+; try catch style. Haskell has similar idiom to
+; handle context.
+(with-handler ([exn:fail? (lambda (exn) 999)])
+              (+ 1 "2"))
+
+; handle case when you break while the program is sleeping.
+(with-handler ([exn:break? (lambda (exn) "No time")])
+              (sleep 3)
+              "phew")
+
+; it will catch numeric value get raised, and return it's
+; identity
+(with-handler ([number? identity])
+              (+ 1 (raise 2)))
+
+;----------------------------------------
+; Some common data structures
+;----------------------------------------
+
+; define structs
+; struct is a macro, it will automatically generate methods like
+; dog? and dog-* (dog-name, dog-breed) for struct dog.
+; it's really like haskell record type, even the accessor part.
+(struct dog ([name : String] [breed : String] [age : Positive-Integer]))
+; hypotheical way of using struct
+
+; ** string-append ** is ad hoc concat for a list of string
+; ** ~a ** is
+(: mk-dog-string (-> dog String))
+(define (mk-dog-string d)
+  (let* ([name (dog-name d)]
+         [name-tag (~a (char-upcase (string-ref name 0)) name)])
+    (string-append "Dog name: " name-tag " | "
+                   "Dog breed: " (dog-breed d) " | "
+                   "Dog age: " (~a (dog-age d) " Years old"))))
+
+; To make a mutable struct you need to specify it in the constructor.
+(struct rgba ([r : Integer]
+              [g : Integer]
+              [b : Integer]
+              [a : Integer]) #:mutable #:transparent)
+
+; there are some boilerplates that we can potentially eliminate with macro.
+(: color-complement! (-> rgba Void))
+(define (color-complement! color)
+  (: flip (-> Integer Integer))
+  (define (flip n)
+    (cond [(> n 255) 0]
+          [else (- 255 n)]))
+    (set-rgba-r! color (flip (rgba-r color)))
+    (set-rgba-g! color (flip (rgba-g color)))
+    (set-rgba-b! color (flip (rgba-b color)))
+    (set-rgba-a! color (flip (rgba-a color))))
+
+; you also have tings like vector.
+; typed racket trips here. I can't use any type other than
+; Vectorof Integer (even Vectorof Any) ...
+(: vector-playground (Vectorof Integer))
+(define vector-playground
+  (let* ([xs (take '(1 2 3 4 2) 3)]
+         [vs-1 (list->vector xs)]
+         [vs-2 #(8 8 9 9)]
+         [vs-3 (vector-append vs-1 vs-2)])
+    vs-3))
+
+; and set $ hash as normal
+(: power-set (All (a) (-> (Setof a) (Setof (Setof a)))))
+(define (power-set xs)
+  (if (= 0 (set-count xs))
+    (let ([set1 (inst set a)]
+          [set2 (inst set (Setof a))])
+      (set2 (set1)))
+    (let ([xs- (power-set (set-rest xs))])
+      (set-union
+        (for/set ([e xs-]) (set-add e (set-first xs)))
+        xs-))))
+
+; Also I found this very convinent digraph for data structures.
+; DATA STRUCTURE   ACCESS       NUMBER     INDICES
+; List:            sequential   Variable   not used
+; Struct:          random       Fixed      names
+; Vector:          random       Fixed      integer
+; Growable vector: random       Variable   integer
+; Hash:            random       Variable   hashable
+; Splay:           random       Variable   non-integer, total order

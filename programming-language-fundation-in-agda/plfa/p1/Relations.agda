@@ -90,5 +90,3 @@ inv-z≤n z≤n = refl
     → m ≤ p
 ≤-trans z≤n _ = z≤n
 ≤-trans (s≤s m≤n) (s≤s n≤p) = s≤s (≤-trans m≤n n≤p)
-
-

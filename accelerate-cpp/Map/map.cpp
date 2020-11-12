@@ -41,7 +41,6 @@ int main(void) {
         std::vector<int>::const_iterator line_it = it->second.begin();
         std::cout << *line_it;
 
-
         ++line_it;
 
         while (line_it != it->second.end()) {

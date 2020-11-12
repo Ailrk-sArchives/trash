@@ -5,11 +5,12 @@
 template <typename Ty, Ty V> struct integral_constant {
   static constexpr Ty value = V;
 };
-
 template <bool B> using bool_constant = integral_constant<bool, B>;
 
 using true_type = bool_constant<true>;
 using false_type = bool_constant<false>;
+
+bool a = bool_constant<true>::value;
 
 // partial specialization
 // some type traits with pattern matching.
