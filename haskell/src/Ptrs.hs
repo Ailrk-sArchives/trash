@@ -9,20 +9,22 @@ import           Foreign.Ptr        (FunPtr, Ptr, plusPtr)
 import           Foreign.Storable   (alignment, peek, poke, sizeOf)
 import           System.IO.MMap     (Mode (..), mmapFileForeignPtr)
 
--- Ptr a
+{-@ Ptr a
 --  - Represent a pointer to an obj or an array of obj
 --  - Type a usually can be marshalled from and to haskell object.
 --  - a usually will have an instance for Storable
 --  - Storable provides marshalling operations.
 --  - Note Storable is not necessary, you can
 --    write your own implementation for marshalling.
+@-}
 
--- ForeignPtr a
+{-@ ForeignPtr a
 --  - similar to Ptr
 --  - reference to object that is not managed by haskell rts
 --  - associated with a finalizer
 --  - finalizer is invoked when the ForeignPtr is gc'ed
 --  - usually finalizer calls a routine in foreign lang to free rescource.
+@-}
 
 -- Note with Ptr alone you can only play with the address, but can't do
 -- anything with values.
