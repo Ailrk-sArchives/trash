@@ -47,7 +47,7 @@ pub fn align(mut segm: (Box<Point>, Box<Point>)) -> (Box<Point>, Box<Point>) {
                                 // borrow expired after this line.
 
     // it's ok to use semg.2, since nothing is borrowing it now.
-    assert!((*segm.0).x == (*segm.1).x);
+    assert!((*segm.1).x == (*segm.1).x);
     segm
 }
 

@@ -43,7 +43,7 @@
 // copy the unique_ptr, you probably want to copy the member field from one unique_ptr to another.
 // And that make the object get pointed to by the member field an alias, no longer unique anymore.
 //
-// Ok now what does it means to move
+// Ok now what does it means to move a constructor?
 
 int main(void)
 {

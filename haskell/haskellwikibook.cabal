@@ -28,11 +28,16 @@ source-repository head
 library
   exposed-modules:
       AlternativeandMonadPlus
+      DependentType
       MonadTransformer
       ReadFile
       Concurrent
       LiquidHs
       Ptrs
+      Conduits
+      TypeFam
+      Lam
+      AbstractAlgebra
   other-modules:
       Paths_haskellwikibook
   hs-source-dirs:
@@ -42,6 +47,8 @@ library
     , mtl
     , mmap
     , stm
+    , conduit
+    , pretty
   default-language: Haskell2010
 
 executable haskellwikibook-exe

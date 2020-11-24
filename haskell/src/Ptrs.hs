@@ -1,13 +1,15 @@
 module Ptrs where
 
-import           Control.Exception  (SomeException, try)
-import           Control.Monad      (forM_)
-import           Data.Char          (chr)
-import           Data.Word          (Word8)
-import           Foreign.ForeignPtr (ForeignPtr, newForeignPtr, withForeignPtr)
-import           Foreign.Ptr        (FunPtr, Ptr, plusPtr)
-import           Foreign.Storable   (alignment, peek, poke, sizeOf)
-import           System.IO.MMap     (Mode (..), mmapFileForeignPtr)
+import           Control.Exception     (SomeException, try)
+import           Control.Monad         (forM_)
+import           Data.Char             (chr)
+import           Data.Word             (Word8)
+import           Foreign.ForeignPtr    (ForeignPtr, newForeignPtr,
+                                        newForeignPtr_, withForeignPtr)
+import           Foreign.Marshal.Alloc (free, malloc)
+import           Foreign.Ptr           (FunPtr, Ptr, plusPtr)
+import           Foreign.Storable      (alignment, peek, poke, sizeOf)
+import           System.IO.MMap        (Mode (..), mmapFileForeignPtr)
 
 {-@ Ptr a
 --  - Represent a pointer to an obj or an array of obj
@@ -42,18 +44,27 @@ foreign import ccall "stdlib.h &free"
 -- This function takes a heap allocated integer, read it's
 -- value, add 10 to it and store it back.
 -- Finally when the function is finished free the mem of the integer.
-allocateStuff :: Ptr Word8 -> IO ()
-allocateStuff p = do
-  fp <- newForeignPtr pfree p   -- create a new fp with pfree as finalizer
-  withForeignPtr fp $ \p -> do
-    val <- peek p               -- Storable peek.
-    let align = alignment val
-    let sz = sizeOf val
-    putStrLn $ "alignment for int: " <> show align
-    putStrLn $ "size of int: " <> show sz
-    -- there are also peekEleOff, peekByteOff etc for c ptr arrays.
-    poke p $ 10 + val           -- Storable poke.
+readStuff :: Ptr Word8 -> IO ()
+readStuff p = do
+  val <- peek p               -- Storable peek.
+  let align = alignment val
+  let sz = sizeOf val
+  putStrLn $ "alignment for int: " <> show align
+  putStrLn $ "size of int: " <> show sz
+  -- there are also peekEleOff, peekByteOff etc for c ptr arrays.
+  poke p $ 10 + val           -- Storable poke.
 
+-- allocate stuffs
+allocateStuff :: IO ()
+allocateStuff = do
+  p <- malloc :: IO (Ptr Word8)
+  value <- peek p
+  putStrLn $ "newly malloced word8, the value is " ++ show value
+  poke p $ value + 128
+
+  newval <- peek p
+  putStrLn $ "new value is of malloced word8 is " ++ show newval
+  free p
 
 doStuff :: ForeignPtr Word8 -> Int -> IO ()
 doStuff fp i =
@@ -61,15 +72,16 @@ doStuff fp i =
     let addr = p `plusPtr` i
     val <- peek addr :: IO Word8
     print (addr, val, chr $ fromIntegral val)
-    allocateStuff p
+    readStuff p
     return ()
-
 
 run :: IO ()
 run = do
   (p, offset, size) <- mmapFileForeignPtr path mode range
   forM_ [0 .. size - 1] $ \i -> do
     doStuff p (offset + i)
+
+  mapM_(\_ -> do allocateStuff) [0..10]
   where
     path = "/tmp/input.dat"
     mode = ReadWrite

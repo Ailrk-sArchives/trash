@@ -123,5 +123,3 @@ instance Monad m => Functor (StateT s m) where
 
 instance MonadTrans (StateT s) where
   lift c = StateT $ \s -> c >>= (\x -> return (x, s))
-
-

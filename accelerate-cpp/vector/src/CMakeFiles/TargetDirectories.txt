@@ -1,3 +1,0 @@
-/home/jimmy/pj/cpp/accCpp/vector/src/CMakeFiles/rebuild_cache.dir
-/home/jimmy/pj/cpp/accCpp/vector/src/CMakeFiles/Vec.dir
-/home/jimmy/pj/cpp/accCpp/vector/src/CMakeFiles/edit_cache.dir
