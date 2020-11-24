@@ -36,7 +36,7 @@ public:
 
   void signal() {
     {
-      std::scoped_lock<std::mutex> lg{m};
+      std::lock_guard<std::mutex> lg{m};
       avail++;
     }
     cv.notify_one();

@@ -3,6 +3,7 @@
 
 #include "semaphore.h"
 #include <cstring>
+#include <thread>
 
 template <typename T> class Queue {
   const size_t size;
@@ -18,14 +19,14 @@ public:
   explicit Queue(const Queue &q)
       : size(q.size), arr(new T[size]), start(q.start), end(q.end),
         write(q.write), read(q.read) {
-    std::scoped_lock<std::recursive_mutex> lg(q.writemtx);
+    std::lock_guard<std::recursive_mutex> lg(q.writemtx);
     std::memcpy(arr, q.arr, size * sizeof(T));
   }
 
   virtual ~Queue() { delete[] arr; }
 
   void add(const T &obj) {
-    std::scoped_lock<std::recursive_mutex> lg(writemtx);
+    std::lock_guard<std::recursive_mutex> lg(writemtx);
     write.wait();
     arr[end++] = obj;
     end %= size;
@@ -33,7 +34,7 @@ public:
   }
 
   bool offer(const T &obj) {
-    std::scoped_lock<std::recursive_mutex> lg(writemtx);
+    std::lock_guard<std::recursive_mutex> lg(writemtx);
     if (!full()) {
       add(obj);
       return true;
@@ -42,7 +43,8 @@ public:
   }
 
   const T &front() {
-    std::scoped_lock<std::recursive_mutex> lg(readmtx);
+    std::lock_guard<std::recursive_mutex> lg(readmtx);
+
     read.wait();
     read.signal();
     return arr[start % size];

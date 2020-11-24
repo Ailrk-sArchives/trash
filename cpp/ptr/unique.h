@@ -25,7 +25,7 @@ public:
   size_t value = 1000;
   size_t span = 1000;
 
-  Stock(size_t &val, size_t duration) : value(val) {}
+  Stock(size_t val, size_t duration) : value(val) {}
   size_t amount() const override { return value; }
 };
 
@@ -59,15 +59,8 @@ std::unique_ptr<Investment> make_investment(MakeWhatInvestment m,
   };
 
   std::unique_ptr<Investment, decltype(del)> p(nullptr, del);
-
-  if (m == MakeWhatInvestment::MakeBond) {
-    // forward all parameters to Stock's constructor.
-    p.reset(new Stock(std::forward<Ts>(params)...));
-    // TODO I dont know why this doesn't work...
-  }
-
-
-  return p;
+  p.reset(new Stock(1, 10));
+  return std::make_unique<Stock>(1, 10);
 }
 
 void investment_balckhold(std::unique_ptr<Investment> p){
@@ -76,7 +69,7 @@ void investment_balckhold(std::unique_ptr<Investment> p){
 
 void investment_balckhold_uref(std::unique_ptr<Investment> &&p) {}
 
-int main(void) {
+int run_unique(void) {
 
   // now p_investment owns the unverlying Investment.
   auto p_investment =

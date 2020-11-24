@@ -63,8 +63,7 @@ public:
   void remove();
 };
 
-template <typename T>
-void QueueMon<T>::add() {
+template <typename T> void QueueMon<T>::add() {
   m.wait();
   // put item into queue
   cv.notify_one();
@@ -72,14 +71,12 @@ void QueueMon<T>::add() {
   m.signal();
 }
 
-template <typename T>
-void QueueMon<T>::remove() {
+template <typename T> void QueueMon<T>::remove() {
   m.wait();
-  while () {
-    cv.wait(m);
+  while (1) {
+    // cv.wait();
   }
   m.signal();
-
 }
 
 #endif /* ifndef MONITOR_H */
