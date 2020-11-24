@@ -385,6 +385,7 @@ _deps
 # External projects
 *-prefix/
 
+MAlonzo/
 # End of https://www.toptal.com/developers/gitignore/api/cmake
 # End of https://www.toptal.com/developers/gitignore/api/purescript
 p
