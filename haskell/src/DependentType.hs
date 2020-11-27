@@ -9,6 +9,7 @@
 
 module DependentType where
 
+-- A super short primer.
 
 {-@ Dependent vector
     Let's make everyone's favorite dependent vactor with it's length

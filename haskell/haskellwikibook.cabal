@@ -35,6 +35,8 @@ library
       LiquidHs
       Ptrs
       Conduits
+      ErrorHandling
+      MTLPractise
       TypeFam
       Lam
       AbstractAlgebra

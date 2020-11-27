@@ -48,5 +48,3 @@ instance Monad m => Alternative (MaybeT m) where
 instance Monad m => MonadPlus (MaybeT m) where
   mzero = empty
   mplus = (<|>)
-
-

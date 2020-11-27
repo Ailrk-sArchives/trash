@@ -1,5 +1,7 @@
 module Lam where
 
+-- Some basic lambda calculus.
+
 
 {-@ Lambda calculus (λx.x)(λy.y)
 

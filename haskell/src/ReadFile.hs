@@ -5,7 +5,11 @@ module ReadFile where
 import           Control.Exception
 import           System.IO
 
+-- Lazy IO is evil and you should get rid of it
+-- for all cost!
 
+-- Lazyness is a property for purity, not for side
+-- effects.
 
 doLoop = do
   putStrLn "Enter a command rFn wFN or q to quit"
