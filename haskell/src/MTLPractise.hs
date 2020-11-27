@@ -1,10 +1,13 @@
 {-# LANGUAGE DerivingStrategies         #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE LambdaCase                 #-}
 module MTLPractise where
 
 import           Control.Monad.Reader
 import           Control.Monad.State
 import           Control.Monad.Writer
+import           Data.Bits
+import           Data.Int
 
 
 -- THis nice example combined read, write, and state monads all
@@ -28,7 +31,7 @@ import           Control.Monad.Writer
 
 -- This is a simple virtual machine.
 -- Read from Program, Act on the Stack, and output to Output.
-data Instr = Push Int | Pop | Puts
+data Instr = Push Int | Pop | Puts | Add | Sub | Mul | Div | ShiftL | ShiftR
 
 type Stack = [Int]
 type Output = [Int]
@@ -43,12 +46,27 @@ newtype Comp a  = Comp { unComp :: VM a}
 
 
 evalInstr :: Instr -> Comp ()
-evalInstr instr = case instr of
-                    Pop -> modify tail
-                    Push n -> modify (n:)
-                    Puts -> do
-                      tos <- gets head
-                      tell [tos]
+evalInstr = \case
+              Pop -> modify tail
+              Push n -> modify (n:)
+              Puts -> do
+                tos' <- get
+                case tos' of
+                  [] -> tell [-1]
+                  _  -> tell [head tos']
+              Add -> binary (+)
+              Sub -> binary (-)
+              Mul -> binary (*)
+              Div -> binary div
+              ShiftR -> binary shiftR
+              ShiftL -> binary shiftL
+  where
+    binary apply = do
+      a1 <- gets head
+      evalInstr Pop
+      a2 <- gets head
+      evalInstr Pop
+      evalInstr $ Push (apply a2 a1)
 
 eval :: Comp ()
 eval = do
@@ -58,7 +76,6 @@ eval = do
     (i:is) -> do
       evalInstr i
       local (const is) eval
-
 
 -- This is mysterous until you know what each function does.
 -- First of all, all monad transformer are associated with
@@ -78,3 +95,18 @@ eval = do
 -- the environment.
 execVM :: Program -> Output
 execVM = flip evalState [] . execWriterT . runReaderT (unComp eval)
+
+program :: Program
+program = [ Push 47
+          , Push 27
+          , Add
+          , Puts
+          , Push 2
+          , Push 3
+          , ShiftL
+          , Puts
+          ]
+
+
+run :: IO ()
+run = mapM_ print $ execVM program
