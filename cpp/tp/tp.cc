@@ -1,30 +1,111 @@
+#include <deque>
 #include <iostream>
+#include <list>
 #include <memory>
-#include <vector>
+#include <stdlib.h>
+#include <string>
 
-// You cannot initialize vector with unique_ptr with initializer list.
-// The reason is the vector's construct will build a initalizer list first
-// which will copy unique_ptrs.
-template <typename T, typename... Args>
-std::vector<std::unique_ptr<T>> make_uniquevec(const Args... args) {
-  std::vector<std::unique_ptr<T>> v;
+/////////////////////////////
+// varadic template
+template <typename... Args> class VClass {};
 
-  (v.push_back(std::make_unique<T>(args)), ...);
+// specialization
+VClass<> v1;
+VClass<int> v2;
+VClass<double> v3;
 
-  return v;
+/////////////////////////////
+// this is not supported until 17
+// type deduction on non type template parmeters.
+template <auto x> constexpr auto constant = x;
+
+// with this at hand you can treat templates as
+// compile time fuction.
+// from type to term level.
+auto x1 = constant<1>;
+auto x2 = constant<2>;
+auto x3 = constant<'a'>;
+
+/////////////////////////////
+// templates as template paramters.
+// higher kinded type
+template <typename T, template <typename U, int I> typename Arr> class Klcass1 {
+  T t;
+  Arr<T, 10> a;
+};
+
+/////////////////////////////
+// default template arguments.
+template <typename T, typename Allocator = std::allocator<T>> class Vector {};
+
+// use default allocator.
+Vector<int> vec1;
+
+// we can also swap out our own allocator.
+// This is an arena allocator
+template <typename T> class ArenaAlloc {
+private:
+  // blocks are linked list on heap.
+  template <size_t BlockSize> struct Arean {
+    struct Arena *next;
+    struct Arena *pre;
+    char block[BlockSize];
+  };
+
+public:
+  T *allocate(T &&) {
+    T *ptr = static_cast<T *>(malloc(sizeof(T)));
+    return ptr;
+  }
+
+  void deallocate() { return; }
+};
+
+// now yor vector will be arena allocated. (fake)
+Vector<int, ArenaAlloc<int>> vec2;
+
+/////////////////////////////
+// template specialization
+template <typename K, typename V> class MyMap {};
+
+// partial specialization.
+template <typename K, typename V> class MyMap<K*, V*> {};
+
+// you might want to handle the case ofstring as key
+// differently.
+template <typename V> class MyMap<std::string, V> {};
+
+// or you might want to pop as log as you get get queue?
+// who knows.
+template <typename K> class MyMap<K, std::deque<int>> {};
+
+/////////////////////////////
+// specialization of function templates.
+
+// first declare the most generic version
+template <typename... Args> void f(Args... args) {
+  ((std::cout << args), ...) << std::endl;
 }
 
-int main(int argc, char *argv[]) {
+// now take at least one
+template <typename T, typename... Args> void f(T t, Args... args) {
+  std::cout << "T and args" << std::endl;
+  ((std::cout << args), ...) << std::endl;
+}
 
-  auto vec = make_uniquevec<int>(1, 2, 3, 4, 5);
+// only one argument.
+// This case might conflict above?
+template <typename T> void f(T t) { std::cout << "T!" << std::endl; }
 
-  for (auto &ptr : vec) {
-    std::cout << *ptr << " ";
-  }
-  std::cout << std::endl;
+template <> void f(int x) { std::cout << "int: " << x << std::endl; }
 
-  auto _ = std::move(vec[0]);
-  std::cout << (vec[0] == nullptr) << std::endl;
+int main(void) {
+  f(1, 2, 3);
+  std::cout << "==" << std::endl;
+  f(1);
+  std::cout << "==" << std::endl;
+  f(12.2);
+  std::cout << "==" << std::endl;
 
   return 0;
 }

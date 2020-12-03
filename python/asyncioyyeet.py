@@ -41,6 +41,8 @@ async def worker_lock(lock):
 
 async def run_lock():
     lock = asyncio.Lock()
+    # this is seriously wierd.
+    # is it some metaprogramming?
     await asyncio.wait([worker_lock(lock), worker_lock(lock)])
 
 
