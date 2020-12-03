@@ -1,3 +1,4 @@
+{-# LANGUAGE RankNTypes #-}
 module Lam where
 
 -- Some basic lambda calculus.
@@ -112,6 +113,65 @@ i = s k k
 @-}
 
 
-{-@
+{-@ Scott Encoding: A way to encode algebraic data type in lambda calculus.
 
+    We can encode data in the parameter and use them as a record
+    c represents constructor.
+    We can also have a function takes different record types to represent sum types.
 @-}
+
+-- simulate records.
+record1 = \a -> \con -> con a
+record2 = \a b -> \con -> con a b
+record3 = \a b c -> \con -> con a b c
+record4 = \a b c d -> \con -> con a b c d
+
+
+-- like record type above.
+newtype PairS a b = PairS { unPairS :: forall r. (a -> b -> r) -> r }
+
+-- p is the constructor of the pair
+pairS :: a -> b -> PairS a b
+pairS a b = PairS (\p -> p a b)
+
+fstS :: PairS a b -> a
+fstS (PairS p) = p (\a _ -> a)
+
+sndS :: PairS a b -> b
+sndS (PairS p) = p (\_ b -> b)
+
+swapS :: PairS a b -> PairS b a
+swapS (PairS p) = PairS (p . flip)
+
+-- peano number
+-- Maybe the simplest sum type.
+
+newtype NumS = NumS { unNums :: forall r. (NumS -> r) -> r -> r}
+
+zeroS :: NumS
+zeroS = NumS (\_ b -> b)
+
+succS :: NumS -> NumS
+succS n = NumS (\s _ -> s n)
+
+unnumS :: (NumS -> r) -> r -> NumS -> r
+unnumS s z (NumS f) = f s z
+
+isZero :: NumS -> Bool
+isZero = unnumS (\_ -> False) True
+
+addS :: NumS -> NumS -> NumS
+addS n m = unnumS (\s -> succS (addS s m)) m n
+
+
+-- list
+newtype ListS a = ListS { unconsS :: forall r. (a -> ListS a -> r) -> r -> r }
+
+nilS :: ListS a
+nilS = ListS (\_ b -> b)
+
+consS :: a -> ListS a -> ListS a
+consS a l = ListS (\f _ -> f a l)
+
+carS :: (a -> ListS a -> r) -> r -> ListS a -> r
+carS co ni (ListS f) = f co ni

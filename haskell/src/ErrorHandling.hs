@@ -91,10 +91,20 @@ instance MonadTrans (ExceptT e) where
 
 
 -- This is mtl style monad transformer.
+-- What does it do?
+-- Essentially it helps you to lift the underlying
+-- monad up no matter how many layers it is buried in.
+--
+-- m can be any monad, as long as we define this
+-- typeclass for several monads. If we combine this
+-- monads together we can deverive a working MonadError
+-- which brings error up even if it is arbitrarily
+-- deep in the monad stack.
+--
+-- The similar idea also apply to MonadState, MonadReader etc.
 class (Monad m) => MonadError e m | m -> e where
   throwError :: e -> m a
   catchError :: m a -> (e -> m a) -> m a
-
 
 instance MonadError IOException IO where
   throwError = ioError

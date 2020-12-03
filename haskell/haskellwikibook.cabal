@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       AlternativeandMonadPlus
+      HOAS
       DependentType
       MonadTransformer
       ReadFile
@@ -37,6 +38,7 @@ library
       Conduits
       ErrorHandling
       MTLPractise
+      ScottEncoding
       TypeFam
       Lam
       AbstractAlgebra
