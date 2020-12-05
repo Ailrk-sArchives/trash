@@ -54,8 +54,9 @@ public:
 
   // if it doens't load atomically the head
   // get loaded might not be the same.
-  auto front() const { return std::atomic_load(&head); }
+  auto front() const { return reference(std::atomic_load(&head)); }
 
+  // TODO
   void push_front(T t) {
     auto p = std::make_shared<Node>();
     p->t = t;
@@ -76,17 +77,20 @@ int main(void) {
 
   CouncurrentStack<int> stack;
 
-  auto t = [&stack]() {
-    stack.push_front(std::rand() % 100);
-    stack.push_front(std::rand() % 100);
-    stack.push_front(std::rand() % 100);
-  };
-
-  for (int i = 0; i < 5; ++i) {
-    std::thread(t).detach();
+  for (int i = 0; i < 4; ++i) {
+    stack.push_front(i);
   }
 
-  std::cout << *stack.find(3) << std::endl;
+  // for (int i = 0; i < 1; ++i) {
+  // }
+
+  std::thread([&stack]() {
+    stack.push_front(9);
+    std::cout << *stack.front() << std::endl;
+    std::cout << "good" << std::endl;
+  }).detach();
+
+  std::cout << *stack.find(9) << std::endl;
 
   return 0;
 }

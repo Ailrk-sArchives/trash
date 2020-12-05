@@ -1,0 +1,254 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9
+					],
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"projectIndex" : 0,
+					"source" : "."
+				},
+				{
+					"build" : "lambda",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "lambda",
+					"targetIndexes" : 
+					[
+						2
+					]
+				},
+				{
+					"build" : "locks",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "locks",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"build" : "ptr",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "ptr",
+					"targetIndexes" : 
+					[
+						5
+					]
+				},
+				{
+					"build" : "stl",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "stl",
+					"targetIndexes" : 
+					[
+						6
+					]
+				},
+				{
+					"build" : "typededuction",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "typededuction",
+					"targetIndexes" : 
+					[
+						7
+					]
+				},
+				{
+					"build" : "tp",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "tp"
+				},
+				{
+					"build" : "class",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "class",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "misc",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "misc",
+					"targetIndexes" : 
+					[
+						4
+					]
+				},
+				{
+					"build" : "concurrent",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "concurrent",
+					"targetIndexes" : 
+					[
+						1
+					]
+				}
+			],
+			"name" : "",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9
+					],
+					"name" : "demo",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 7,
+					"id" : "class::@b6006207bac832bbf61c",
+					"jsonFile" : "target-class-a9de91e4a06c7f6be5c0.json",
+					"name" : "class",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 9,
+					"id" : "concurrent::@2beca3e4e3d386bd9238",
+					"jsonFile" : "target-concurrent-50da669c7be28c999fa2.json",
+					"name" : "concurrent",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "lambda::@fe4bb6a088336fc19866",
+					"jsonFile" : "target-lambda-3ce7b08ee513db9c1beb.json",
+					"name" : "lambda",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "locks::@45d0f9b575d7f1596d7e",
+					"jsonFile" : "target-locks-a7f4657b8eb957b8d793.json",
+					"name" : "locks",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 8,
+					"id" : "misc::@a483cf504d1cdb2ea3d2",
+					"jsonFile" : "target-misc-cdfeec2a0ab565af5127.json",
+					"name" : "misc",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "ptr::@9fce1b8383f02f005a82",
+					"jsonFile" : "target-ptr-9d1c7d89e227aea9091a.json",
+					"name" : "ptr",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "stl::@2f0c3ea9eb2cc145e9d7",
+					"jsonFile" : "target-stl-2284fb47f818ac3b420a.json",
+					"name" : "stl",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 5,
+					"id" : "typededuction::@a14d6af1d1126c20aa5f",
+					"jsonFile" : "target-typededuction-361bcfdf9a0f5e81dfac.json",
+					"name" : "typededuction",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/jimmy/newDisk/Repo/misc/cpp",
+		"source" : "/home/jimmy/newDisk/Repo/misc/cpp"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 1
+	}
+}

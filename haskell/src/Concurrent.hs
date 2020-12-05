@@ -36,7 +36,7 @@ release m = takeMVar m
 -- Contains two MVars
 -- first MVars has it's current value, and a list of semaphores to notify
 -- second MVars is a semaphore for this particular reader. Full if there is a value
---  not read yet.
+-- not read yet.
 -- Writing to the channel never block. Reading block if there are no new values.
 
 data SkipChan a = SkipChan (MVar (a, [MVar ()])) (MVar ())
@@ -55,7 +55,7 @@ putSkipChan (SkipChan main _) v = do
   mapM_ (\sem -> putMVar sem ()) sems   -- release all.
 
 -- note if get from a newly created skip chan,
--- it will hit bottom.
+-- it will hit the bottom.
 getSkipChan :: SkipChan a -> IO a
 getSkipChan (SkipChan main sem) = do
   takeMVar sem

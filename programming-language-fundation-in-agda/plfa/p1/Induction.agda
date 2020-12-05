@@ -255,4 +255,3 @@ n+n*m≡n*[1+m] (suc n) m =
     ∎
 ∸-+-assoc (suc m) zero p = refl
 ∸-+-assoc (suc m) (suc n) p = ∸-+-assoc m n p
-
