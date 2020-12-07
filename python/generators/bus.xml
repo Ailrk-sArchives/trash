@@ -1,0 +1,18 @@
+<buses>
+  <bus>
+    <id></id>
+    <route></route>
+    <direction></direction>
+  </bus>
+  <bus>
+    <id></id>
+    <route></route>
+    <direction></direction>
+  </bus>
+  <bus>
+    <id></id>
+    <route></route>
+    <direction></direction>
+  </bus>
+</buses>
+
