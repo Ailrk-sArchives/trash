@@ -119,7 +119,10 @@ template <typename T> struct BoundedBuffer {
 
   BoundedBuffer(int capacity)
       : capacity(capacity), front(0), rear(0), count(0),
-        buffer(std::make_unique<std::vector<T>>()) {}
+        buffer(std::make_unique<std::vector<T>>()) {
+    buffer->reserve(capacity);
+    buffer->resize(capacity);
+  }
 
   ~BoundedBuffer() {}
 
@@ -132,7 +135,7 @@ template <typename T> struct BoundedBuffer {
     // wait takes a lock and a preducate function.
     // it blocks until the predicate is true.
     // otherwise the thread will sleep.
-    not_full.wait(l, [this]() { return count != capacity; });
+    not_full.wait(l, [this]() { return count < capacity; });
 
     buffer->at(front) = data;
     rear = (rear + 1) % capacity;
@@ -148,7 +151,7 @@ template <typename T> struct BoundedBuffer {
   int get() {
     std::unique_lock<std::mutex> l(lock);
 
-    not_empty.wait(l, [this]() { return count != 0; });
+    not_empty.wait(l, [this]() { return count > 0; });
 
     int result = buffer->at(front);
     front = (front + 1) % capacity;
@@ -160,6 +163,10 @@ template <typename T> struct BoundedBuffer {
   }
 };
 
+
+// this is a simplified version of producer consumer model.
+// There is no exit signal, so if items produced is lessthan
+// item received, consumer will take meaningless items.
 class ProducerComsumerProblem {
 
 public:
@@ -172,11 +179,12 @@ public:
     std::thread c2([&buffer]() { consume(2, buffer); });
     std::thread c3([&buffer]() { consume(3, buffer); });
 
+    p1.join();
+    p2.join();
+
     c1.join();
     c2.join();
     c3.join();
-    p1.join();
-    p2.join();
     std::cout << "end" << std::endl;
   }
 
@@ -184,7 +192,7 @@ public:
     for (int i = 0; i < 50; ++i) {
       int value = buffer.get();
       std::cout << "Consumer " << id << " got " << value << std::endl;
-      std::this_thread::sleep_for(std::chrono::milliseconds(200));
+      std::this_thread::sleep_for(std::chrono::milliseconds(80));
     }
   }
 
