@@ -1,0 +1,1 @@
+For simplicity, there is no smart pointer. This is one part I hate c++ the most. If you're trying to advocate the goodness of smart pointer, at least make it easier to use. I can affort 30 characters for every pointer I created right?
