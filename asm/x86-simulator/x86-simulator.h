@@ -1,3 +1,6 @@
+#ifndef X86_SIMULATOR_
+#define X86_SIMULATOR_ value
+
 // simulate c calling convention
 // It's just a rough simulation.
 // assume it's a 64 bit machine
@@ -29,14 +32,14 @@ struct CCR {
 struct Register {
   // no ip reg.
   size_t rip;
-  uint64_t esp;
-  uint64_t ebp;
-  uint64_t eax;
-  uint64_t ebx;
-  uint64_t ecx;
-  uint64_t edx;
-  uint64_t esi;
-  uint64_t edi;
+  uint64_t rsp;
+  uint64_t rbp;
+  uint64_t rax;
+  uint64_t rbx;
+  uint64_t rcx;
+  uint64_t rdx;
+  uint64_t rsi;
+  uint64_t rdi;
   CCR ccr;
 };
 
@@ -66,40 +69,40 @@ static char memory[256 * 4];
 // we use intel convention, so all instructions has
 // their destination on the left.
 
-void I_move(uint64_t *reg1, uint64_t *reg2) { *reg1 = *reg2; }
-void I_move(uint64_t *reg1, Address addr) { *reg1 = memory[addr.address]; }
-void I_move(uint64_t addr, uint64_t *reg2) { memory[addr] = *reg2; }
-void I_move(uint64_t *reg1, const uint64_t val) { *reg1 = val; }
-void I_move(uint64_t addr, const uint64_t val) { memory[addr] = val; }
+void move(uint64_t *reg1, uint64_t *reg2) { *reg1 = *reg2; }
+void move(uint64_t *reg1, Address addr) { *reg1 = memory[addr.address]; }
+void move(uint64_t addr, uint64_t *reg2) { memory[addr] = *reg2; }
+void move(uint64_t *reg1, const uint64_t val) { *reg1 = val; }
+void move(uint64_t addr, const uint64_t val) { memory[addr] = val; }
 
 // push
 // esp-4 <- val
-void I_push(uint64_t *reg) {
-  auto old_esp = regfile.esp;
-  regfile.esp -= 4;
+void push(uint64_t *reg) {
+  auto old_esp = regfile.rsp;
+  regfile.rsp -= 4;
   memcpy(memory + old_esp, reg, sizeof(*reg));
 }
-void I_push(Address addr) {
-  auto old_esp = regfile.esp;
-  regfile.esp -= 4;
+void push(Address addr) {
+  auto old_esp = regfile.rsp;
+  regfile.rsp -= 4;
   memcpy(memory + old_esp, (memory + addr.address), sizeof(memory[0] * 4));
 }
-void I_push(const uint64_t val) {
-  auto old_esp = regfile.esp;
-  regfile.esi -= 4;
+void push(const uint64_t val) {
+  auto old_esp = regfile.rsp;
+  regfile.rsi -= 4;
   memcpy(memory + old_esp, &val, sizeof(memory[0] * 4));
 }
 
 // pop
 // esp+4 -> val
-void I_pop(uint64_t *reg) {
-  regfile.esp += 4;
-  memcpy(reg, memory + regfile.esp, sizeof(memory[0] * 4));
+void pop(uint64_t *reg) {
+  regfile.rsp += 4;
+  memcpy(reg, memory + regfile.rsp, sizeof(memory[0] * 4));
 }
 
-void I_pop(Address addr) {
-  regfile.esp += 4;
-  memcpy(memory + addr.address, memory + regfile.esp, sizeof(memory[0] * 4));
+void pop(Address addr) {
+  regfile.rsp += 4;
+  memcpy(memory + addr.address, memory + regfile.rsp, sizeof(memory[0] * 4));
 }
 
 // lea
@@ -163,12 +166,6 @@ mk_binop_addr_const(std::function<uint64_t(uint64_t, uint64_t)> op) {
   };
 }
 
-static auto mk_binops(std::function<uint64_t(uint64_t, uint64_t)> op) {
-  return std::make_tuple(mk_binop_reg_reg(op), mk_binop_reg_addr(op),
-                         mk_binop_addr_reg(op), mk_binop_addr_reg(op),
-                         mk_binop_addr_const(op));
-}
-
 // when we call this functions our ccr is always clear.
 static auto add_ = [](uint64_t a, uint64_t b) {
   auto result = a + b;
@@ -204,39 +201,78 @@ auto cmp_ = [](uint64_t a, uint64_t b) {
 };
 
 // binary operators
-auto [I_add_reg_reg, I_add_reg_addr, I_add_addr_reg, I_add_reg_const,
-      I_add_addr_const] = mk_binops(add_);
+// auto [add_reg_reg, add_reg_addr, add_addr_reg, add_reg_const, add_addr_const]
+// =
+//     mk_binops(add_);
 
-auto [I_sub_reg_reg, I_sub_reg_addr, I_sub_addr_reg, I_sub_reg_const,
-      I_sub_addr_const] = mk_binops(sub_);
+// auto [sub_reg_reg, sub_reg_addr, sub_addr_reg, sub_reg_const, sub_addr_const]
+// =
+//     mk_binops(sub_);
 
-auto [I_and_reg_reg, I_and_reg_addr, I_and_addr_reg, I_and_reg_const,
-      I_and_addr_const] = mk_binops(and_);
+// auto [and_reg_reg, and_reg_addr, and_addr_reg, and_reg_const, and_addr_const]
+// =
+//     mk_binops(and_);
 
-auto [I_or_reg_reg, I_or_reg_addr, I_or_addr_reg, I_or_reg_const,
-      I_or_addr_const] = mk_binops(or_);
+// auto [or_reg_reg, or_reg_addr, or_addr_reg, or_reg_const, or_addr_const] =
+//     mk_binops(or_);
 
-auto [I_xor_reg_reg, I_xor_reg_addr, I_xor_addr_reg, I_xor_reg_const,
-      I_xor_addr_const] = mk_binops(xor_);
+// auto [xor_reg_reg, xor_reg_addr, xor_addr_reg, xor_reg_const, xor_addr_const]
+// =
+//     mk_binops(xor_);
+
+// add
+auto add_reg_reg = mk_binop_reg_reg(add_);
+auto add_reg_addr = mk_binop_reg_addr(add_);
+auto add_addr_reg = mk_binop_addr_reg(add_);
+auto add_reg_const = mk_binop_reg_const(add_);
+auto add_addr_const = mk_binop_addr_const(add_);
+
+// sub
+auto sub_reg_reg = mk_binop_reg_reg(sub_);
+auto sub_reg_addr = mk_binop_reg_addr(sub_);
+auto sub_addr_reg = mk_binop_addr_reg(sub_);
+auto sub_reg_const = mk_binop_reg_const(sub_);
+auto sub_addr_const = mk_binop_addr_const(sub_);
+
+// and
+auto and_reg_reg = mk_binop_reg_reg(and_);
+auto and_reg_addr = mk_binop_reg_addr(and_);
+auto and_addr_reg = mk_binop_addr_reg(and_);
+auto and_reg_const = mk_binop_reg_const(and_);
+auto and_addr_const = mk_binop_addr_const(and_);
+
+// or
+auto or_reg_reg = mk_binop_reg_reg(or_);
+auto or_reg_addr = mk_binop_reg_addr(or_);
+auto or_addr_reg = mk_binop_addr_reg(or_);
+auto or_reg_const = mk_binop_reg_const(or_);
+auto or_addr_const = mk_binop_addr_const(or_);
+
+// xor
+auto xor_reg_reg = mk_binop_reg_reg(xor_);
+auto xor_reg_addr = mk_binop_reg_addr(xor_);
+auto xor_addr_reg = mk_binop_addr_reg(xor_);
+auto xor_reg_const = mk_binop_reg_const(xor_);
+auto xor_addr_const = mk_binop_addr_const(xor_);
 
 // cmp
-auto I_cmp_reg_reg = mk_binop_reg_reg(cmp_);
-auto I_cmp_reg_addr = mk_binop_reg_addr(cmp_);
-auto I_cmp_reg_const = mk_binop_reg_const(cmp_);
-auto I_cmp_addr_reg = mk_binop_addr_reg(cmp_);
+auto cmp_reg_reg = mk_binop_reg_reg(cmp_);
+auto cmp_reg_addr = mk_binop_reg_addr(cmp_);
+auto cmp_reg_const = mk_binop_reg_const(cmp_);
+auto cmp_addr_reg = mk_binop_addr_reg(cmp_);
 
-auto I_shl_reg_const = mk_binop_addr_reg(shl_);
-auto I_shl_addr_const = mk_binop_addr_const(shl_);
+auto shl_reg_const = mk_binop_addr_reg(shl_);
+auto shl_addr_const = mk_binop_addr_const(shl_);
 
-auto I_shr_reg_const = mk_binop_addr_reg(shr_);
-auto I_shr_addr_const = mk_binop_addr_const(shr_);
+auto shr_reg_const = mk_binop_addr_reg(shr_);
+auto shr_addr_const = mk_binop_addr_const(shr_);
 
-void I_inc(uint64_t *reg) { (*reg)++; }
-void I_inc(Address addr) { memory[addr.address]++; }
-void I_dec(uint64_t *reg) { (*reg)--; }
-void I_dec(Address addr) { memory[addr.address]--; }
-void I_not(uint64_t *reg) { *reg = ~(*reg); }
-void I_not(Address addr) { memory[addr.address] = ~memory[addr.address]; }
+void inc(uint64_t *reg) { (*reg)++; }
+void inc(Address addr) { memory[addr.address]++; }
+void dec(uint64_t *reg) { (*reg)--; }
+void dec(Address addr) { memory[addr.address]--; }
+void not_(uint64_t *reg) { *reg = ~(*reg); }
+void not_(Address addr) { memory[addr.address] = ~memory[addr.address]; }
 
 #define jmp(label) goto label
 #define je(label)                                                              \
@@ -278,9 +314,14 @@ void I_not(Address addr) { memory[addr.address] = ~memory[addr.address]; }
 // Note && to get the address of label is
 // a gnu extension
 #define call(label)                                                            \
-  call##label : I_push((const uint64_t) && call##label);                       \
+  call##label : push((const uint64_t) && call##label);                         \
   goto label;
 
 #define ret                                                                    \
-  I_pop(&regfile.rip);                                                         \
+  pop(&regfile.rip);                                                           \
   goto *regfile.rip;
+
+// you can use the c calling convention
+// the convention comprises two parts for caller and callee respectively.
+//
+#endif /* ifndef X86_SIMULATOR_ */

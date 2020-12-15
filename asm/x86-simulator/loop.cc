@@ -6,10 +6,10 @@ int main(void)
   Register r = regfile;
 
 loop:
-  I_cmp_reg_const(&r.ecx, 10);
+  cmp_reg_const(&r.rcx, 10);
   jge(endloop);
-  std::cout << (r.ecx) << std::endl;
-  I_inc(&r.ecx);
+  std::cout << (r.rcx) << std::endl;
+  inc(&r.rcx);
 
   jmp(loop);
 endloop:
