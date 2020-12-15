@@ -1,5 +1,4 @@
 #include <ao/ao.h>
-#include <atomic>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -9,6 +8,7 @@
 #include <unistd.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_event.h>
+#include <atomic>
 
 // X c bindings, low level api for x window server.
 // xcb is an alternative of xlib,
@@ -141,15 +141,6 @@ int main(void) {
   std::thread note;
   std::atomic<int> new_notehit;
 
-  auto press = [&new_notehit](float freq) {
-    if (new_notehit == true) {
-      new_notehit = false;
-      return;
-    }
-    new_notehit = true;
-    beep(freq);
-  };
-
   while ((evt = xcb_wait_for_event(conn))) {
     switch (evt->response_type) {
     case XCB_KEY_PRESS: {
@@ -159,28 +150,29 @@ int main(void) {
       switch ((int)((xcb_key_press_event_t *)(evt))->detail) {
       case 38: // F
 
-        std::thread([=]() { press(349.23); }).detach();
+        note = std::thread([]() { beep(349.23); });
+        note.detach();
         break;
       case 39: // G
-        std::thread([=]() { press(392); }).detach();
+        std::thread([]() { beep(392); }).detach();
         break;
       case 40: // A
-        std::thread([=]() { press(440); }).detach();
+        std::thread([]() { beep(440); }).detach();
         break;
       case 41: // B
-        std::thread([=]() { press(493.88); }).detach();
+        std::thread([]() { beep(493.88); }).detach();
         break;
       case 42: // C
-        std::thread([=]() { press(523.25); }).detach();
+        std::thread([]() { beep(523.25); }).detach();
         break;
       case 43: // D
-        std::thread([=]() { press(587.33); }).detach();
+        std::thread([]() { beep(587.33); }).detach();
         break;
       case 44: // E
-        std::thread([=]() { press(659.25); }).detach();
+        std::thread([]() { beep(659.25); }).detach();
         break;
       case 45: // F
-        std::thread([=]() { press(698.46); }).detach();
+        std::thread([]() { beep(698.46); }).detach();
         break;
 
       default:

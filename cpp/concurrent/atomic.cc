@@ -7,6 +7,7 @@
 struct Flag {
   // make an atomic
   std::atomic<int> foo;
+  mutable std::atomic_int ff;
 
   Flag() : foo(0) {}
 

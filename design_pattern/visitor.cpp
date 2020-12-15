@@ -15,6 +15,7 @@ public:
   virtual void visit_concreteB(const ConcreteComponentB *element) const = 0;
 };
 
+// this is the element you traverse  through.
 class Component {
 public:
   virtual ~Component() {}
@@ -26,7 +27,6 @@ public:
   void accept(Visitor *visitor) const override {
     visitor->visit_concreteA(this);
   }
-
   std::string exclusive_method_of_A() const { return "A"; }
 };
 
@@ -35,8 +35,7 @@ public:
   void accept(Visitor *visitor) const override {
     visitor->visit_concreteB(this);
   }
-
-  std::string exclusive_method_of_B() const { return "A"; }
+  std::string exclusive_method_of_B() const { return "B"; }
 };
 
 // define two concrete visitors with different implementation
@@ -72,4 +71,25 @@ void client(std::array<const Component *, 2> components, Visitor *visitor) {
   for (const Component *comp : components) {
     comp->accept(visitor);
   }
+}
+
+int main(void) {
+  std::array<const Component *, 2> components = {new ConcreteComponentA,
+                                                 new ConcreteComponentB};
+  std::cout << "the client works with all visitors via the "
+               "base visitor interface"
+            << std::endl;
+
+  ConcreteVisitor1 *v1 = new ConcreteVisitor1;
+  client(components, v1);
+
+  std::cout << "Now we can shove in another concrete visitor "
+               "this will change the visitor behavior witout"
+               "introduce any new code."
+            << std::endl;
+
+  ConcreteVisitor2 *v2 = new ConcreteVisitor2;
+  client(components, v2);
+
+  return 0;
 }
