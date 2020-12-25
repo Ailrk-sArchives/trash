@@ -3,7 +3,6 @@
 #include <vector>
 using std::function;
 using std::vector;
-
 template <typename... P> struct parameter_pack {
   template <template <typename...> typename T> using apply = T<P...>;
 };
@@ -49,18 +48,18 @@ template <typename Fn1, typename Fn2> struct composition {
   using type = typename lambda_traits<Fn2>::template args_pack<p_>;
 };
 
-template <typename Fn1, typename Fn2, typename... Args>
+template <typename Fn1, typename Fn2>
 typename composition<Fn1, Fn2>::type operator<(Fn1 f, Fn2 g) {
-  return [=](auto a) { return f(g(a)); };
+  return [=](auto &&... a) { return f(g(a...)); };
 }
+
 
 template <typename Fn1, typename Fn2> auto operator>(Fn1 f1, Fn2 f2) {
-  return [=](auto a) { return f1(f2(a)); };
+  return [=](auto ...a) { return f1(f2(a...)); };
 }
-
 // currying
 template <typename...> struct currying_impl { using type = void; };
-template <typename R, typename Arg> struct currying_impl<R, Arg> {
+template <typename Arg, typename R> struct currying_impl<Arg, R> {
   using type = std::function<R(Arg)>;
 };
 
@@ -74,11 +73,14 @@ template <typename Fn> struct curring {
       typename lambda_traits<Fn>::template all_pack<currying_impl>::type;
 };
 
-curring<std::function<int(double, char, vector<int>)>>::type f;
+template <typename Fn> using curring_t = typename curring<Fn>::type;
+
+curring_t<std::function<int(double, char, vector<int>)>> f;
 auto a = f(1.1);
 auto b = a('1');
-auto c = b({1,2,3});
+auto x = b({1, 2, 3});
 
+// test for composition
 function<char(int)> f1{[](int a) { return 'a'; }};
 function<int(double)> f2{[](double b) { return b + 100 % 10; }};
 function<vector<char>(char)> f3{[](char a) { return vector<char>{a, a, a}; }};
@@ -89,6 +91,7 @@ composition<decltype(f3), decltype(f1f2)>::type f3f1f2(f3 < f1f2);
 
 auto f3f1f2_ = f3 < (f1 < f2);
 auto f3f1f2__ = f3 > (f1 > f2);
+
 
 auto c = [](auto x) { return f1(f2(x)); };
 
