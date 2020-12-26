@@ -38,6 +38,7 @@ library
       MonadTransformer
       ReadFile
       Concurrent
+      Continuation
       LiquidHs
       Ptrs
       Conduits

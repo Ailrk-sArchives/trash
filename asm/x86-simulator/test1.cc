@@ -1,8 +1,6 @@
 #include "x86-simulator.h"
 
-
-int main(void)
-{
+int main(void) {
 
 loop:
   cmp_reg_const(&r.rcx, 10);

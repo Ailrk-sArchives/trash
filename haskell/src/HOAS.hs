@@ -53,5 +53,3 @@ data ValuePHOAS
   = Vlit Integer
   | VFun (ValuePHOAS -> ValuePHOAS)
 
-
-

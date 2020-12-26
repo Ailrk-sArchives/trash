@@ -3,6 +3,7 @@
 
 // what is an object?
 
+// this struct has exactly the same alignment as an interger.
 struct Int {
   int i;
 };
@@ -12,6 +13,7 @@ int use_Int() {
   Int s{15};
 
   // reinterpret a struct to the first element of struct.
+  // if you cast it to an integer you can use it directly.
   int &i = reinterpret_cast<int &>(s);
   i = 23;
   return s.i;
@@ -26,6 +28,8 @@ int use_int() {
 }
 
 void trait_check() {
+  // trivially ... means there is no virtual function, abstract
+  // base class, virtual destructor.
   static_assert(std::is_trivially_constructible<Int>::value);
   static_assert(std::is_trivially_constructible<int>::value);
 
@@ -41,7 +45,7 @@ void trait_check() {
   static_assert(std::is_pod<Int>::value);
   static_assert(std::is_pod<int>::value);
 
-  // they both objects
+  // they're both objects
   // an object is a type that is not a function, not a reference, not void.
   // so pretty much everything is an object.
   static_assert(std::is_object<Int>::value);

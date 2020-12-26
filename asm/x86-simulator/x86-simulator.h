@@ -9,7 +9,19 @@
 #include <functional>
 #include <inttypes.h>
 #include <iostream>
-#include <tuple>
+
+// we have three segemetations
+// ------------
+// Stack 0          grow down
+// ------------
+// Heap 128 * 7 - 1 grow up
+// ------------
+// Data 128 * 7
+
+#define STACK_BASE 256 * 8
+#define HEAP_BASE 256 * 4
+#define DATA_BASE 256
+#define TEXT_BASE 0
 
 // status register
 struct CCR {
@@ -43,28 +55,26 @@ struct Register {
   CCR ccr;
 };
 
-static Register regfile;
-typedef struct {
+static Register regfile{.rip = 0,
+                        .rsp = STACK_BASE,
+                        .rbp = STACK_BASE,
+                        .rax = 0,
+                        .rbx = 0,
+                        .rcx = 0,
+                        .rdx = 0,
+                        .rsi = 0,
+                        .rdi = 0,
+                        .ccr = CCR{}};
+struct Address {
   uint64_t address;
-} Address;
+};
 
 // for simplicity,
 // we have in total 256 addresses
-static char memory[256 * 4];
+static char memory[256 * 8];
 
-// we have three segemetations
-// ------------
-// Stack 0          grow down
-// ------------
-// Heap 128 * 7 - 1 grow up
-// ------------
-// Data 128 * 7
-
-#define STACK_BASE 256 * 4
-#define HEAP_BASE 256 * 2
-#define DATA_BASE 256
-#define TEXT_BASE 0
-
+#define r regfile
+#define m memory
 // instructions
 // we use intel convention, so all instructions has
 // their destination on the left.
@@ -75,40 +85,51 @@ void move(uint64_t addr, uint64_t *reg2) { memory[addr] = *reg2; }
 void move(uint64_t *reg1, const uint64_t val) { *reg1 = val; }
 void move(uint64_t addr, const uint64_t val) { memory[addr] = val; }
 
+void swap_endianess(uint64_t val) {
+  unsigned char *bytes = reinterpret_cast<unsigned char *>(&val);
+  for (int i = 0; i < sizeof(val); i += 2) {
+    unsigned char temp = std::move(bytes[i]);
+    bytes[i] = std::move(bytes[sizeof(val) - i]);
+    bytes[sizeof(val) - i] = temp;
+  }
+}
+
 // push
-// esp-4 <- val
+// rsp-4 <- val
 void push(uint64_t *reg) {
-  auto old_esp = regfile.rsp;
-  regfile.rsp -= 4;
-  memcpy(memory + old_esp, reg, sizeof(*reg));
+  regfile.rsp -= 8;
+  swap_endianess(*reg);
+  memcpy(memory + regfile.rsp, reg, sizeof(uint64_t));
 }
 void push(Address addr) {
-  auto old_esp = regfile.rsp;
-  regfile.rsp -= 4;
-  memcpy(memory + old_esp, (memory + addr.address), sizeof(memory[0] * 4));
+  regfile.rsp -= 8;
+  swap_endianess(*(memory + addr.address));
+  memcpy(memory + regfile.rsp, (memory + addr.address), sizeof(uint64_t));
 }
 void push(const uint64_t val) {
-  auto old_esp = regfile.rsp;
-  regfile.rsi -= 4;
-  memcpy(memory + old_esp, &val, sizeof(memory[0] * 4));
+  swap_endianess(val);
+  regfile.rsp -= 8;
+  memcpy(memory + regfile.rsp, &val, sizeof(uint64_t));
 }
 
 // pop
-// esp+4 -> val
+// rsp+4 -> val
 void pop(uint64_t *reg) {
-  regfile.rsp += 4;
-  memcpy(reg, memory + regfile.rsp, sizeof(memory[0] * 4));
+  auto old_rsp = regfile.rsp;
+  regfile.rsp += 8;
+  memcpy(reg, memory + old_rsp, sizeof(uint64_t));
 }
 
 void pop(Address addr) {
-  regfile.rsp += 4;
-  memcpy(memory + addr.address, memory + regfile.rsp, sizeof(memory[0] * 4));
+  auto old_rsp = regfile.rsp;
+  regfile.rsp += 8;
+  memcpy(memory + addr.address, memory + old_rsp, sizeof(uint64_t));
 }
 
 // lea
 // only load the effective address
 // reg <- mem
-void I_lea(uint64_t *reg, Address addr) { *reg = addr.address; }
+void lea(uint64_t *reg, Address addr) { *reg = addr.address; }
 
 #define SET_CCR_Z(from)                                                        \
   if (from == 0) {                                                             \
@@ -200,26 +221,6 @@ auto cmp_ = [](uint64_t a, uint64_t b) {
   return a; // do nothing
 };
 
-// binary operators
-// auto [add_reg_reg, add_reg_addr, add_addr_reg, add_reg_const, add_addr_const]
-// =
-//     mk_binops(add_);
-
-// auto [sub_reg_reg, sub_reg_addr, sub_addr_reg, sub_reg_const, sub_addr_const]
-// =
-//     mk_binops(sub_);
-
-// auto [and_reg_reg, and_reg_addr, and_addr_reg, and_reg_const, and_addr_const]
-// =
-//     mk_binops(and_);
-
-// auto [or_reg_reg, or_reg_addr, or_addr_reg, or_reg_const, or_addr_const] =
-//     mk_binops(or_);
-
-// auto [xor_reg_reg, xor_reg_addr, xor_addr_reg, xor_reg_const, xor_addr_const]
-// =
-//     mk_binops(xor_);
-
 // add
 auto add_reg_reg = mk_binop_reg_reg(add_);
 auto add_reg_addr = mk_binop_reg_addr(add_);
@@ -310,18 +311,26 @@ void not_(Address addr) { memory[addr.address] = ~memory[addr.address]; }
     goto label;                                                                \
   }
 
+#define CONCAT_(x, y) x##y
+#define CONCAT(x, y) CONCAT_(x, y)
+
 // push current ip
+//
 // Note && to get the address of label is
 // a gnu extension
-#define call(label)                                                            \
-  call##label : push((const uint64_t) && call##label);                         \
-  goto label;
+
+#define call_(label, counter)                                                  \
+  push((const uint64_t) && CONCAT(label, counter));                            \
+  goto label;                                                                  \
+  CONCAT(label, counter) :
+
+#define call(label) call_(label, __COUNTER__)
 
 #define ret                                                                    \
   pop(&regfile.rip);                                                           \
   goto *regfile.rip;
 
 // you can use the c calling convention
-// the convention comprises two parts for caller and callee respectively.
+// the convention comprises two parts for caller and callee rrspectively.
 //
 #endif /* ifndef X86_SIMULATOR_ */
