@@ -17,6 +17,7 @@ module Continuation where
 import           Control.Monad
 import           Control.Monad.Cont
 import           Data.Char
+import           Data.IORef
 import           Foreign.C.String      (CString, withCString)
 import           Foreign.Marshal.Array (withArray0)
 import           Foreign.Ptr
@@ -25,6 +26,7 @@ import           Foreign.Ptr
 id' :: a -> a
 id' a = a
 
+{-@ continuation @-}
 -- continuation passing style
 idCPS :: a -> (a -> r) -> r
 idCPS a cont = cont a
@@ -38,14 +40,17 @@ idCPS a cont = cont a
 -- ($ 2) makes it as if we are appling a value to a function.
 demo1 = map ($ 2) [(2 *), (3 *), (4 +)]
 
+{-@ suspend computation @-}
 -- look at  this type
 -- f :: (a -> r) -> r
--- f is a suspend computation. to complete it, we need to pass a
+-- f is a suspend computation.
+-- to complete it, we need to pass a
 -- funtion with type (a -> r), which represents the continuation
 -- of the current computation.
 
 -- this function converts a value to a suspension.
-suspend = flip ($)
+newtype Suspend r a = Suspend { unSuspend :: (a -> r) -> r }
+mkSuspend = Suspend . flip ($)
 
 -- some simple examples
 
@@ -69,30 +74,11 @@ main = putStrLn . show $ factCPS 10 (\a -> mysqrtCPS (fromIntegral a) id)
 -- intermediate structures
 multiCont :: [(r -> a) -> a] -> ([r] -> a) -> a
 multiCont xs = runCont (mapM cont xs)
-
 withCStringArray0 :: [String] -> (Ptr CString -> IO a) -> IO a
 withCStringArray0 strings act =
   multiCont (map withCString strings) (\rs -> withArray0 nullPtr rs act)
 
--- let's define our own continuation monad.
-newtype Cont' r a = Cont' { runCont' :: (a -> r) -> r } deriving Functor
-
-instance Applicative (Cont' r) where
-  pure = return
-  (<*>) = ap
-
-instance Monad (Cont' r) where
-  return a = Cont' $ \k -> k a
-  (Cont' c) >>= f = Cont' $ \k -> c (\a -> runCont' (f a) k)
-
--- callcc calls the current continuation as its argument.
-class Monad m => MonadCont' m where
-  callCC' :: ((a -> m b) -> m a) -> m a
-
-instance MonadCont' (Cont' r) where
-  callCC' f = Cont' $ \k -> runCont' (f (\a -> Cont' $ \_ -> k a)) k
-
-
+-- write some functions in continuation passing style.
 pythagorasCPS :: Int -> Int -> Cont r Int
 pythagorasCPS x y = do
   xsquared <- pure $ (x ^ 2)
@@ -106,7 +92,6 @@ pythagorasCPS x y = do
     sqrt_cont :: Floating a => a -> Cont r a
     sqrt_cont x = return (sqrt x)
 
-
 gcdCPS :: Int -> Int -> Cont r Int
 gcdCPS x y = if y == 0 then return x else do
   r <- rem_cont x y
@@ -115,7 +100,6 @@ gcdCPS x y = if y == 0 then return x else do
     rem_cont :: Int -> Int -> Cont r Int
     rem_cont x y = return (rem x y)
 
-
 lcmCPS :: Int -> Int -> Cont r Int
 lcmCPS x y  = do
   mul_cont x y >>= \m -> abs_cont m >>= \a -> do
@@ -123,14 +107,52 @@ lcmCPS x y  = do
     div_cont a gcd
   where
     abs_cont :: Int -> Cont r Int
-    abs_cont x = return ((\x -> if x >= 0 then x else negate x) x)
-
+    abs_cont x = pure ((\x -> if x >= 0 then x else negate x) x)
     div_cont :: Int -> Int -> Cont r Int
-    div_cont x y = return (div x y)
-
+    div_cont x y = pure (div x y)
     mul_cont :: Int -> Int -> Cont r Int
-    mul_cont x y = return (x * y)
+    mul_cont x y = pure (x * y)
 
+-- write it without make everthing cps.
+lcmCPS' :: Int -> Int -> Cont r Int
+lcmCPS' x y = do
+  m <- pure $ (x * y)
+  a <- pure $ (abs m)
+  gcd <- gcdCPS x y
+  return $ (a `div` gcd)
+
+{-@ continuation monad @-}
+-- let's define our own continuation monad.
+newtype Cont' r a = Cont' { runCont' :: (a -> r) -> r } deriving Functor
+
+instance Applicative (Cont' r) where
+  pure = return
+  (<*>) = ap
+
+instance Monad (Cont' r) where
+  return = Cont' . flip ($)
+  (Cont' c) >>= f = Cont' $ \k -> c (\a -> runCont' (f a) k)
+
+{-@ callCC @-}
+-- continuation monad allows us to write continuation with
+-- normal order. But with monadic facilities along, we can't
+-- exploit the full power of continuation: arbitrarily control the
+-- flow control.
+--
+-- callCC helps us to do that.
+
+squareCPC :: Int -> Cont r Int -- without callcc
+squareCPC n = return (n ^ 2)
+
+squareCC :: Int -> Cont r Int -- with callcc. Expose the current continuation out.
+squareCC n = callCC $ \k -> k (n * 2)
+
+-- callcc calls the current continuation as its argument.
+class Monad m => MonadCont' m where
+  callCC' :: ((a -> m b) -> m a) -> m a
+
+instance MonadCont' (Cont' r) where
+  callCC' f = Cont' $ \k -> runCont' (f (\a -> Cont' $ \_ -> k a)) k
 -- how is continuation be used?
 fun :: Int -> String
 fun n = (`runCont` id) $ do
@@ -149,8 +171,9 @@ fun n = (`runCont` id) $ do
   return $ "Answer: " ++ str
 
 
--- use k?
---
+{-@ continuation monad and callCC @-}
+
+-- use callCC allows you to decide when use k
 -- early return
 foo :: Int -> Cont r String
 foo x = callCC $ \k -> do
@@ -159,3 +182,33 @@ foo x = callCC $ \k -> do
   return (show $ y - 4)
 
 
+bar :: Char -> String -> Cont r Int
+bar c s = do
+  msg <- callCC $ \k -> do
+    let s0 = c:s
+    when (s0 == "Hello") $ k "They say hello"
+    return ("They appear to be saying " ++ s0)
+  return $ length msg
+
+quux :: Cont r Int
+quux = callCC $ \k -> do
+  let n = 5
+  k n
+  return 25 -- this wil never be called
+
+-- use callCC as a goto.
+getCC :: MonadCont m => m (m a)
+getCC = callCC (\k -> let x = k x in return x)
+
+-- PS: no matter what, try traverse is always right.
+loopyWithcallCC :: IO ()
+loopyWithcallCC = do
+  c <- liftIO $ newIORef (10 :: Int)
+  flip runContT return $ do
+    k <- getCC  -- goto
+    traverse liftIO [ (putStrLn "Hello1"), modifyIORef c $ (\x -> x-1) ]
+    liftIO $ (putStrLn "Hello2") >> (modifyIORef c $ (\x -> x-1))
+    c' <- liftIO . readIORef $ c
+    when (c' > 0) k
+    liftIO . putStrLn $ "counter is zero now"
+  putStrLn "Done"
