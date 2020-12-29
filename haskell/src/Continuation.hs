@@ -1,5 +1,4 @@
-{-# LANGUAGE DeriveFunctor              #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE DeriveFunctor              #-} {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 -- The point of continuation is to alter the control flow of a program.
 -- You can early return by call the continuation in the middle of the program.
@@ -212,3 +211,39 @@ loopyWithcallCC = do
     when (c' > 0) k
     liftIO . putStrLn $ "counter is zero now"
   putStrLn "Done"
+
+{-@ Continuation for exception @-}
+
+-- implemented with two continuations
+divExcept :: Int -> Int -> (String -> Cont r Int) -> Cont r Int
+divExcept x y handler = callCC $ \ok -> do
+  err <- callCC $ \notok -> do
+    when (y == 0) $ notok "Denominator 0"
+    ok $ x `div` y
+  handler err
+
+indexExcept :: [a] -> Int -> (String -> Cont r a) -> Cont r a
+indexExcept xs idx handler = callCC $ \ok -> do
+  err <- callCC $ \notok -> do
+    when (length xs - 1 < idx) $ notok "out of bound"
+    ok $ xs !! idx
+  handler err
+
+-- more general exception handling
+tryCont :: MonadCont m => ((err -> m a) -> m a) -> (err -> m a) -> m a
+tryCont c h = callCC $ \ok -> do
+  err <- callCC $ \notok -> do
+    x <- c notok
+    ok x
+  h err
+
+data SqrtException = LessThanZero deriving (Show, Eq)
+
+sqrtIO :: (SqrtException -> ContT r IO ()) -> ContT r IO ()
+sqrtIO throw = do
+  ln <- lift (putStrLn "Enter a number to sqrt: " >> readLn)
+  when (ln < 0) (throw LessThanZero)
+  lift $ print (sqrt ln)
+
+runSqrtIO :: IO ()
+runSqrtIO = runContT (tryCont sqrtIO (liftIO . print)) return

@@ -39,6 +39,8 @@ library
       ReadFile
       Concurrent
       Continuation
+      CoroutinesWithContinuation
+      ThinkingWithTypes
       LiquidHs
       Ptrs
       Conduits
