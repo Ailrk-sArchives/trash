@@ -29,6 +29,7 @@ std::vector<T> make_set(std::vector<T> &xs, std::vector<T> &ys, Comp cmp) {
   return vs;
 }
 
+
 int main(void) {
   auto vs = make_set(phone_book1, phone_book2, std::greater<Entry<6>>());
   for (auto &v : vs) {
