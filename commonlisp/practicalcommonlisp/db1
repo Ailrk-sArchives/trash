@@ -1,2 +1,1 @@
-
 (((:TITLE "randomm") NIL :TITLE "random" :ARTIST "random" :RATING 100 :RIPPED NIL) (:TITLE "ain't misbehavin" :ARTIST "joe pass" :RATING 100 :RIPPED NIL) (:TITLE "misty" :ARTIST "ella fizgerald" :RATING 100 :RIPPED NIL) (:TITLE "bossa uh" :ARTIST "potsu" :RATING 100 :RIPPED T) (:TITLE "banana with nuts" :ARTIST "potsu" :RATING 100 :RIPPED NIL) (:TITLE "sunny" :ARTIST "potsu" :RATING 100 :RIPPED T))
