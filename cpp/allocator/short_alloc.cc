@@ -8,6 +8,7 @@
 #include <cstdint>
 
 template <size_t N, size_t Alignment = alignof(std::max_align_t)> class Arena {
+  // alignas allows you to specify alignment.
   alignas(Alignment) char buf[N];
 
   char *ptr;
@@ -48,16 +49,17 @@ char *Arena<N, Alignment>::allocate(size_t n) {
   assert(pointer_in_buffer(ptr) && "short_alloc has outlived arena");
   auto const aligned_n = align_up(n);
   if (static_cast<decltype(aligned_n)>(buf + N - ptr) >= aligned_n) {
-    char* r = ptr;
+    char *r = ptr;
     ptr += aligned_n;
     return r;
   }
 
-  static_assert(Alignment <= alignof(std::max_align_t), "you've chosen an "
+  static_assert(Alignment <= alignof(std::max_align_t),
+                "you've chosen an "
                 "alignment that is larger than alignof(std::max_align_t), and "
                 "cannot be guaranteed by normal operator new");
 
-  return static_cast<char*>(::operator new(n));
+  return static_cast<char *>(::operator new(n));
 }
 
 template <size_t N, size_t Alignment>
