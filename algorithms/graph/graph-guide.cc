@@ -6,8 +6,12 @@
 #include <vector>
 
 // different types of graphs
+// 0. GRAPH
+//    a graph is denoted as G(V, E)
+//    where V = {vetexes}
+//          E = {edges}
 
-// 1. DIRECTED / UNDIRECTED GRAPH
+// 1. DIRECTED / UNDIRECTED GRAPH, SIMPLE ? MULTI GRAPH
 //
 //   A-----B---------E
 //   \     |\       /|
@@ -15,6 +19,12 @@
 //     \   |  \   /  |
 //      \  |   \ /   |
 //        C.    D----F
+//        this is a simple graph,
+//        no self looping, no vertex has multiple edges.
+//
+//    +----+      +--+
+//    A    B --- C  |
+//    +----+      +--+  and this is a multigraph.
 
 // -- a little exercise:
 // Imagine a padlock start with 00. You can move 1 up to make 0
@@ -57,6 +67,13 @@ struct PadLockNode {
     dead_combinations = combs;
   }
 
+  bool is_allowed(std::pair<int, int> p) {
+    return std::find_if(dead_combinations.begin(), dead_combinations.end(),
+                        [&](auto dp) {
+                          return p.first == dp.first && p.second == dp.second;
+                        }) == dead_combinations.end();
+  }
+
   auto adjacents() -> std::vector<PadLockNode> {
     std::vector<PadLockNode> buffer{};
     std::pair<int, int> pairs[4]{{(d0 + 1) % 10, d1},
@@ -64,10 +81,7 @@ struct PadLockNode {
                                  {d0, (d1 + 1) % 10},
                                  {d0, (d1 - 1) % 10}};
     for (auto p : pairs) {
-      if (std::find_if(dead_combinations.begin(), dead_combinations.end(),
-                       [&](auto dp) {
-                         return p.first == dp.first && p.second == dp.second;
-                       }) == dead_combinations.end()) {
+      if (is_allowed(p)) {
         buffer.push_back(PadLockNode(p.first, p.second, steps));
       }
     }
@@ -138,6 +152,8 @@ void test_find_parlock_target() {
 //      E = [AB, AC, AD, CB]
 //
 //      This approach is more compact, but harder to traverse.
+//      These is probably the closest implementation to the
+//      G(V, E) definition.
 //
 //   3. dictionary
 
@@ -257,7 +273,7 @@ void test_adj_connected() {
   adj_connected(D);
 }
 
-// 3. loops in graph
+// 3. LOOPS IN GRAPH
 //    1. cyclic graph
 //      B -> E -> F -> G -> B
 //      A -> B -> C -> D -> A
@@ -297,18 +313,154 @@ void test_adj_connected() {
 //      |     |\  |\
 //      |     | \ | \
 //      D --- C  .G--F
-//      walk: e && v
-//        A -> B -> C -> B -> E
-//      trail: !e && v
-//        E -> F -> G -> E -> B
-//      path:
-//      cycle:
-//      circuit:
+//
+struct Walk {
+  //      walk: e && v
+  //        A -> B -> C -> B -> E
+  bool need_closed = false;
+  bool edge_can_repeat = true;
+  bool vertex_can_repeat = true;
+};
 
+struct Trail {
+  //      trail: !e && v
+  //        E -> F -> G -> E -> B
+  bool need_closed = false;
+  bool edge_can_repeat = false;
+  bool vertex_can_repeat = true;
+};
 
+struct Path {
+  //      path: !e && !v
+  //        A -> B -> E -> F
+  bool need_closed = false;
+  bool edge_can_repeat = false;
+  bool vertex_can_repeat = false;
+};
 
+struct Circuit : public Trail {
+  //      circuit: closed && !e && v
+  bool need_closed = true;
+};
 
-// 4. weight
+struct Cycle : public Path {
+  //      cycle: closed && !e && !v
+  bool need_closed = true;
+};
+
+// 4. Some lemmas
+//    1. Degree
+//      degree of a vertex is the # of edges it's adjacent to.
+//      denoted as deg(v)
+//      a vertex of a directed graph has in degree deg-(v)
+//      and out degree deg+(v)
+//
+//    note now you have three objects on the table.
+//      Vertexes, Edges, and Degrees.
+//
+struct Node_D { // a node of directed graph.
+  std::vector<Node_D *> adjacents_to;
+  std::vector<Node_D *> adjacents_from;
+  int deg_in() { return adjacents_from.size(); }
+  int deg_out() { return adjacents_to.size(); }
+  int deg() { return deg_in() + deg_out(); }
+};
+
+//    2. handshaking theorem
+//        Edges and degrees are closely related by this lemma:
+//        For undirected graph, each edge contribute to degree twice,
+//
+//            A == B
+//
+//          For a undirected graph,
+//            Sum(deg(v)) =  2 |E|
+//            v in V
+//          This implies:
+//            1. sum of degree is always even
+//            2. known num of edges we know the sum of degrees.
+struct Graph_D {
+  std::vector<Node_D *> nodes;
+  int sum_of_deg() { return nodes.size(); }
+};
+
+struct Node_N {
+  std::vector<Node_N *> adjacents;
+  int deg() { return adjacents.size(); }
+};
+
+struct Graph_N {
+  std::vector<Node_N *> nodes;
+  int sum_of_deg() { return nodes.size() * 2; }
+};
+
+//      3. lemma of handshaking theorem:
+//        An undirected graph has even # of vertices of odd degrees.
+//        Proof:
+//          Let V1, V2 be the sets of vertices with even and odd degrees
+//          respectively. we know Veven, Vodd can't overlap.
+//          V = V1 union V2,
+//
+//          By handshaking  theorem,
+//
+//               Sum(deg(V)) = 2|E|
+//           =>  2|E| = Sum(deg(Veven)) + Sum(deg(Vodd))
+//
+//           Sum(deg(V1)) must be even,
+//             [proof:
+//              let v1 in Veven, we know deg(v1) = 2k for k in Z.
+//              => Sum(deg(Veven)) = Sum(2 . h) = 2 Sum(h) for h in Z.
+//              done.
+//             ]
+//
+//           So 2 | Sum(deg(Vodd))
+//           let v2 in Vodd, deg(v2) is odd.
+//           Sum(deg(v2)) = Sum(2k + 1) = Sum(2k) + Sum(1)
+//           => 2 | Sum(1)
+//           => There are even number of vertices with odd degree.
+
+//      4. Complete graph
+//        A complete graph is a simple graph that each vertex connected
+//        with all other vertexes.
+//
+//            x ---- x
+//
+//            x ----- x
+//             \     /
+//              \   /
+//               \ /
+//                x
+//
+//        |E| = n(n+1) / 2
+//
+
+//     5. Hyper cube
+//        n-dimensional analogus of a square
+//
+//
+//           x------x          x----x
+//          /|     /|          |    |
+//         x-+----x |          |    |
+//         | |    | |          x----x Q2
+//         | x----+-x
+//         |/     |/
+//         x------x   Q3
+//            | projects to 2d
+//            V  (they bascially looks the same...)
+//           x-----x
+//          / \   / \
+//         /   \ /   \
+//        x-----x-----x
+//         \   / \   /
+//          \ /   \ /
+//           x-----x
+//
+//       denoted as Qn
+//
+//       2^n vertices, each represent a n bit string.
+//
+//       |E| = 2^n
+//
+//
 
 int main(void) {
   test_find_parlock_target();
