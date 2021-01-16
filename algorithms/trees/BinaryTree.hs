@@ -47,6 +47,3 @@ type TreeZipper a = (BinaryTree a, TreeDirections a)
 
 data TreeBranch a = TreeBranch (BinaryTree a) a (BinaryTree a)
   deriving (Eq, Ord)
-
-instance (BinaryTreeNode a, Show a) => Show (TreeBranch a) where
-  show ()

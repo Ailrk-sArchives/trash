@@ -51,7 +51,8 @@ rights (ListZipper _ _ r) = r
 -- wrapping and unwrapping.
 -- In case if you need to use maybe related function, just provide
 -- a map to maybe.
-data MaybeListZipper a = IsZ (ListZipper a) | IsNotZ  deriving (Eq, Show)
+data MaybeListZipper a = IsZ (ListZipper a) | IsNotZ
+  deriving (Eq, Show)
 
 -- isZ :: ListZipper a -> MaybeListZipper a
 -- isZ = MListsZipper . Just
@@ -135,30 +136,36 @@ findRight p (ListZipper l x r) =
     (_, [])     -> IsNotZ
     (l', x':r') -> IsZ (ListZipper (reverse l' <> (x : l)) x' r')
 
+-- move the zipper left. If no element to the left then wrap.
 moveLeftLoop :: ListZipper a -> ListZipper a
 moveLeftLoop (ListZipper [] x r) =
   let (x', r') = foldl (\(p, q) z -> (z, p : q)) (x, []) r
    in ListZipper r' x' []
 moveLeftLoop (ListZipper (l:ls) x r) = ListZipper ls l (x:r)
 
+-- dual to moveLeftLoop
 moveRightLoop :: ListZipper a -> ListZipper a
 moveRightLoop (ListZipper l x []) =
   let (x', l') = foldl (\(p, q) z -> (z, p: q)) (x, []) l
    in ListZipper [] x' l'
 moveRightLoop (ListZipper l x (r:rs)) = ListZipper (x:l) r rs
 
+-- move one left.
 moveLeft :: ListZipper a -> MaybeListZipper a
 moveLeft (ListZipper [] _ _)     =  IsNotZ
 moveLeft (ListZipper (l:ls) x r) = IsZ (ListZipper ls l (x:r))
 
+-- move one right.
 moveRight :: ListZipper a -> MaybeListZipper a
 moveRight (ListZipper _ _ [])     = IsNotZ
 moveRight (ListZipper l x (r:rs)) = IsZ (ListZipper (x:l) r rs)
 
+-- swap with left element of the cursor.
 swapLeft :: ListZipper a -> MaybeListZipper a
 swapLeft (ListZipper [] _ _)     = IsNotZ
 swapLeft (ListZipper (l:ls) x r) = IsZ $ ListZipper (x:ls) l r
 
+-- dual of swapLeft
 swapRight :: ListZipper a -> MaybeListZipper a
 swapRight (ListZipper _ _ [])     = IsNotZ
 swapRight (ListZipper l x (r:rs)) = IsZ $ ListZipper l r (x:rs)
@@ -169,11 +176,31 @@ dropLefts (ListZipper _ x r) = ListZipper [] x r
 dropRights :: ListZipper a -> ListZipper a
 dropRights (ListZipper l x _) = ListZipper l x []
 
-moveLeftN :: Int -> ListZipper a ->  MaybeListZipper a
-moveLeftN = undefined
+-- move left N element. If it's negate move to the right.
+moveLeftN :: Int -> ListZipper a -> MaybeListZipper a
+moveLeftN n z | n == 0 = IsZ z
+  | n < 0 = moveRightN (negate n) z
+  | otherwise = asMaybeZipper (moveLeftN (n - 1)) (moveLeft z)
 
+-- dual of moveLeftN
 moveRightN :: Int -> ListZipper a -> MaybeListZipper a
-moveRightN = undefined
+moveRightN n z | n == 0 = IsZ z
+  | n < 0 = moveLeftN (negate n) z
+  | otherwise = asMaybeZipper (moveRightN (n - 1)) (moveRight z)
+
+-- move left n elements. If can't move by n, return the maxium
+-- number m that the cursor can be moved.
+moveLeftN' :: Int -> ListZipper a -> Either Int (ListZipper a)
+moveLeftN' n z = moveLeftN'' n z 0
+  where
+    moveLeftN'' n' z' q | n == 0 = Right z'
+      | n < 0 = moveRightN' (negate n') z'
+      | otherwise = case moveLeft z' of
+                      IsZ zz -> moveLeftN'' (n' - 1) zz (q + 1)
+                      IsNotZ -> Left q
+
+moveRightN' :: Int -> ListZipper a -> Either Int (ListZipper a)
+moveRightN' = undefined
 
 nth :: Int -> ListZipper a -> MaybeListZipper a
 nth i z
