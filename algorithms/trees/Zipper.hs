@@ -188,8 +188,7 @@ moveRightN n z | n == 0 = IsZ z
   | n < 0 = moveLeftN (negate n) z
   | otherwise = asMaybeZipper (moveRightN (n - 1)) (moveRight z)
 
--- move left n elements. If can't move by n, return the maxium
--- number m that the cursor can be moved.
+-- move left n elements. If can't move by n, return the maxium -- number m that the cursor can be moved.
 moveLeftN' :: Int -> ListZipper a -> Either Int (ListZipper a)
 moveLeftN' n z = moveLeftN'' n z 0
   where
@@ -200,12 +199,28 @@ moveLeftN' n z = moveLeftN'' n z 0
                       IsNotZ -> Left q
 
 moveRightN' :: Int -> ListZipper a -> Either Int (ListZipper a)
-moveRightN' = undefined
+moveRightN' n z = moveRightN'' n z 0
+  where
+    moveRightN'' n' z' q | n' == 0 = Right z
+      | n' < 0 = moveLeftN' (negate n') z'
+      | otherwise = case moveRight z' of
+                      IsZ z'' -> moveRightN'' (n' - 1) z'' (q + 1)
+                      IsNotZ -> Left q
 
+-- index in the zipper.
+-- if i > a, move to the right by (i - a)
+-- if i <= a, move  to the right
+-- [_ _ _ _ _ _ _ _]
+--        ^
+--            i      : case i > a
+--    i              : case i < a
+--
 nth :: Int -> ListZipper a -> MaybeListZipper a
 nth i z
   | i < 0 = IsNotZ
-  | otherwise = undefined
+  | otherwise = case moveLeftN' i z of
+                  Left a -> moveRightN (i - a) z
+                  Right (ListZipper l _ _) -> moveLeftN (length l) z
 
 index :: ListZipper a -> Int
 index (ListZipper l _ _) = length l
