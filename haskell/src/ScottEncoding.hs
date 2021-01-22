@@ -24,4 +24,3 @@ newtype Either' a b =
 
 newtype Pair' a b =
   Pair' { runPair :: forall c. (a -> b -> c) -> c }
-

@@ -3,6 +3,7 @@
 {-# LANGUAGE FunctionalDependencies     #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module ErrorHandling where
 
 import           Control.Exception
@@ -110,8 +111,43 @@ instance MonadError IOException IO where
   throwError = ioError
   catchError = catch
 
-
 instance MonadError e (Either e) where
   throwError = Left
   Left l `catchError` h  = h l
   Right r `catchError` _ = Right r
+
+instance (Monad m) => MonadError e (ExceptT e m) where
+  throwError = throwE
+  catchError = catchE
+
+{-@ Possible use case @-}
+
+-- throw in the code (If there is an error wrap it in Left.)
+throwMeEither:: Int -> Either String Int
+throwMeEither n |  n > 100 = Right n
+  | otherwise = Left "Bad bad"
+
+throwMeExcept :: Int -> ExceptT String IO Int
+throwMeExcept n | n > 100 = return n
+  | otherwise = throwError "Bad bad except"
+
+-- capture with an handler. With monad error we can't capture
+-- Either and ExceptT with the same function.
+catchMe :: MonadError e m => Int -> (Int -> m Int) -> m Int
+catchMe n f = catchError (f n) (\_ -> return 1)
+
+{-@ quirks when catching IO @-}
+
+-- this will crash.
+-- First the thunk head [] is created, then it will live for the entire time until you
+-- evaluate it, which in this case is never. Essentially no exception happend in the code,
+-- the exception happend when ghci try to print the value out.
+catchWithReturn = catch (return $ head []) $ \(_ :: SomeException) -> return "good"
+
+-- This wont crash, because ghci doesn't need to print anything, the exceptional code (head [])
+-- is still there like a bomb.
+catchWithReturnUnit = catch (return $ head []) $ \(_ :: SomeException) -> return ()
+
+-- evaluate force it's argument to be evaluated into weak head normal form.
+-- this means (head []) get evaluated in place, and it get returned directly.
+catchWithEvaluate = catch (evaluate $ head []) $ \(_ :: SomeException) -> return "good"

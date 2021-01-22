@@ -1,4 +1,4 @@
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GADTs      #-}
 {-# LANGUAGE RankNTypes #-}
 module HOAS where
 
@@ -23,8 +23,7 @@ i = Lam (\x -> x)
 k :: ExprHOAS (a -> b -> a)
 k = Lam (\x -> Lam (\_ -> x))
 
-s
-  :: ExprHOAS ((a -> b -> c) -> (a -> b) -> (a -> c))
+s :: ExprHOAS ((a -> b -> c) -> (a -> b) -> (a -> c))
 s = Lam (\x -> Lam (\y -> Lam (\z -> App (App x z) (App y z))))
 
 skk = App (App s k) k
@@ -52,4 +51,3 @@ data ExprPHOAS a
 data ValuePHOAS
   = Vlit Integer
   | VFun (ValuePHOAS -> ValuePHOAS)
-

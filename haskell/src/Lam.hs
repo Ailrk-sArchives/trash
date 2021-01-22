@@ -27,6 +27,7 @@ module Lam where
 type Name = String
 
 -- lambda calculus is really simple...
+-- this can definitely benefits from gadt.
 data Expr
   = Var Name
   | App Expr Expr

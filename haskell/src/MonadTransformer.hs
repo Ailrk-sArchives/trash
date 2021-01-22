@@ -1,11 +1,14 @@
+{-# LANGUAGE GADTs      #-}
+{-# LANGUAGE RankNTypes #-}
 module MonadTransformer where
 
-import Control.Applicative
-import Control.Monad
-import Control.Monad.Trans
+import           Control.Applicative
+import           Control.Monad
+import           Control.Monad.Trans
 
--- monad transformer solves problem of accessing nested monad
--- without pattern matching.
+{-@ monad transformer solves problem of accessing nested monad
+    without pattern matching.
+@-}
 
 -- simple monad transformer
 -- runMaybeT is just a handy accessor.
@@ -24,7 +27,7 @@ instance Monad m => Monad (MaybeT m) where
   x >>= f = MaybeT $ do
     maybe_value <- runMaybeT x
     case maybe_value of
-      Nothing -> return Nothing
+      Nothing    -> return Nothing
       Just value -> runMaybeT $ f value
 
 -- Monad requirements.
@@ -43,7 +46,7 @@ instance Monad m => Alternative (MaybeT m) where
     maybe_value <- runMaybeT x
     case maybe_value of
       Nothing -> runMaybeT y
-      Just _ -> return maybe_value
+      Just _  -> return maybe_value
 
 instance Monad m => MonadPlus (MaybeT m) where
   mzero = empty
