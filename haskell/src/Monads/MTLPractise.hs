@@ -1,7 +1,7 @@
 {-# LANGUAGE DerivingStrategies         #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase                 #-}
-module MTLPractise where
+module Monads.MTLPractise where
 
 import           Control.Monad.Reader
 import           Control.Monad.State

@@ -1,5 +1,7 @@
 {-# LANGUAGE MultiWayIf #-}
-module Conduits where
+module Libs.Conduits where
+
+
 
 import           Control.Monad.Trans
 import           Data.Conduit

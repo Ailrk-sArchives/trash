@@ -3,7 +3,8 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes            #-}
 
-module Gadts where
+module Types.Gadts where
+
 
 {-@ Frist, what's the motivation?
  @-}

@@ -1,5 +1,7 @@
 {-# LANGUAGE RankNTypes #-}
-module Lam where
+module PL.Lam where
+
+
 
 -- Some basic lambda calculus.
 

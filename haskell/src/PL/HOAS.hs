@@ -1,6 +1,6 @@
 {-# LANGUAGE GADTs      #-}
 {-# LANGUAGE RankNTypes #-}
-module HOAS where
+module PL.HOAS where
 
 
 {-@ Higher order abstract syntax.

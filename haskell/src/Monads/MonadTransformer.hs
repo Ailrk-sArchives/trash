@@ -1,6 +1,8 @@
 {-# LANGUAGE GADTs      #-}
 {-# LANGUAGE RankNTypes #-}
-module MonadTransformer where
+module Monads.MonadTransformer where
+
+
 
 import           Control.Applicative
 import           Control.Monad

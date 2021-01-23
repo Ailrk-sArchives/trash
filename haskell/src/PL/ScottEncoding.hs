@@ -1,5 +1,6 @@
 {-# LANGUAGE RankNTypes #-}
-module ScottEncoding where
+module PL.ScottEncoding where
+
 
 -- Scott encoding.
 -- You can use functions to encode algebraic data types.

@@ -7,7 +7,9 @@
 {-# LANGUAGE UndecidableInstances  #-}
 {-# LANGUAGE TypeOperators #-}
 
-module DependentType where
+module Types.DependentType where
+
+
 
 -- A super short primer.
 

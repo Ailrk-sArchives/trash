@@ -10,8 +10,8 @@
 --
 -- With continuation, you have the next computation at hand, and you can
 -- make the decision where to continue the computation.
+module PL.Continuation where
 
-module Continuation where
 
 import           Control.Monad
 import           Control.Monad.Cont

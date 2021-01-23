@@ -2,7 +2,9 @@
 {-# LANGUAGE GADTs             #-}
 {-# LANGUAGE TypeFamilies      #-}
 
-module TypeFam where
+module Types.TypeFam where
+
+
 
 import           Data.Char   (ord)
 import qualified Data.IntMap as M
@@ -41,6 +43,14 @@ evalgadt (K' :@ x :@ _)      = x
 evalgadt (S' :@ x :@ y :@ z) = x :@ z :@ (y :@ z)
 evalgadt x                   = x
 
+-- you can't realy simulate this gadt though, because data family implies
+-- that data instances has the same arity.
+data family Fam a :: *
+data instance Fam () = FamA Int Int
+data instance Fam Int = FamB Char
+data instance Fam (a -> b) = FamC (a -> b)
+
+
 -----------------------------------------------------------------------
 
 {-@ Associated (data familiy).
@@ -65,6 +75,35 @@ instance GMapKey Char where
   empty = GMapChar M.empty
   lookup k (GMapChar m) = M.lookup (ord k) m
   insert k v (GMapChar m) = GMapChar $ M.insert (ord k) v m
+
+class Zippers c where
+  type Focus c :: *
+  type Context c :: *
+  moveLeft :: c -> c
+  moveRight :: c -> c
+  modify :: (Focus c -> Focus c) -> c -> c
+
+data ListZipper a = ListZipper [a] a [a]
+data Tree a = Branch a (Tree a) (Tree a) | Leaf
+data TreeDir a = TreeLeft a (Tree a)
+               | TreeRight a (Tree a)
+type TreeDirs a = [TreeDir a]
+data TreeZipper a = TreeZipper (Tree a) (TreeDirs a)
+
+instance Zippers (ListZipper a) where
+  type Focus (ListZipper a) = a
+  type Context (ListZipper a) = ([a], [a])
+  moveLeft (ListZipper (l:ls) x rs) = ListZipper ls l (x:rs)
+  moveRight (ListZipper ls x (r:rs)) = ListZipper (x:ls) r rs
+  modify f (ListZipper ls x rs) = ListZipper ls (f x) rs
+
+instance Zippers (TreeZipper a) where
+  type Focus (TreeZipper a) = a
+  type Context (TreeZipper a) = TreeDirs a
+  moveLeft (TreeZipper (Branch a lt rt) bs) = TreeZipper lt ((TreeLeft a rt) : bs)
+  moveRight (TreeZipper (Branch a lt rt) bs) = TreeZipper rt ((TreeRight a lt) : bs)
+  modify f (TreeZipper (Branch a lt rt) bs) = (TreeZipper (Branch (f a) lt rt) bs)
+
 
 m :: GMap Char Int
 m = insert 'a' 10 empty
@@ -108,14 +147,21 @@ type family Pred' n
 type instance Pred' (Succ n) = n
 type instance Pred' Zero = Zero
 
-
 -- you can write type family in one place.
 -- this starts to feels like Gadt
 type family Pred n where
   Pred (Succ n) = n
   Pred n = n
 
+-- ambigious type
+data KebabState = Kebab | NoKebab | NoMoreKebab  deriving (Show, Eq)
+class HasKebab a where
+  type KGame a :: *
+  hasKebab :: KGame a -> a
+    {-@ hasKebab :: KGame a -> KebabState @-}
+  -- this will cause a can't deduce Kebab a warning.
+  -- Imagine writing typeclass without type family, of course you need to
+  -- have the type parameter a some where to indicate which oveload to use.
 
--- constraint type families
---
-
+class HasKebab' a where
+  hasKebab' :: a -> a

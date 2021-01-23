@@ -1,7 +1,8 @@
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TemplateHaskell       #-}
-module AbstractAlgebra where
+module Other.AbstractAlgebra where
+
 
 import           Prelude (Bool, Eq, (==))
 

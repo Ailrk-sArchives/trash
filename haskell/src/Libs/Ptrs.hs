@@ -1,4 +1,4 @@
-module Ptrs where
+module Libs.Ptrs where
 
 import           Control.Exception     (SomeException, try)
 import           Control.Monad         (forM_)

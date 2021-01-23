@@ -1,4 +1,4 @@
-module Concurrent where
+module Concurrent.Concurrent where
 
 
 import           Control.Concurrent

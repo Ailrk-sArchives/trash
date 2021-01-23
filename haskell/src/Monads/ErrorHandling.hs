@@ -4,7 +4,9 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-module ErrorHandling where
+module Monads.ErrorHandling where
+
+
 
 import           Control.Exception
 import           Control.Monad

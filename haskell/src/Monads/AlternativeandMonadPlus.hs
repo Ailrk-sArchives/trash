@@ -1,9 +1,10 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 
-module AlternativeandMonadPlus where
+module Monads.AlternativeandMonadPlus where
 
-import Control.Applicative
-import Control.Monad
+
+import           Control.Applicative
+import           Control.Monad
 
 -- experiement target
 data Option a = Some a | None
@@ -54,18 +55,18 @@ data List a = Cons a (List a) | End
 -- and since _:_ is a list of list it can
 -- also be divided as []:_ or _:_
 concatList :: List (List a) -> List a
-concatList End = End
-concatList (Cons End xss) = concatList xss
+concatList End                    = End
+concatList (Cons End xss)         = concatList xss
 concatList (Cons (Cons x xs) xss) = Cons x $ concatList (Cons xs xss)
 
 instance Functor Option where
   fmap f (Some a) = Some $ f a
-  fmap f None = None
+  fmap f None     = None
 
 instance Monad Option where
   return = Some
   (Some a) >>= f = f a
-  None >>= f = None
+  None >>= f     = None
 
 instance Applicative Option where
   pure = return
@@ -73,12 +74,12 @@ instance Applicative Option where
 
 instance Functor List where
   fmap f (Cons a xs) = Cons (f a) (fmap f xs)
-  fmap f End = End
+  fmap f End         = End
 
 instance Monad List where
   return a = Cons a End
   End >>= f = End
-  xs >>= f = concatList $ fmap f xs
+  xs >>= f  = concatList $ fmap f xs
 
 instance Applicative List where
   pure = return
@@ -87,7 +88,7 @@ instance Applicative List where
 instance Semigroup (List a) where
   End <> a = a
   a <> End = a
-  a <> b = concatList $ (Cons a (Cons b End))
+  a <> b   = concatList $ (Cons a (Cons b End))
 
 instance Monoid (List a) where
   mempty = End
@@ -98,9 +99,9 @@ instance Monoid (List a) where
 
 instance Alternative Option where
   empty = None
-  None <|> None = None
-  Some x <|> None = Some x
-  None <|> Some x = Some x
+  None <|> None     = None
+  Some x <|> None   = Some x
+  None <|> Some x   = Some x
   Some x <|> Some y = Some x
 
 -- use monoid for Alternative direcly.
@@ -150,7 +151,7 @@ my_asum = foldr (<|>) empty
 -- list comprehension version
 my_guard :: Alternative m => Bool -> m ()
 my_guard True = pure ()
-my_guard _ = empty
+my_guard _    = empty
 
 pyth1 =
   [ (x, y, z)

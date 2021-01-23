@@ -1,4 +1,5 @@
-module CoroutinesWithContinuation where
+module PL.CoroutinesWithContinuation where
+
 
 import           Control.Applicative
 import           Control.Monad.Cont

@@ -1,6 +1,8 @@
 {-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE UndecidableInstances #-}
-module ReadFile where
+module Libs.ReadFile where
+
+
 
 import           Control.Exception
 import           System.IO

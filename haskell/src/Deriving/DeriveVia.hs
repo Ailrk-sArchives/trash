@@ -3,7 +3,9 @@
 {-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE TypeFamilies           #-}
 
-module DeriveVia where
+module Deriving.DeriveVia where
+
+
 
 import           Data.Coerce
 

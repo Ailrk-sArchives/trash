@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module LiquidHs where
+module Types.LiquidHs where
+
+
 
 import           Prelude hiding (head, length, tail)
 
