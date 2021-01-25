@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE GADTs                 #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -5,6 +6,7 @@
 
 module Types.Gadts where
 
+import           GHC.TypeLits
 
 {-@ Frist, what's the motivation?
  @-}
@@ -181,3 +183,16 @@ rest :: List a NonEmpty -> Either (List a Empty) (List a NonEmpty)
 rest (Cons _ xs) = case xs of
                      c@(Cons _ _) -> Right c
                      _            -> Left Nil
+
+{-@ using GADT to represent stack
+@-}
+data Z
+data S n
+
+data Stack n where
+  SEmpty :: Stack Z
+  SPush :: Stack n -> Stack (S n)
+  SPop :: Stack (S n) -> Stack n
+
+theStack = SPush . SPush . SPush $ SEmpty
+theStack' = SPop . SPop $ theStack

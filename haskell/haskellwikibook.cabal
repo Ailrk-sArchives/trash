@@ -32,16 +32,18 @@ flag dump
 library
   exposed-modules:
       Algorithms.MergeSort
+      Algorithms.Other
 
       Concurrent.Concurrent
 
       Deriving.DeriveVia
 
       Monads.AlternativeandMonadPlus
-      Monads.MonadTransformer
+      Monads.Monads
       Monads.MonadTransformerList
       Monads.ErrorHandling
       Monads.MTLPractise
+      Monads.MyMTL
 
       Types.DependentType
       Types.LiquidHs
@@ -63,6 +65,8 @@ library
 
       Other.TicTacToe
       Other.AbstractAlgebra
+      Other.Testing
+      Other.FFI
   other-modules:
       Paths_haskellwikibook
   hs-source-dirs:
@@ -75,6 +79,8 @@ library
     , stm
     , conduit
     , pretty
+    , QuickCheck
+    , hspec
   default-language: Haskell2010
   -- if flag(dump)
   --   ghc-options:

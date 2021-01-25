@@ -1,6 +1,10 @@
-{-# LANGUAGE GADTs      #-}
-{-# LANGUAGE RankNTypes #-}
-module Monads.MonadTransformer where
+{-# LANGUAGE GADTs          #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE RankNTypes     #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE DeriveFunctor #-}
+module Monads.Monads where
 
 
 
@@ -53,3 +57,15 @@ instance Monad m => Alternative (MaybeT m) where
 instance Monad m => MonadPlus (MaybeT m) where
   mzero = empty
   mplus = (<|>)
+
+
+{-@ Monad is defined with join, but
+    in haskell you get >>= instead. how?
+@-}
+
+-- kind signature helps you to tell the kindness of type variable
+class (Applicative m) => Monadish (m :: * -> *) where
+  merge :: m (m a) -> m a
+  bind :: m a -> (a -> m b) -> m b
+  bind m f = merge (fmap f m)
+  {-# MINIMAL merge #-}

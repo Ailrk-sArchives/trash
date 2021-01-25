@@ -1,13 +1,16 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs             #-}
+{-# LANGUAGE TypeApplications  #-}
 {-# LANGUAGE TypeFamilies      #-}
 
 module Types.TypeFam where
 
 
 
-import           Data.Char   (ord)
-import qualified Data.IntMap as M
+import           Control.Exception
+import           Control.Monad.Except
+import           Data.Char            (ord)
+import qualified Data.IntMap          as M
 
 -- how you normall define a list with gadt??
 data GList a where
@@ -165,3 +168,34 @@ class HasKebab a where
 
 class HasKebab' a where
   hasKebab' :: a -> a
+
+-- some convenient language extensions
+{-@ type applications
+    Allows you to explicitly declare what types should be instantiated
+    for argument of a function application.
+    There are cases that you need to specify the type of a simple parameter,
+    but to annotate it you needs to provides the full type signatures.
+    Type application helps you to annotate only one type to make it type check.
+@-}
+
+type family FTypeApp a
+-- only have two overloads here.
+type instance FTypeApp Char = Bool
+type instance FTypeApp Bool = Bool
+
+functionApp = l $ ord h
+  where
+    g :: FTypeApp a -> a
+    g _ = undefined
+
+    -- this can be inferred.
+    f :: Char
+    f = g True
+
+    -- give the tyupe info here.
+    -- h' = g False   -- this causes an error.
+    h = g @Char False
+
+    x :: Enum b => b -> b
+    x = undefined
+    l = x @Int  -- here specify l with use the Int overload.

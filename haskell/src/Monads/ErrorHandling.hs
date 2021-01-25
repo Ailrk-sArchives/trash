@@ -1,11 +1,20 @@
+{-# LANGUAGE DeriveFunctor              #-}
 {-# LANGUAGE DerivingStrategies         #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE FunctionalDependencies     #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE ScopedTypeVariables        #-}
+{-# LANGUAGE TypeApplications           #-}
 module Monads.ErrorHandling where
 
+{-@ The initial purpose of this practice is just
+    to learn some error handling in haskell, but it
+    ended up to be a universal guide for error handling,
+    mtl...
+    If you don't implemenet mtl once you won't know the
+    details.
+@-}
 
 
 import           Control.Exception
@@ -60,6 +69,11 @@ instance (Monad m) => Monad (ExceptT e m) where
       Left e  -> return . Left $ e
       Right a -> runExceptT (k a)
 
+-- define a monadIO so we can bring any IO a over
+-- with liftIO.
+-- This is big peepee.
+instance MonadIO m => MonadIO (ExceptT e m) where
+  liftIO = lift . liftIO
 
 -- construct an exceptT with left value.
 -- this creates an exception that can be handled easily.
@@ -103,12 +117,50 @@ instance MonadTrans (ExceptT e) where
 -- monads together we can deverive a working MonadError
 -- which brings error up even if it is arbitrarily
 -- deep in the monad stack.
---
--- The similar idea also apply to MonadState, MonadReader etc.
+
+{-@ Similar to MonadState, MonadError, and MonadIO
+    The idea behind an mtl interface is that you
+    only use interface they provide, and will never have
+    the need to call lift.
+
+    What is mtl really for?
+    A mtl class Monad... is basically an interface over any
+    other monad.  If a monad has this instance, it can be used
+    as the interface stated.
+
+    For most monads, there are only a handful number of opertaions
+    that are required. For example, a state monad will allow you
+    to get set modify, reader monad will be ask.
+
+    But if multiple monads are wrapped together, the type you access
+    will no longer be State monad or Reader monad, instead, you are
+    using a  monad transformer stack with State monad, reader monad's
+    functionality embeded.
+
+    Normally to call an action from a monad nested in a transformer stack,
+    you call lift . lift  until reach the layer. But with mtl you can
+    derive an instance of a mtl typeclass, and use it as if the transformer
+    stack implemented the type.
+
+    To achieve this we are heavily dependent on generalized newypte deriving,
+    since all instances are derive from some monad somewhere in the stack.
+
+    Note, for error handling, MonadError provides an universal interface for
+    all errorish type. Either, ExceptT... etc. They are fundamentally different
+    types, and you need to provide difference implementation for each of them.
+
+    Another example is monadIO. IO is a huge monad, and it has a plantora of
+    action and will be extended by users. It's unlikely to provide a mtl interface
+    for all IO actions. That's why MonadIO provides you with liftIO, so instead of
+    call putStrLn, you call liftIO putStrLn.
+  @-}
 class (Monad m) => MonadError e m | m -> e where
   throwError :: e -> m a
   catchError :: m a -> (e -> m a) -> m a
 
+-- without this instance you need to call the
+-- specific ioError and catch for IO exceptions. WIth
+-- MonadError this problem is handled universally.
 instance MonadError IOException IO where
   throwError = ioError
   catchError = catch
@@ -137,6 +189,44 @@ throwMeExcept n | n > 100 = return n
 -- Either and ExceptT with the same function.
 catchMe :: MonadError e m => Int -> (Int -> m Int) -> m Int
 catchMe n f = catchError (f n) (\_ -> return 1)
+
+{-@ Some exampels @-}
+-- define your own exception
+data LengthError = EmptyString
+                 | StringTooLong Int
+                 | OtherError String
+
+instance Show LengthError where
+  show EmptyString = "the string is empty"
+  show (StringTooLong len) = "The length of the string " ++ (show len) ++ " is too long"
+  show (OtherError msg) = msg
+
+newtype Length a = Length { unLengh :: ExceptT LengthError IO a }
+  deriving (Functor, Applicative, Monad, MonadError LengthError, MonadIO)
+
+-- note it's not necessary to catch every throw, since throw is really
+-- just a pure for the error case anyway.
+stringLengthExample  :: IO ()
+stringLengthExample = do
+  r <- runExceptT (unLengh calculateLength)
+  report r
+
+report :: Either LengthError Int -> IO ()
+report (Right len) = putStrLn ("length of the str is: " <> show len)
+report (Left e)    = putStrLn ("Error: " ++ show e)
+
+calculateLength :: Length Int
+calculateLength = do
+  liftIO . putStrLn $ "Please enter a string"
+  s <- liftIO getLine
+  if null s
+    then throwError EmptyString
+    else let len = length s
+          in if len > 50
+                then throwError $ StringTooLong len
+                else return len
+
+-- catchMe 10 (\n -> if n == 10 then throwError "bad bad" else return 1)
 
 {-@ quirks when catching IO @-}
 

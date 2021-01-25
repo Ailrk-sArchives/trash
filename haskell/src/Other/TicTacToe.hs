@@ -8,11 +8,16 @@
 {-# LANGUAGE RankNTypes                 #-}
 {-# LANGUAGE TypeFamilies               #-}
 module Other.TicTacToe where
-import           Control.Monad       (when)
+import           Control.Monad       (join, when)
 import           Control.Monad.State
 import           Data.Foldable       (fold)
-import           Data.List           (subsequences)
+import           Data.List           (subsequences, (\\))
+import           Debug.Trace         (trace)
 
+
+-- print and return
+traceThis :: (Show a) => String ->  a -> a
+traceThis msg x = trace (msg ++ " " ++ show x) x
 
 {-@ Let's write a tic tac toe @-}
 --  -OOO-
@@ -74,8 +79,6 @@ class HasKebab a where
   hasKebab :: Bool -> a -> KebabState
   whatStrategy :: a -> String
 
-
-
 -- | This implementation uses the fact that forall a, b \in  (Z3, +)
 -- By rotating and fliping "shape" of the multiplication table, we can form D8. But because elements
 -- in the table are symmetic along -- two diagnoses too, it turns out D and D' are the same as I and R180,
@@ -83,10 +86,10 @@ class HasKebab a where
 -- sum of each straight column, row, or diagnose is always 0, we can use this property to test for solution
 -- But there are some unwanted cases also sum up to zero. For example, say we have this table:
 --     0 1 2, 1 2 0, 2 0 1
--- Case1:        0 1 _, _ 2 _, _ _ _
---   In this case, 0 1 => 0 + 1 + 2 = 0 (mod 3). We can get rid of cases like this by also
---   compute the sum of the same location in R90. If all pieces are in a row | column | diagnose,
---   the sum will be 0 in both tables.
+-- Case1: 0 1 _ In this case, 0 1 => 0 + 1 + 2 = 0 (mod 3). We can get rid of cases like this by also
+--        _ 2 _ compute the sum of the same location in R90. If all pieces are in a row | column | diagnose,
+--        _ _ _ the sum will be 0 in both tables.
+
 rotateTicTacToe :: TicTacToe v -> TicTacToe v
 rotateTicTacToe (TicTacToe d) = TicTacToe $ \i j ->
   case (i, j) of { (Zero, Zero) -> d Zero Two; (Zero, Two) -> d Two Two
@@ -94,11 +97,24 @@ rotateTicTacToe (TicTacToe d) = TicTacToe $ \i j ->
                  ; (One, Two) -> d Two One; (Two, One) ->  d One Zero
                  ; (One, Zero) -> d Zero One; (Zero, One) -> d One Two
                  ; (a, b) -> d a b }
--- Case2:        0 _ _, _ _ 0, _ 0 _
---   This case is hard because it's symmetric along the diagnose. No matter how you rotate or flip
---   the table the sum will always be 0. The best way I find so far is just manually exclude these
---   cases. (There are four cases in total)
-excludeDiagonalSymmetric :: TicTacToe v -> _
+-- Case2: 0 _ _  This case is hard because it's symmetric along the diagnose. No matter how you rotate or flip
+--        _ _ 0  the table the sum will always be 0. The best way I find so far is just manually exclude these
+--        _ 0 _  cases. (There are four cases in total)
+
+sameSet :: Eq a => [a] -> [a] -> Bool
+sameSet x y = null (x \\ y) && null (y \\ x)
+
+-- 00 12 21, 02 10 21, 20 01 12, 22 01 10
+excludeDiagonalSymmetric :: [[(Three, Three)]]-> [[(Three, Three)]]
+excludeDiagonalSymmetric = filter needToExclude
+  where
+    needToExclude xs | length xs /= 3 = False
+      | and (fmap (sameSet xs) excludeList) = False
+      | otherwise = True
+    excludeList = [[(Zero, Zero), (One, Two), (Two, One)]
+                  ,[(Zero, Two), (One, Zero), (Two, One)]
+                  ,[(Two, Zero), (Zero, One), (One, Two)]
+                  ,[(Two, Two), (Zero, One), (One, Zero)]]
 
 instance HasKebab (TicTacToe Symmetric) where
   type KebabStrategy (TicTacToe Symmetric) = Symmetric
@@ -106,10 +122,11 @@ instance HasKebab (TicTacToe Symmetric) where
     | length [v | (_, _, v) <- fullBoard b, v == Nothing] == 1 = NoMoreKebab
     | otherwise = NoKebab
     where
-        roll f = [ x <> y | (x, y, v) <- fullBoard (f b), v == Just marker ]
-        markers = fold (combinations 3 $ roll id)
-        rotatedMarkers = fold (combinations 3 $ roll rotateTicTacToe)
-        hasKebab' = any (==Zero) (zipWith (<>) markers rotatedMarkers)
+        roll f = join
+               $ (fmap . fmap) (\(a, b) -> a <> b )
+               $ excludeDiagonalSymmetric . combinations 3
+               $ [ (x, y) | (x, y, v) <- fullBoard (f b), v == Just marker ]
+        hasKebab' = any (==(Zero, Zero)) (zip (roll id) (roll rotateTicTacToe))
   whatStrategy _ = "Symmetic"
 
 instance HasKebab (TicTacToe LinAlg) where

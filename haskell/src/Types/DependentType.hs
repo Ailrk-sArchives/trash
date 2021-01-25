@@ -9,7 +9,20 @@
 
 module Types.DependentType where
 
-
+{-@ Four capabilities of dependent type systems.
+    1. Type camputation
+        - program the type checker.
+    2. Indexed types
+        - type indices constrain values and guide
+          computation
+    3. Double-duty data
+        - using both data in the type indicies and runtime
+        - quantify a type parameter with PI, and you can
+          get the type in the term level. This is what dependent
+          type brings.
+        - singleton is used to simulate pi type.
+    4. Equivalcne proof
+@-}
 
 -- A super short primer.
 
