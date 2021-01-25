@@ -4,7 +4,7 @@ be familiar with sqlalchemy.
 ORM===================================
               ORM
 core =================================
-  | ddl |, | sql expr | , | engine |
+    | ddl |, | sql expr | , | engine |
     | dialect |, | connection |
 dbapi ================================
           python DBAPI

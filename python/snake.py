@@ -74,7 +74,8 @@ class Game:
         os.system('clear')
         # update map by object state.
         view_map = copy.deepcopy(self.map)
-        print('snake head: ', self.snake.body_list[-1].pos, 'length: ', len(self.snake.body_list))
+        print('snake head: ',
+              self.snake.body_list[-1].pos, 'length: ', len(self.snake.body_list))
         for o in self.obj_list:
             x, y = o.pos
             if x < self.height and y < self.width:  # if x, y are outside of the map
@@ -113,7 +114,8 @@ class Snake:
     body_list: List[SnakeBody] = []
 
     def __init__(self, width, height):
-        self.body_list.append(SnakeBody(random.randint(0, height - 1), random.randint(0, width - 1)))
+        self.body_list.append(SnakeBody(random.randint(
+            0, height - 1), random.randint(0, width - 1)))
         self.direction = 0  # init direction 0 left, 1 right, 2 up, 3 down.
 
     def eat(self):
@@ -161,4 +163,3 @@ class Snake:
 if __name__ == "__main__":
     game = Game()
     game.start()
-

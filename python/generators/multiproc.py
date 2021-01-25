@@ -1,13 +1,15 @@
 import pickle
 import socket
 from typing import Generator, List, Iterator
-import queue, threading
+import queue
+import threading
 
 
 # Pickler/Unpickler
 def gen_pickle(source):
     for item in source:
         yield pickle.dumps(item)
+
 
 def get_unpickle(infile):
     while True:
@@ -18,6 +20,8 @@ def get_unpickle(infile):
             return
 
 # Sender/Receiver
+
+
 def sendto(source, addr):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(addr)

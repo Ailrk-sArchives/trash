@@ -10,6 +10,7 @@ class VerboseAttribute():
     """
     A property object that implemented the descriptor protocol
     """
+
     def __get__(self, obj, type=None) -> object:
         print("accessing attribute to get the value")
         return 99
@@ -41,9 +42,10 @@ class Foo3:
     def getter(self) -> object:
         print("accessing attribute to get the value")
         return 99
+
     def getter(self) -> object:
         print("good")
-        return 9kkuuuuu:j
+        return 99
 
     attribute = property(getter, setter)
 
@@ -66,6 +68,7 @@ class StaticMehod:
     StaticMehod simply ignore the obj
     call f with regular args
     """
+
     def __init__(self, f):
         self.f = f
 
@@ -78,6 +81,7 @@ class ClassMethod:
     PyyClassMethod_Type()
     call f with class as the first argument
     """
+
     def __init__(self, f):
         self.f = f
 
@@ -104,6 +108,7 @@ class OneDigitNumericValue:
     descriptor. data stored in owner object.
     automatically get assigned a name as identifier.
     """
+
     def __set_name__(self, owner, name):
         self.name = name
 
@@ -128,6 +133,7 @@ class LazyProperty:
     so next time when meaning_of_life is accessed
     the value will be get from __dict__ directly.
     """
+
     def __init__(self, f):
         self.f = f
         self.name = f.__name__
@@ -142,7 +148,6 @@ class DeepThough:
     def meaning_of_life(self):
         time.sleep(3)
         return 99
-
 
 
 if __name__ == "__main__":

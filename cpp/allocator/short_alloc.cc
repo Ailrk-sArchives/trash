@@ -19,7 +19,7 @@ public:
   // Intialize the ptr to the buf position.
   Arena() noexcept : ptr(buf) {}
 
-  // Of course, we don't want our Arena be copied.
+  // of course, we don't want our Arena be copied.
   Arena(const Arena &) = delete;
   Arena &operator=(const Arena &) = delete;
 

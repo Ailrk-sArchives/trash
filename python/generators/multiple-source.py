@@ -8,6 +8,3 @@ def concatenate(sources: List[Generator]):
     for s in sources:
         for item in s:
             yield item
-
-
-

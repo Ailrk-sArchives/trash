@@ -1,4 +1,10 @@
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE DerivingVia        #-}
+
 module TreeZipper where
+
+import qualified Control.Monad (ap)
+import           GHC.Generics  (Generic)
 
 {-@ Zipper for tree
     Zipper for list is simple, but how does it work for a  tree?
@@ -83,6 +89,9 @@ type TreeDirections a = [TreeDirection a]
 -- back up and visit other nodes.
 
 data TreeZipper a = TreeZipper (BinaryTree a) (TreeDirections a)
+data MaybeTreeZipper a = IsTZ (TreeZipper a)
+                       | NotTZ
+                       deriving Show
 
 instance (Show a) => Show (TreeZipper a) where
   show (TreeZipper t bs) = "TreeZipper" <> "\n" <> show t <> "\n" <> show bs
@@ -90,33 +99,62 @@ instance (Show a) => Show (TreeZipper a) where
 instance Functor TreeZipper where
   fmap f (TreeZipper t bs) =  TreeZipper (fmap f t) ((fmap . fmap) f bs)
 
+toMaybe :: MaybeTreeZipper a -> Maybe (TreeZipper a)
+toMaybe (IsTZ t) = Just t
+toMaybe NotTZ    = Nothing
+
+fromMaybe :: Maybe (TreeZipper a) -> MaybeTreeZipper a
+fromMaybe (Just t) = IsTZ t
+fromMaybe Nothing  = NotTZ
+
+-- help guard operation from a normal tree zipper to maybe treezipper.
+asMaybeTreeZipper :: (TreeZipper a -> MaybeTreeZipper a) -> MaybeTreeZipper a -> MaybeTreeZipper a
+asMaybeTreeZipper _ NotTZ    = NotTZ
+asMaybeTreeZipper f (IsTZ t) =  f t
+
+isRoot :: TreeZipper a -> Bool
+isRoot (TreeZipper _ []) =  True
+isRoot _                 = False
+
+isLeaf :: TreeZipper a -> Bool
+isLeaf (TreeZipper Leaf _) = True
+isLeaf _                   = False
+
 fromTree :: BinaryTree a -> TreeZipper a
 fromTree t = TreeZipper t []
 
 toTree :: TreeZipper a -> BinaryTree a
 toTree z = case toRoot z of
-             (TreeZipper t _) -> t
+             IsTZ (TreeZipper t _) -> t
 
-left :: TreeZipper a -> TreeZipper a
-left (TreeZipper (Branch x l r) bs) = TreeZipper l $ (TreeLeft x r) : bs
+moveLeft :: TreeZipper a -> MaybeTreeZipper a
+moveLeft (TreeZipper (Branch x l r) bs) = IsTZ $ TreeZipper l ((TreeLeft x r) : bs)
+moveLeft (TreeZipper Leaf _) = NotTZ
 
-right :: TreeZipper a -> TreeZipper a
-right (TreeZipper (Branch x l r) bs) = TreeZipper r $ (TreeRight x l) : bs
+moveRight :: TreeZipper a -> MaybeTreeZipper a
+moveRight (TreeZipper (Branch x l r) bs) = IsTZ $ TreeZipper r ((TreeRight x l) : bs)
+moveRight (TreeZipper Leaf _) = NotTZ
 
-parent :: TreeZipper a -> TreeZipper a
-parent (TreeZipper t ((TreeLeft x l) : bs)) = TreeZipper (Branch x l t) bs
+moveUp :: TreeZipper a -> MaybeTreeZipper a
+moveUp (TreeZipper t ((TreeLeft x l) : bs)) = IsTZ $  TreeZipper (Branch x l t) bs
+moveUp (TreeZipper _ []) = NotTZ
 
 modify :: (a -> a) -> TreeZipper a -> TreeZipper a
 modify f (TreeZipper (Branch x l r) bs) = TreeZipper (Branch (f x) l r) bs
 modify _ (TreeZipper Leaf bs)           = TreeZipper Leaf bs
 
+set :: a -> TreeZipper a -> TreeZipper a
+set a t = modify (const a) t
+
 attach :: BinaryTree a -> TreeZipper a -> TreeZipper a
 attach t (TreeZipper Leaf bs) = TreeZipper t bs
 attach _ z                    = z
 
-toRoot :: TreeZipper a -> TreeZipper a
-toRoot (TreeZipper t []) = TreeZipper t []
-toRoot z                 = toRoot (parent z)
+toRoot :: TreeZipper a -> MaybeTreeZipper a
+toRoot (TreeZipper t []) = IsTZ $ TreeZipper t []
+toRoot z                 = case moveUp z of
+                             IsTZ z' -> toRoot z'
+                             NotTZ   -> IsTZ  z
 
 tree = Branch 5
   (Branch 7
