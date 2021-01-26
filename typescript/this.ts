@@ -2,6 +2,7 @@
 this.pp = 10;
 this.data = "global";
 
+
 const obj1 = {
   data: "obj1",
   f1: () => {
@@ -22,6 +23,8 @@ const f3 = obj1.f1;
 const f4 = obj2.f2;
 const f5 = obj2.f2;
 const f6 = obj2.f2;
+
+console.log("yeet");
 f5.bind({data: "rebinded data"});
 f5.bind(obj1);
 
@@ -32,11 +35,13 @@ obj1.f1();
 obj2.f2();
 
 // arrow method get assigned.
-f3();
+// f3();
 
 // regular function get assigned and rebind with different obj.
-f5();
-f6();
+// f5();
+// f6();
 
 // // regular function get assigned.
 // f4();
+
+//export {};

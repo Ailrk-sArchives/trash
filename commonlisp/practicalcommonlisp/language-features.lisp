@@ -206,3 +206,23 @@
 (defun try-shift (a b)
   (shiftf a b 10)
   (list a b))
+
+;; lisp 2
+;; common lisp is lisp 2, so it's variable name and function names
+;; are in different namespaces.
+;; when common lisp sees form (f a b c d), name a will be looked
+;; up in function space and a b c d will be from variable space.
+;; this is why you have let and flet.
+;; use flet to introduce a local binding.
+
+;; use let* and labels for the usual cases,
+;; let and labels are used only for cases that you explicitly
+;; don't want closure or don't want recursive binds.
+
+(defun lisp2-let ()
+  (let* ((a 10)
+         (b 20))
+    (labels ((f (x) (+ x 1))
+             (g (x) (* x 2)))
+      (print (f (g a)))
+      (print (g (f b))))))

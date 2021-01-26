@@ -44,12 +44,13 @@ library
       Monads.ErrorHandling
       Monads.MTLPractise
       Monads.MyMTL
+      Monads.ReadP
 
       Types.DependentType
       Types.LiquidHs
       Types.Gadts
       Types.TypeFam
-      Types.TypeFam1
+      Types.Kindness
       Types.ThinkingWithTypes
 
       PL.Lam
@@ -62,6 +63,7 @@ library
       Libs.Ptrs
       Libs.Conduits
       Libs.StgDumpExperiment
+      Libs.Refs
 
       Other.TicTacToe
       Other.AbstractAlgebra
@@ -80,7 +82,9 @@ library
     , conduit
     , pretty
     , QuickCheck
+    , transformers
     , hspec
+    , array
   default-language: Haskell2010
   -- if flag(dump)
   --   ghc-options:

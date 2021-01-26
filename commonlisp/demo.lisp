@@ -76,3 +76,22 @@
 
 (defun (lamdba (x)
                (fact0)))
+
+;; log rules
+(defun log-rule1 (m n)
+  (= (log (* m n))
+     (+ (log m) (log n))))
+
+(defun log-rule2 (m n)
+  (= (log (/ m n))
+     (- (log m) (log n))))
+
+(defun log-rule3 (m k)
+  (= (log (expt m k))
+     (* k (log m))))
+
+(defun log-rule5 () (= (log 1) 0))
+
+(defun log-rule6 (n) (= (log n n) 1))
+
+(defun log-rule7 (b k) (= (expt b (log k b)) k))

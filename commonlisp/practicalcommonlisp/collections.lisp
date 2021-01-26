@@ -177,14 +177,53 @@
   (rest (list 1 2 3))
   (last (list 1 2 3))
   (mapcar (lambda (x) (+ x 1)) (list 1 2 3))
+  (mapcar (lambda (x y) (+ x y)) (list 1 2 3) (list 2 3 4))
+
+  (let ((x '(1 2 3))
+        (y '(2 3 4)))
+    (mapcan (lambda (a b) (+ a b)) x y)
+    (cons x y))
+
+  (map 'vector #'evenp (loop for i from 0 to 100 collecting i))
+
+  (maplist (lambda (x) (cons 'foo x)) '(a b c d))
+
+  ;; map list is like scan, it lambda receive the rest of the list.
+  (maplist (lambda (xs) (mapcar #'1+ xs)) '(1 2 3 4))
+
+  (maplist (lambda (xs ys) (concatenate 'list xs ys)) '(1 2 3 4) '(3 4 5 6))
+
+  ;; mapcan is like mapcar but reuslt is connected with nconc
+  ;; mapcan is destructive, apply nconc to intermediate result.
+  ;; this is really confusing.
+  (let ((x (list 1 2 3)))
+    (mapcan (lambda (a) (+ a 1)) x)
+    x)
+
+  (let ((x '((1 2 3) (4) (5 6) (2 3))))
+    (mapcan #'cdr x)
+    ;x destructive
+    x)
+
+  (mapc (lambda (x) (+ x 1)) '(1 2 3))
+  (mapcar (lambda (x) (+ x 1)) '(1 2 3))
+
+  ;; mapcon is like maplist but connected with nconc
+  (let ((x '(1 2 3 4))
+        (y '(2 3 4 5)))
+    (mapcon
+      (lambda (xs ys) (mapcar (lambda (x y) (+ x y)) xs ys)) x y)
+    (cons x y))
+
+  (mapcon (lambda (x) (mapcar #'1+ x)) '(1 2 3 4))
+
   (nth 3 (list 1 2 3 4))
   (quote ((1 2) (3 4) (5 6)))
 
   (let* ((list1 '(1 2 3))
          (list2 (copy-list list1))
          (list3 '((1 2) (3 4)))
-         (list4 (copy-list list3))
-         )
+         (list4 (copy-list list3)))
     (setf (elt list2 2) 99)
 
     (format t "list1: ~a~%" list1) ; (1 2 3)
