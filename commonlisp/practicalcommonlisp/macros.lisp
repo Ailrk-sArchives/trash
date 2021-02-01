@@ -1,4 +1,5 @@
 ;; chapter 7, some constructs
+
 ;; show the side effect.
 (defmacro show (val)
   `(progn
@@ -22,11 +23,19 @@
           (show (rotatef x y))
           (show (shiftf y x 100))))))
 
+
 (defmacro my-when (condition &rest body)
   `(if ,condition (progn ,@body)))
 
 (defmacro my-unless (condition &rest body)
   `(if (not ,condition) (progn ,@body)))
+
+
+;; note backquotes ` are just short hand for creating list.
+;; everything you write under defmacro will be executed at the
+;; compile time, and the returned list will be inserted into the AST.
+(defmacro set-them-* (a b) (list 'setf a 10 b 20))
+(defmacro set-them (a b) `(setf a 10 b 20))
 
 ;; traverse_ on a list
 (defun play-dolist ()
@@ -106,7 +115,7 @@
 ;; extended loop
 
 ;; these two do the same thing
-;; so lisp do is basically a mutation based loop
+;; lisp do is basically a mutation based loop
 ;; structure.
 (defun do-and-loop ()
   (do ((nums nil)   ; mutation right there ew.

@@ -3,7 +3,7 @@
 {-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE TypeFamilies           #-}
 
-module Deriving.DeriveVia where
+module GHCs.DeriveVia where
 
 
 

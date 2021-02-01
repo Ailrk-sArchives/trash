@@ -1,12 +1,15 @@
-{-# LANGUAGE GADTs          #-}
-{-# LANGUAGE KindSignatures #-}
-{-# LANGUAGE RankNTypes     #-}
+{-# LANGUAGE DeriveFunctor              #-}
+{-# LANGUAGE DerivingStrategies         #-}
+{-# LANGUAGE GADTs                      #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE KindSignatures             #-}
+{-# LANGUAGE RankNTypes                 #-}
 module Monads.Monads where
 
-
+{-@ Functor: morphism between categories
+    Endofunctor: A functor from a category to itself.
+    Natural transformation: 2-morphism between two functors.
+@-}
 
 import           Control.Applicative
 import           Control.Monad
@@ -58,7 +61,6 @@ instance Monad m => MonadPlus (MaybeT m) where
   mzero = empty
   mplus = (<|>)
 
-
 {-@ Monad is defined with join, but
     in haskell you get >>= instead. how?
 @-}
@@ -69,3 +71,20 @@ class (Applicative m) => Monadish (m :: * -> *) where
   bind :: m a -> (a -> m b) -> m b
   bind m f = merge (fmap f m)
   {-# MINIMAL merge #-}
+
+newtype Kleisli m a b = Kleisli (a -> m b)
+
+kbind :: Monad m => Kleisli m a b -> Kleisli m b c -> Kleisli m a c
+kbind (Kleisli f) (Kleisli g) = Kleisli $ join . fmap g . f
+
+-- bind' :: Monad m => (a -> m b) -> (b -> m c) -> (a -> m c)
+-- bind' f g = join . fmap g . f
+
+{-@ Comonad is the duality of Monad @-}
+
+-- unsafePerformIO is a cokleisli arrow.
+newtype Cokleisli w a b = Cokleisli (w a -> b)
+
+class Functor w => Comonad w where
+  (=>=) :: (w a -> b) -> (w b -> c) -> (w a -> c)
+  extract :: w a -> a

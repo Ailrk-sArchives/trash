@@ -130,6 +130,18 @@ public:
   }
 };
 
+void ad() {
+  // define struct within function..
+  struct R {
+    double a, b, c;
+  };
+  static R rs[2] = {{1, 1, 1}, {1, 2, 3}};
+
+  for (int i = 0, k = 0; i < 2; ++i) {
+    rs[i] = {rs[i].a + 1, rs[i].b + 1, rs[i].c + 1};
+  }
+}
+
 int main(void) {
   std::vector<MemoryBlock> v;
 

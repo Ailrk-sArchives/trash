@@ -1,4 +1,10 @@
 ; read
+;; common lisp has a very complicated stream system.
+;; (not really, but the api is hard to follow up)
+;; I'm sure if you are already very familiar with the
+;; mechanism it will be very nice to use, but there are
+;; simply too many details exposed.
+
 (let ((in (open "db1" :if-does-not-exist nil)))
   (when in
     (format t "~a~%" (read-line in))
@@ -21,6 +27,11 @@
 ; easily.
 (read (print '(1 2 3)))
 
+(with-output-to-string (out)
+  (format out "output this string to out")
+  out)
+
+
 ; context manager for files
 ; nil is almost necessary for read-line...
 (with-open-file (in "./file.txt")
@@ -40,3 +51,19 @@
 (defun try-it-unprotected ()
   (return-from try-it-unprotected)
   (print 'iamhere))  ; this will not be printed
+
+; an example implementation of getenv
+
+(defun my-getenv (name &optional default)
+  "Obtains the current value of the POSIX environment variable NAME."
+  (declare (type (or string symbol) name))
+  (let ((name (string name)))
+       (or #+abcl (ext:getenv name)
+           #+ccl (ccl:getenv name)
+           #+clisp (ext:getenv name)
+           #+cmu (unix:unix-getenv name) ; since CMUCL 20b
+           #+ecl (si:getenv name)
+           #+gcl (si:getenv name)
+           #+mkcl (mkcl:getenv name)
+           #+sbcl (sb-ext:posix-getenv name)
+           default)))

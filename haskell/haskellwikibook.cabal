@@ -36,7 +36,8 @@ library
 
       Concurrent.Concurrent
 
-      Deriving.DeriveVia
+      GHCs.DeriveVia
+      GHCs.Rules
 
       Monads.AlternativeandMonadPlus
       Monads.Monads
@@ -45,6 +46,8 @@ library
       Monads.MTLPractise
       Monads.MyMTL
       Monads.ReadP
+      Monads.Arrows
+      Monads.ArrowPractice
 
       Types.DependentType
       Types.LiquidHs
