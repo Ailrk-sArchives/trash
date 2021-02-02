@@ -106,3 +106,16 @@
 
 ;; get rid of the multi value return
 (defun floor-1 (x y) (floor x y) x)
+
+;; a traditional common lisp association list.
+(defparameter *assoclist* (list
+                            (cons 'a 10)
+                            (cons 'b 20)
+                            (cons 'c 30)))
+
+;; get value from an assoc list
+(assoc 'a *assoclist*)
+
+(setf (cdr (assoc 'a *assoclist*)) 100)
+
+(acons 'd 100 *assoclist*)

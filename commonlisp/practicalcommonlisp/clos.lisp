@@ -18,8 +18,6 @@
 ; make-instance.
 ; &key is required because that's how initialize-instance defined
 (defmethod initialize-instance :after ((account bank-account)
-                                       &key opening-bonus-percentage)
-  (let ((balance (slot-value account 'balance)))
     (setf (slot-value account 'account-type)
           (cond
             ((>= balance 10000) :gold)
