@@ -394,4 +394,7 @@ a
 a.out
 .metals
 
-.stack-work
+.stack-work/
+.ccls-cache/
+.clangd/
+.cmake/
