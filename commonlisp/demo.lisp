@@ -95,3 +95,14 @@
 (defun log-rule6 (n) (= (log n n) 1))
 
 (defun log-rule7 (b k) (= (expt b (log k b)) k))
+
+;; multiple value reutrn
+
+(defun polar (x y)
+  (values (sqrt (+ (* x x) (* y y))) (atan y x)))
+
+(multiple-value-bind (r theta) (polar 3 4)
+  (vector r theta))
+
+;; get rid of the multi value return
+(defun floor-1 (x y) (floor x y) x)

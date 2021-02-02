@@ -1,6 +1,5 @@
 ;;; early chapters
 
-
 (defun make-row (title artist rating ripped)
   (list :title title :artist artist :rating rating :ripped ripped))
 

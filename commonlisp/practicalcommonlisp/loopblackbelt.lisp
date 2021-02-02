@@ -1,5 +1,6 @@
-;; Today, try to be a blakc belt loop user
-;; tomorrow, write your own loop.
+;;;; I have no idea how a loop dsl can be so complicated...
+;; but it's a way to investigate what doesn it mean to be a loop so...
+;; guess it's worthy.
 
 ;; this is really a zip
 (loop
@@ -273,4 +274,3 @@
 ;; 2. general control clauses (initally, with, for repeat)
 ;; 3. body clauses (conditional/unconditional clauses, accumulation, termination test)
 ;; 4. end with finally
-

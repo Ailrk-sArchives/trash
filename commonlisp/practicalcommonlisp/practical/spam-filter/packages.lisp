@@ -1,8 +1,8 @@
 ;; bayesian spam filter.
 (in-package :cl-user)
 
-(defpackage :com.ailrk.spam
-  (:nickname :spam)
+(defpackage :spam-filter
+  (:nickname :spam-filter)
   (:use :common-lisp
         :com.ailrk.pathnames
         :com.ailr.utilities)
