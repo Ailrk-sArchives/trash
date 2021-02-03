@@ -398,3 +398,8 @@ a.out
 .ccls-cache/
 .clangd/
 .cmake/
+.cm/
+.mlb
+.du
+.ud
+
