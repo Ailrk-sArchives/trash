@@ -94,4 +94,3 @@
   (if (procedure? fn)
       (fn args)                   ;; think, how to warn the user this error
       (error "Not a function")))  ;; as early as possible?
-
