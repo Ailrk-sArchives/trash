@@ -27,6 +27,14 @@ Astm *print_stm(AexprList *exps) {
   return s;
 }
 
+Aexpr *eseq_expr(Astm *stm, Aexpr *expr) {
+  Aexpr *s = (Aexpr *)checked_malloc(sizeof(*s));
+  s->kind = Aeseqexpr;
+  s->u.eseqexpr.stm = stm;
+  s->u.eseqexpr.expr = expr;
+  return s;
+}
+
 Aexpr *id_expr(string id) {
   Aexpr *s = (Aexpr *)checked_malloc(sizeof(*s));
   s->kind = Aidexpr;
@@ -138,6 +146,4 @@ void visit_aexpr(Aexpr *e, void (*fn)(void *)) {
 }
 
 // pretty print the tree.
-static void pretty_print(void *) {
-  static int indent = 0;
-}
+static void pretty_print(void *) { static int indent = 0; }

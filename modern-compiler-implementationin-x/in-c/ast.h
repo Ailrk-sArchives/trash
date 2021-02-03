@@ -32,9 +32,9 @@ void free_astm(Astm *);
 void free_aexprlist(AexprList *);
 void free_aexpr(Aexpr *);
 
-void visit_astm(Astm *, void(*fn)(void *));
-void visit_aexprlist(AexprList *, void(*fn)(void *));
-void visit_aexpr(Aexpr *, void(*fn)(void *));
+void visit_astm(Astm *, void (*fn)(void *));
+void visit_aexprlist(AexprList *, void (*fn)(void *));
+void visit_aexpr(Aexpr *, void (*fn)(void *));
 
 typedef enum AstmTypes { AcompoundStm, AassignStm, AprintStm } AstmTypes;
 struct Astm_ {
@@ -67,6 +67,7 @@ struct Aexpr_ {
   union {
     char *id;
     int num;
+
     struct {
       Aexpr *left;
       Abinop op;
@@ -83,6 +84,7 @@ struct Aexpr_ {
 Aexpr *id_expr(string id);
 Aexpr *num_expr(int num);
 Aexpr *biop_expr(Aexpr *left, Abinop op, Aexpr *right);
+Aexpr *eseq_expr(Astm *stm, Aexpr *expr);
 
 typedef enum { Apairlist, AlastExprList } AexprListTypes;
 struct AexprList_ {
