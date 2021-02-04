@@ -19,10 +19,10 @@ struct
   fun isEmpty ([], []) = true
     | isEmpty _ = false
 
-  fun singleton a = ([], [a])
+    fun singleton a = ([], [a])
 
   fun insert (a, ([], [])) = ([], [a])
-    | insert (a, (ins, outs)) = (a::ins, outs)
+      | insert (a, (ins, outs)) = (a::ins, outs)
 
   fun peek (_, []) = raise QueueError
     | peek (ins, a::outs) = a

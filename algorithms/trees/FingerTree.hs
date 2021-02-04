@@ -27,4 +27,3 @@ data Node a = Node2 a a | Node3 a a a
 data FingerTree a = Empty
                   | Unit a
                   | More (Digit a) (FingerTree (Node a)) (Digit a)
-
