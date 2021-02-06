@@ -1,3 +1,0 @@
-#!/usr/bin/bash
-
-cloc --by-file-by-lang --vcs=git . > report

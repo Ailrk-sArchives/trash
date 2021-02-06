@@ -1,3 +1,0 @@
-# SICP
-
-on going.

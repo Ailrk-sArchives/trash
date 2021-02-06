@@ -1,8 +1,0 @@
-the quick fox did what?
-it jumps over the what?
-the lazy dog!
-(1 2 3)
-456
-"a string" ;comment
-((a b)
-(c d))

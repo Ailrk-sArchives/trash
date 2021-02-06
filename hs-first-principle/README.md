@@ -1,1 +1,0 @@
-Despite the size of the book, I find I'm still not as comfortable with Haskell as I expect after I finished it. But tbf, Haskell is not something you nail with one book anyway. The books introduces some lingo and provides a good starting point.

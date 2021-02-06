@@ -1,5 +1,0 @@
-module NaturalTransformation where
-
-
-
-

@@ -1,4 +1,0 @@
-$(SML_LIB)/basis/basis.mlb
-ast.sml
-util.sml
-main.sml
