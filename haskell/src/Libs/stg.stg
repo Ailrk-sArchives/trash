@@ -1,0 +1,57 @@
+-- define a lambda
+-- each lambda has two argument list
+-- the first one is the list of free variables.
+-- the second one is the list of paramters.
+f = {} \n {a, b, c} -> a + b + c
+
+-- application is tail call
+f {1, 2, 3}
+
+-- case always evaluates.
+-- case uses stack
+seq = {} \n {x, y} -> case x of _ { _DEFAULT_ -> y }
+
+-- let is allocation
+let {
+  v1 = {w, x} \n {y, z} -> ...;
+  v2 =  {w} \n {y} -> ...;
+} in ...
+
+-- calling a constructor is allocation
+-- this code create a I# integer, which will
+-- allocate a heap pointer for the integer.
+con = {} \n {i} -> case +# i 1 of j { _DEFAULT_ -> I# j }
+
+-- Unboxed Types
+-- Int# Word# Double# Float# Char#, (# a, b #) ...
+-- Tuple is useful to allocate multiple variables
+-- without allocate a heap object.
+-- Important for avoiding allocation.
+
+-- Ex
+
+-- haskell map --
+-- map f [] = []
+-- map
+
+-- stg map
+-- \n means everytime map is called, the body of the map will be evaluated
+map = {} \n {f, xs} ->  -- build a new lambda
+
+  case xs of _ {        -- case analysis
+
+    [] {} -> [] {} ;    -- empty case
+
+    : {y, ys} -> let {  -- match on case (y:ys)
+
+      -- create two closures
+      -- \u means the first time it gets executed, the body will be evaluated,
+      -- the result will be  written back to the address the closure is at.
+      -- All other calls of the closure will refer to the value in the address
+      -- instead of reevaluate it again. (lazy eval)
+      fy = {f, y} \u {} -> f {y} ; -- once you call this closure, you apply f to y
+
+      mfys = {f, ys} \u {} -> map {f, ys} -- once you call this closure, you recursively call map with ys.
+
+    } in : {fy, mfys}
+  }

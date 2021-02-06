@@ -1,0 +1,68 @@
+     100 files     106 text files.
+classified 106 filesDuplicate file check 106 files (106 known unique)Unique:      100 files                                               106 unique files.                              
+Counting:  100      65 files ignored.
+
+github.com/AlDanial/cloc v 1.88  T=0.03 s (1677.9 files/s, 146724.4 lines/s)
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+File                                                                                                                                                                 blank        comment           code
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+./dist-newstyle/build/x86_64-linux/ghc-8.8.4/haskellwikibook-0.1.0.0/build/autogen/cabal_macros.h                                                                       22             22            198
+./src/report.html                                                                                                                                                       26              0            160
+./src/PL/Continuation.hs                                                                                                                                                45             50            154
+./src/Other/TicTacToe.hs                                                                                                                                                30             29            127
+./dist-newstyle/build/x86_64-linux/ghc-8.8.4/haskellwikibook-0.1.0.0/x/haskellwikibook-exe/build/haskellwikibook-exe/autogen/cabal_macros.h                             14             14            123
+./src/Types/TypeFam.hs                                                                                                                                                  41             46            114
+./src/Monads/ErrorHandling.hs                                                                                                                                           43            110             92
+./src/Monads/AlternativeandMonadPlus.hs                                                                                                                                 34             88             80
+./src/Concurrent/Concurrent.hs                                                                                                                                          31             74             74
+./src/Monads/MonadTransformerList.hs                                                                                                                                    22             18             67
+./src/Monads/MTLPractise.hs                                                                                                                                             19             33             60
+./src/Monads/MyMTL.hs                                                                                                                                                   23             14             60
+./src/Types/Gadts.hs                                                                                                                                                    33            106             59
+./src/Monads/Arrows.hs                                                                                                                                                  21             14             57
+./src/Libs/Ptrs.hs                                                                                                                                                      10             30             48
+./src/PL/Lam.hs                                                                                                                                                         53             81             46
+./src/Monads/Monads.hs                                                                                                                                                  17             28             45
+./src/Monads/ReadP.hs                                                                                                                                                   15             11             43
+./dist-newstyle/build/x86_64-linux/ghc-8.8.4/haskellwikibook-0.1.0.0/build/autogen/Paths_haskellwikibook.hs                                                              8              0             42
+./dist-newstyle/build/x86_64-linux/ghc-8.8.4/haskellwikibook-0.1.0.0/x/haskellwikibook-exe/build/haskellwikibook-exe/autogen/Paths_haskellwikibook.hs                    8              0             42
+./src/Types/ThinkingWithTypes.hs                                                                                                                                        22             21             37
+./src/Other/AbstractAlgebra.hs                                                                                                                                          33             74             36
+./src/Other/FFI.hs                                                                                                                                                      18             20             32
+./src/Types/LiquidHs.hs                                                                                                                                                 28             46             31
+./src/Other/Testing.hs                                                                                                                                                   8             14             28
+./src/Types/DependentType.hs                                                                                                                                            18             50             28
+./src/Libs/ReadFile.hs                                                                                                                                                   8              4             27
+./src/PL/HOAS.hs                                                                                                                                                        14             13             26
+./src/Libs/Conduits.hs                                                                                                                                                  14             26             22
+./src/Algorithms/MergeSort.hs                                                                                                                                            3              0             17
+./src/Types/Kindness.hs                                                                                                                                                 14             29             17
+./src/Monads/ArrowPractice.hs                                                                                                                                            8             13             14
+./src/Libs/Refs.hs                                                                                                                                                       4              3             13
+./src/PL/ScottEncoding.hs                                                                                                                                                9              6             12
+./src/PL/CoroutinesWithContinuation.hs                                                                                                                                   5              1             10
+./src/GHCs/DeriveVia.hs                                                                                                                                                 14             20              9
+./src/Algorithms/Other.hs                                                                                                                                                2              1              7
+./app/Main.hs                                                                                                                                                            2              0              3
+./ChangeLog.md                                                                                                                                                           1              0              2
+./Setup.hs                                                                                                                                                               0              0              2
+./src/GHCs/Rules.hs                                                                                                                                                      3              6              2
+./src/Libs/StgDumpExperiment.hs                                                                                                                                          5              0              2
+./test/Spec.hs                                                                                                                                                           0              0              2
+./README.md                                                                                                                                                              0              0              1
+./dist-newstyle/cache/plan.json                                                                                                                                          0              0              1
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SUM:                                                                                                                                                                   748           1115           2072
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+Language                     files          blank        comment           code
+-------------------------------------------------------------------------------
+Haskell                         39            685           1079           1587
+C/C++ Header                     2             36             36            321
+HTML                             1             26              0            160
+Markdown                         2              1              0              3
+JSON                             1              0              0              1
+-------------------------------------------------------------------------------
+SUM:                            45            748           1115           2072
+-------------------------------------------------------------------------------
