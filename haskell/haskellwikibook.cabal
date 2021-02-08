@@ -50,11 +50,14 @@ library
       Monads.ArrowPractice
 
       Types.DependentType
+      Types.DependentTypeSing
       Types.LiquidHs
       Types.Gadts
       Types.TypeFam
       Types.Kindness
       Types.ThinkingWithTypes
+      Types.ExSubTyping
+      Types.Ex
 
       PL.Lam
       PL.ScottEncoding
@@ -72,6 +75,9 @@ library
       Other.AbstractAlgebra
       Other.Testing
       Other.FFI
+      Other.TemplateH
+      Other.QQHtml
+      Other.QQHtmlRunner
   other-modules:
       Paths_haskellwikibook
   hs-source-dirs:
@@ -81,6 +87,7 @@ library
     , mtl
     , mmap
     , containers
+    , singletons
     , stm
     , conduit
     , pretty
@@ -88,6 +95,8 @@ library
     , transformers
     , hspec
     , array
+    , template-haskell
+    , parsec
   default-language: Haskell2010
   -- if flag(dump)
   --   ghc-options:
