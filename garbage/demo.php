@@ -6,16 +6,6 @@
   $int1 = 3;
   unset($int1);
 
-  $nowdoc = <<<'END'
-  Multi line
-  string
-  END;
-
-  $heredoc = <<<'END'
-  Multi line
-  string
-  END;
-
   echo "Good" . "Bad" . "\n";
 
   // constant

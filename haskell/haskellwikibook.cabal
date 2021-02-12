@@ -70,6 +70,7 @@ library
       Libs.Conduits
       Libs.StgDumpExperiment
       Libs.Refs
+      Libs.MyArray
 
       Other.TicTacToe
       Other.AbstractAlgebra

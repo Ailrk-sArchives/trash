@@ -119,11 +119,10 @@
 (loop for (item . rest) on '(1 2 3 4 5 6) do
       (format t "~a ~A ~%" item rest))
 
-;; this is the same as
 (loop for cons on '(1 2 3 4 5 6) do
       (format t "~a" (car cons)) when (cdr cons) do
       (format t ", "))
-;; this
+;; above is the same as this
 (loop for (item . rest) on '(1 2 3 4 5 6)
       do (format t "~a" item)
       when rest do (format t ", "))     ;; don't add , after nil.
