@@ -28,7 +28,6 @@
           (setf (elt xs (+ i 1)) key)))
   xs)
 
-
 (defun merge-* (xs p q r)
   (declare (type sequence xs)
            (type number p q r))

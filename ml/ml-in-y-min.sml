@@ -58,12 +58,12 @@ datatype shape
   | Square of loc * real
   | Trig of loc * loc * loc;
 
-fun dist ((x0, y0), (x1, y1)) = let
-  val dx = x1 - x0
-  val dy = y1 - y0;
-                                        in
-                                          Math.sqrt (dx * dx + dy * dy)
-end;
+fun dist ((x0, y0), (x1, y1)) =
+  let
+    val dx = x1 - x0;
+    val dy = y1 - y0;
+  in Math.sqrt (dx * dx + dy * dy)
+end
 
 fun heron (a, b, c) = let
   val ab = dist (a, b)

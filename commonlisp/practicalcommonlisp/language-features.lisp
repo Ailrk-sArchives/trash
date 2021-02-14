@@ -21,9 +21,8 @@
 
   ; apply is the same as funcall, but takes arguments as a list
   (write (apply (lambda (x) (+ x 1)) '(1)))
-  (write (apply #'evenp '(2)))
+  (write (apply #'evenp '(2))))
   ; (funcall evenp 2) this doesn't work because evenp get evaluated.
-  )
 
 
 (defun hello-world ()

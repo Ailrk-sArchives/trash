@@ -1,6 +1,6 @@
 #include <iostream>
 
-// Default allocator from C++ 03
+// default allocator from C++ 03
 template <typename T> struct Allocator {
 
   using size_type = size_t;

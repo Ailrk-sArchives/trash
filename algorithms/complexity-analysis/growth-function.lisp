@@ -2,16 +2,16 @@
 ;; it's complexity. (Asymptotic analysis)
 ;; This approach simplify the work of analyzing algorithm significantly.
 
-;;;; Θ notation
+;;;; Θ notation ;;;;
 ;;  Θ(g(n)) = { f(n) | ∃c₁, c₂ ∈ ℤ⁺ st
 ;;                     0 ≤ c₁g(n) ≤ f(n) ≤ c₂g(n) ∀ n ≥ n₀ }
 ;;  we say g(n) is an asymptotic tight bound of f(n)
 
-;;;; O notation
+;;;; O notation ;;;;
 ;;  O(g(n)) =  { f(n) | ∃c, n₀ st 0 ≤ f(n) ≤ cg(n) ∀ n ≥ n₀ }
 ;;  cg(n) is the upper bound of f(n)
 
-;;;; Ω notation
+;;;; Ω notation ;;;;
 ;; Ω(g(n)) = { f(n) | ∃c, n₀ st o ≤ cg(n) ≤ f(n) ∀ n ≥ n₀ }
 ;; cg(n) is the lower bound of f(n)
 
@@ -22,7 +22,7 @@
 ;; so if g(n) can bound both above and below, apparently f(n) is bounded
 ;; by g(n). So we can analyse the complexity of f(n) by analysing g(n)
 
-;;;; interpretation
+;;;; interpretation ;;;;
 ;; 2n² + 3n + 1 =
 ;; 2n² + θ(n) =
 ;; θ(n²)
@@ -41,23 +41,48 @@
 ;;;; Super slow growth function, iterated logrithm
 ;; lg*n = min {i ≥ 0 | lgⁱn ≤ 1}
 
-
-;;;; How to obtain the order of growth of recurrences algorithm?
-;; three methods
+;;;; How to obtain the order of growth of recurrences algorithm? ;;;;
+;; three methods to find complexity of recurrence algo.
 ;; 1. substitition method
 ;; 2. recursion tree method
 ;; 3. master method
 
-;;;; substitution method
+;;;; Substitution method
 ;; 1. guess a bound
 ;; 2. prove the bound with math induction.
 ;;    - you need to find a proper base case first.
 ;;    - this process is pretty heuristic based.
-;;             1
-;;          +--+--+
-;;         /       \
-;;        /         \
-;;      1/2          1/2
-;;    /    \       /    \
-;;   /      \     /      \
-;; 1/4      1/4 1/4      1/4
+
+;;;;  Recursion tree
+;; 1. draw the tree and do some sloppy analysis to yield a good guess.
+;; 2. use substitution method to proof the guess.
+
+;;;; Master method T(n) = aT(n/b) + f(n)  *
+;; just apply three cases
+;; T(n) = aT(n/b) + f(n)
+
+;;                  log'b(a) - ε                     log'b(a)
+;; case1: f(n) = O(n),  ε > 0           ⇔  T(n) = θ(n)
+
+;;                  log'b(a)                         log'b(a)
+;; case2: f(n) = O(n)                   ⇔  T(n) = θ(n          . lg(n))
+
+;;                  log'b(a) + ε
+;; case3: f(n) = O(n),   ε > 0          ⇔  T(n) = θ(f(n))
+;;                   ,  af(n/b) ≤ cf(n)
+;;                      for c < 1
+;;                      and n large enough
+
+;; Example
+;; 1. T(n) = 9T(n/3) + n:
+;;  a = 9, b = 3, f(n) = n
+;;
+;;   log'3(9)
+;;  n         = θ(n²)
+;;                     log'3(9) - ε
+;;  we find f(n) = O(n             ) where ε = 1
+;;  so we can apply case 1 of master theorem.
+;;
+;;            log'3(9)
+;;  T(n) = θ(n        )  = θ(n²)
+
