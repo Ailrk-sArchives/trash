@@ -1,6 +1,8 @@
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE RankNTypes     #-}
 {-# LANGUAGE TypeFamilies   #-}
 {-# LANGUAGE TypeOperators  #-}
+{-# LANGUAGE LiberalTypeSynonyms #-}
 
 
 -- a group has some elements
@@ -16,8 +18,12 @@ data E1 :: *
 data E2 :: *
 data E3 :: *
 
-type family (a :: * -> *) . (b :: * -> *) where
-  a . _ = a
+type Compose f g x = f (g x)
+
+type family Comp (a :: * -> *) (b :: * -> *) c where
+  Comp a b c = a (b c)
+
+type K a = Int
 
 type family Id a :: * where
   Id E1 = E1
@@ -48,5 +54,3 @@ type family Segma' a :: * where
   Segma' E3 = E2
   Segma' E2 = E1
   Segma' E1 = E3
-
-type TT a = Tau' (Tau' a)
