@@ -9,6 +9,7 @@ template <typename T, typename... Args>
 std::vector<std::unique_ptr<T>> make_uniquevec(const Args... args) {
   std::vector<std::unique_ptr<T>> v;
 
+  // replicate statement, ooh..
   (v.push_back(std::make_unique<T>(args)), ...);
 
   return v;
