@@ -4,9 +4,7 @@
 #include <optional>
 #define Debug
 
-// trees are not necessarily to be represented as nodes, you can also use an
-// array. it's a much more compact way to represent tree.
-//
+// always has the largest element on the top.
 // Property:
 //  1. A binary heap is a complete binary tree,
 //  2. Keys has to be in total order.
@@ -68,7 +66,7 @@ private:
 
   // maintain the invariant.
   bool swim_up(T &o, size_t idx);
-  bool sink_down(T &o, size_t idx);
+  void sink_down(size_t idx);
 
 public:
   BinHeap() : data(), bottom(0) {}
@@ -94,19 +92,12 @@ public:
 template <typename T, size_t Size>
 inline std::optional<size_t> BinHeap<T, Size>::search(const T &o) {
 
-  static std::function<size_t(size_t)> search_ = [&](size_t idx) -> size_t {
-    if (idx >= bottom) {
-      return {};
+  for (size_t i = 0; i <= bottom; ++i) {
+    if (data.at(i) == o) {
+      return i;
     }
-
-    if (o > data.at(idx)) {
-      return search_(right_(idx));
-    } else if (o < data.at(idx)) {
-      return search_(left_(idx));
-    }
-    return idx;
-  };
-  return search_(0);
+  }
+  return {};
 }
 
 // swim up
@@ -126,6 +117,26 @@ bool BinHeap<T, Size>::swim_up(T &o, size_t idx) {
   }
 }
 
+template <typename T, size_t Size>
+void BinHeap<T, Size>::sink_down(size_t idx) {
+  size_t left = left_(idx);
+  size_t right = right_(idx);
+  size_t largest = idx;
+
+  if (in_range(left) && data.at(left) > data.at(largest)) {
+    largest = left;
+  }
+
+  if (in_range(right) && data.at(right) > data.at(largest)) {
+    largest = right;
+  }
+
+  if (largest != idx) {
+    std::swap(data.at(idx), data.at(largest));
+    sink_down(largest);
+  }
+}
+
 template <typename T, size_t Size> inline bool BinHeap<T, Size>::insert(T o) {
   if (is_empty()) {
     data.at(bottom) = o;
@@ -137,7 +148,7 @@ template <typename T, size_t Size> inline bool BinHeap<T, Size>::insert(T o) {
     return false;
   }
 
-  if (!search(o)) {
+  if (search(o)) {
     return false;
   }
 
@@ -155,33 +166,12 @@ inline std::optional<T> BinHeap<T, Size>::extract() {
   }
 
   T top = std::move(data.at(0));
-
   data.at(0) = std::move(data.at(bottom));
-
   bottom--;
 
-  std::function<T(size_t)> sink = [&](size_t idx) {
-    size_t left = left_(idx);
-    size_t right = right_(idx);
-    size_t largest = idx;
+  sink_down(0);
 
-    if (in_range(left) && data.at(left) > data.at(largest)) {
-      largest = left;
-    }
-
-    if (in_range(right) && data.at(right) > data.at(largest)) {
-      largest = right;
-    }
-
-    if (largest != idx) {
-      swap(data.at(idx), data.at(largest));
-      sink(largest);
-    }
-  };
-
-  sink(0);
-
-  return top;
+  return top; // RVO
 }
 
 int main() {
@@ -203,4 +193,21 @@ int main() {
 #ifdef Debug
   heap.print_data();
 #endif
+
+  heap.insert(8);
+  heap.insert(12);
+
+#ifdef Debug
+  heap.print_data();
+#endif
+
+  heap.extract();
+  heap.extract();
+  heap.extract();
+
+#ifdef Debug
+  heap.print_data();
+#endif
+
+  return 0;
 }
