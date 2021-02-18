@@ -42,13 +42,13 @@ mkDList xs = let (first,last) = go last xs first
                               in  (this,last)
 
 
-takef :: Integer -> DList a -> [a]
+takeF :: Integer -> DList a -> [a]
 takeF 0 _                 = []
-takeF n (DLNode _ x next) = x : (takeF (n-1) next)
+takeF n (DLNode _ x next) = x : takeF (n-1) next
 
 takeR :: Integer -> DList a -> [a]
 takeR 0 _                 = []
-takeR n (DLNode prev x _) = x : (takeR (n-1) prev)
+takeR n (DLNode prev x _) = x : takeR (n-1) prev
 
 --         2<.
 --         |  \..
@@ -82,7 +82,7 @@ matchAny = undefined
 ghead :: Graph a -> a
 ghead g | isEmpty g = error "empty graph"
 ghead g = case matchAny g of
-            ((Context _ node _), _) -> node
+            (Context _ node _, _) -> node
 
 
 -- our goal is to patter match on the graph. But we cannot directly do this

@@ -9,6 +9,7 @@ type
 var
   n: Node;
   nodePtr: PNode;
+  i: integer;
 
 function foo(p: PNode): PNode;
 begin
@@ -17,9 +18,12 @@ begin
 end;
 
 begin
+  i := 10;
+
   n.data := 0;
   writeln('before: ', n.data);
   nodePtr := @n;
   foo(nodePtr);
+
   writeln('after: ', n.data);
 end.

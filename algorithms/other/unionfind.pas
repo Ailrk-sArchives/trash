@@ -56,13 +56,23 @@ begin
   get := @pool[i];
 end;
 
-(* rootIdx of root is always the same as itself *)
+(* rootIdx of root is always the same as itself
+ * Trick (path compression)
+ * We can fattern a linked list to a two layer tree
+ * to speed up find
+ *)
 function UnionFind.find(n: PNode): PNode;
+var
+  parent: PNode;
 begin
   if pool[n^.rootIdx].rootIdx = n^.rootIdx then
     find := n
   else
-    find := find(@pool[n^.rootIdx]);
+  begin
+    parent := find(@pool[n^.rootIdx]);
+    pool[n^.rootIdx].rootIdx := parent^.rootIdx;
+    find := parent;
+  end;
 end;
 
 (* find(n)^.rootIdx always give the root itself *)
@@ -103,7 +113,6 @@ begin
 
   writeln('is node 2 and node 8 in the same set? ',
     u.find(u.get(2))^.rootIdx = u.find(u.get(8))^.rootIdx);
-
 end;
 
 begin
