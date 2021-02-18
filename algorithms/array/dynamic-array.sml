@@ -59,7 +59,8 @@ struct
            case n_alloc of
                 NONE => ()
               | SOME(r) => r := (!r) + 1;
-           Array.update (ls, !ptr, SOME(a))) end
+           Array.update (ls, !ptr, SOME(a)))
+        end
 
   (* be careful about recursive polymorphic types *)
   fun push (a, b) = (push_ 1.5 NONE) (a, b);
@@ -68,11 +69,8 @@ struct
     if (!ptr) = 0
     then NONE
     else
-      let
-        val head = Array.sub (!arr, !ptr);
-      in
-        (ptr := (!ptr) - 1;
-         head) end
+      let val head = Array.sub (!arr, !ptr);
+      in (ptr := (!ptr) - 1; head) end
 end
 
 structure Test =

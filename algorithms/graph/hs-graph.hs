@@ -41,7 +41,8 @@ mkDList xs = let (first,last) = go last xs first
                                   (rest,last) = go this xs next
                               in  (this,last)
 
-takeF :: Integer -> DList a -> [a]
+
+takef :: Integer -> DList a -> [a]
 takeF 0 _                 = []
 takeF n (DLNode _ x next) = x : (takeF (n-1) next)
 

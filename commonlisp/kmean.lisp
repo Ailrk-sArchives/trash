@@ -1,5 +1,4 @@
 ; kmean
-
 (defun classify (means data dist-fun)
   (let ((sets (loop for m in means collect '())))
     (loop for d in data do
@@ -13,4 +12,3 @@
     sets))
 
 (+ 1 2)
-
