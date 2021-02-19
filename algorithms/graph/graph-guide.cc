@@ -5,6 +5,15 @@
 #include <unordered_map>
 #include <vector>
 
+// How to represent graph.
+// 1. adjacent matrix
+//    pros:     easy to write, quick query
+//    cons:     super bad space complexity O(mn)
+//              not extensible.
+// 2. adjacent table (hard to write)
+// 3. linked front star (...invented by some acmer, I can't find any offical
+// name)
+
 // different types of graphs
 // 0. GRAPH
 //    a graph is denoted as G(V, E)
@@ -68,10 +77,12 @@ struct PadLockNode {
   }
 
   bool is_allowed(std::pair<int, int> p) {
-    return std::find_if(dead_combinations.begin(), dead_combinations.end(),
-                        [&](auto dp) {
-                          return p.first == dp.first && p.second == dp.second;
-                        }) == dead_combinations.end();
+    auto pred = [&](auto dp) {
+      return p.first == dp.first && p.second == dp.second;
+    };
+    auto first = dead_combinations.begin(), last = dead_combinations.end();
+    auto e = std::find_if(first, last, pred);
+    return e == dead_combinations.end();
   }
 
   auto adjacents() -> std::vector<PadLockNode> {

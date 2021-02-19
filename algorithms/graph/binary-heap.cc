@@ -51,17 +51,15 @@ private:
   struct Parent {
     size_t idx;
     typename decltype(data)::reference value;
-    bool is_left_child;
   };
 
   inline Parent parent_(size_t i) {
     if (i == 0)
-      return {0, data.at(0), false};
+      return {0, data.at(0)};
 
     size_t idx = static_cast<size_t>((i - 1) / 2);
-    bool is_left = (i % 2 == 0);
 
-    return {idx, data.at(idx), is_left};
+    return {idx, data.at(idx)};
   }
 
   // maintain the invariant.
@@ -106,10 +104,9 @@ template <typename T, size_t Size>
 bool BinHeap<T, Size>::swim_up(T &o, size_t idx) {
 
   Parent parent = parent_(idx);
-  bool is_left = parent.is_left_child;
 
   // keep the order invariant.
-  if ((is_left && parent.value < o) || (!is_left && parent.value < o)) {
+  if (parent.value < o || parent.value < o) {
     std::swap(parent.value, o);
     return swim_up(parent.value, parent.idx);
   } else {

@@ -41,23 +41,11 @@
 
 #define lowbit(x) ((x) & (-x))
 
-constexpr int MAXN = 100000;
+template <typename T, size_t Size> class BitTree {
+private:
+  std::array<T, Size> data;
 
-std::array<int, MAXN> tree;
-
-// modify one element.
-inline void update(int i, int x) {
-  for (int pos = i; pos < MAXN; pos += lowbit(pos)) {
-    tree[pos] += x;
-  }
-}
-
-// accumulate sum
-inline int query(int n) {
-  int ans = 0;
-  for (int pos = n; pos; pos -= lowbit(pos))
-    ans += tree[pos];
-  return ans;
-}
-
-inline int query(int a, int b) { return query(b) - query(a - 1); }
+public:
+  BitTree(const std::array<T, Size> &arr) : data(arr) {}
+  BitTree(std::array<T, Size> &&arr) : data(std::move(arr)) {}
+};
