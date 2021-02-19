@@ -43,8 +43,8 @@ private:
   std::array<T, Size> data;
   size_t bottom;
 
-  inline size_t left_(size_t i) { return i * 2 + 1; };
-  inline size_t right_(size_t i) { return i * 2 + 2; };
+  constexpr inline size_t left_(size_t i) noexcept { return i * 2 + 1; };
+  constexpr inline size_t right_(size_t i) noexcept { return i * 2 + 2; };
 
   // given node, we want to know it's parent idx, value, and
   // whether the node is left or right child of the parent.
@@ -78,17 +78,17 @@ public:
   }
 #endif
 
-  inline bool is_full() { return bottom >= data.size() - 1; };
-  inline bool is_empty() { return bottom == 0; };
-  inline bool in_range(size_t i) { return i < data.size(); }
+  inline bool is_full() noexcept { return bottom >= data.size() - 1; };
+  inline bool is_empty() noexcept { return bottom == 0; };
+  inline bool in_range(size_t i) noexcept { return i < data.size(); }
 
   inline bool insert(T o);
-  inline std::optional<T> extract();
-  inline std::optional<size_t> search(const T &o);
+  inline std::optional<T> extract() noexcept;
+  inline std::optional<size_t> search(const T &o) noexcept;
 };
 
 template <typename T, size_t Size>
-inline std::optional<size_t> BinHeap<T, Size>::search(const T &o) {
+inline std::optional<size_t> BinHeap<T, Size>::search(const T &o) noexcept {
 
   for (size_t i = 0; i <= bottom; ++i) {
     if (data.at(i) == o) {
@@ -157,7 +157,7 @@ template <typename T, size_t Size> inline bool BinHeap<T, Size>::insert(T o) {
 
 // sink
 template <typename T, size_t Size>
-inline std::optional<T> BinHeap<T, Size>::extract() {
+inline std::optional<T> BinHeap<T, Size>::extract() noexcept {
   if (is_empty()) {
     return {};
   }
