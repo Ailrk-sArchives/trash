@@ -1,4 +1,6 @@
+#include "template-list.hpp"
 #include <iostream>
+
 // template topological sort
 // get a total ordered list (topological order) from a graph without cycle (a
 // DAG). note a DAG might have multiple topological ordering.
@@ -44,6 +46,11 @@ struct Edge<auto (*)(Node1)->auto (*)(Node2)> {
   using From = Node1;
   using To = Node2;
 };
+
+template <typename T> struct Src { using type = typename T::From; };
+template <typename T> struct Dst { using type = typename T::To; };
+
+template <typename... LS> using Edges = List<Edge<LS>...>;
 
 // simulate GHC pipeline
 //      Say we have this src

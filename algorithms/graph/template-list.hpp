@@ -2,6 +2,8 @@
 
 struct Nil {};
 
+template <typename T> struct Return { using type = T; };
+
 // varadic ...Ts includes on or more, and it's already recursive by itself.
 // there is no need to define a ADT style list.
 template <typename... Ts> struct List {
@@ -44,13 +46,17 @@ struct Filter<Pred, Base, List<T, Ts...>> {
 };
 
 template <template <typename> typename Op, typename I, typename XS>
-struct FoldeR {};
+struct FoldeL : Return<I> {};
 
-template <template <typename> typename Op, typename Acc, typename T, typename ...Ts>
-struct FoldeR <Op, Acc, List<T, Ts...>> {
-  using type = _;
+template <template <typename> typename Op, typename Acc, typename T,
+          typename... Ts>
+struct FoldeL<Op, Acc, List<T, Ts...>>
+    : FoldeL<Op, typename Op<typename Acc::type>::type, List<Ts...>> {};
 
-}
+template <typename E, typename XS> struct Elem {};
+template <typename E, typename... Ts>
+struct Elem<E, List<Ts...>> : std::bool_constant<(std::is_same_v<Ts> || ...)> {
+};
 
 #define typeof(TYPE) static_assert(sizeof(TYPE) == -1)
 

@@ -11,8 +11,7 @@
 // Monotonic queue for sliding window problems.
 // find the biggest value in a subsequence
 //
-// O(n) for querying extrema in an interval. It's better then ST table and
-// segment tree.
+// O(n) for querying extrema in an interval. It's better then ST table and segment tree.
 //
 // The idea is to maintain a deque, and only include elements that are
 // `possible` to be the biggest (smallest) value in the subsequence.
