@@ -46,11 +46,11 @@ struct Filter<Pred, Base, List<T, Ts...>> {
 template <template <typename> typename Op, typename I, typename XS>
 struct FoldeR {};
 
-// template <template <typename> typename Op, typename Acc, typename T, typename ...Ts>
-// struct FoldeR <Op, Acc, List<T, Ts...>> {
-//   using type = _;
+template <template <typename> typename Op, typename Acc, typename T, typename ...Ts>
+struct FoldeR <Op, Acc, List<T, Ts...>> {
+  using type = _;
 
-// }
+}
 
 #define typeof(TYPE) static_assert(sizeof(TYPE) == -1)
 
