@@ -11,8 +11,7 @@
 // Monotonic queue for sliding window problems.
 // find the biggest value in a subsequence
 //
-// O(n) for querying. It's better then ST table and
-// segment tree.
+// O(n) for querying extrema in an interval. It's better then ST table and segment tree.
 //
 // The idea is to maintain a deque, and only include elements that are
 // `possible` to be the biggest (smallest) value in the subsequence.
@@ -183,9 +182,9 @@ template <typename Iter, typename Comp> class monotonic_stack_iterator {
 private:
   using T = typename std::iterator_traits<Iter>::value_type;
   using stack = std::vector<T>;
+  Comp comp;
   stack data;
   Iter first;
-  Comp comp;
 
 public:
   using difference_type = void;
@@ -196,17 +195,13 @@ public:
   using iterator_category = std::input_iterator_tag;
 
   constexpr monotonic_stack_iterator(Iter first, const Comp &comp)
-      : first(first), comp(comp), data() {}
+      : comp(comp), data(), first(first) {}
 
-  template <typename Tag, typename std::enable_if_t<
-                              std::is_same_v<Tag, monotonic_decreasing>>>
-  constexpr monotonic_stack_iterator(Iter first, Tag tag)
+  constexpr monotonic_stack_iterator(Iter first, monotonic_decreasing tag)
       : monotonic_stack_iterator(
             first, [](const auto &a, const auto &b) { return a > b; }) {}
 
-  template <typename Tag, typename std::enable_if_t<
-                              std::is_same_v<Tag, monotonic_increasing>>>
-  constexpr monotonic_stack_iterator(Iter first, Tag tag)
+  constexpr monotonic_stack_iterator(Iter first, monotonic_increasing tag)
       : monotonic_stack_iterator(
             first, [](const auto &a, const auto &b) { return a < b; }) {}
 
@@ -250,17 +245,22 @@ monotonic_stack_iterator(Iter) -> monotonic_stack_iterator<
     Iter, std::function<bool(typename std::iterator_traits<Iter>::value_type,
                              typename std::iterator_traits<Iter>::value_type)>>;
 
+template <typename Iter, typename Tag>
+monotonic_stack_iterator(Iter, Tag) -> monotonic_stack_iterator<
+    Iter, std::function<bool(typename std::iterator_traits<Iter>::value_type,
+                             typename std::iterator_traits<Iter>::value_type)>>;
+
 template <typename Iter, typename Comp>
 constexpr decltype(auto) make_monotonic_stack_iterators(Iter begin, Iter end,
                                                         const Comp &comp) {
-  return std::pair{monotonic_stack_iterator{begin, comp},
-                   monotonic_stack_iterator{end, comp}};
+  return std::pair(monotonic_stack_iterator{begin, comp},
+                   monotonic_stack_iterator{end + 1, comp});
 }
 
-template <typename Iter, typename Tag,
+template <typename Iter, typename Comp, typename Tag,
           typename std::enable_if_t<is_monotonic_iterator_tag<Tag>::value>>
 constexpr decltype(auto) make_monotonic_stack_iterators(Iter begin, Iter end,
                                                         Tag tag) {
-  return std::pair{monotonic_stack_iterator{begin, tag},
-                   monotonic_stack_iterator{end, tag}};
+  return std::pair(monotonic_stack_iterator{begin, tag},
+                   monotonic_stack_iterator{end + 1, tag});
 }

@@ -5,7 +5,7 @@
 // 2. Recursively merge 2 sublists until there is only 1 list remain.
 
 // define list.
-struct Nil {};        // a empty type.
+struct Nil {}; // a empty type.
 // define structure of List.
 // value needs to be defined as constexpr,
 // type can just be bind with a name with using.
@@ -39,8 +39,10 @@ template <typename Then, typename Else> struct if_<true, Then, Else> {
 //
 // base case.
 template <typename L> struct Split {};
+
 // ues template <> when matching with concrete value
 template <> struct Split<Nil> { using type = Pair<Nil, Nil>; };
+
 // a is polymorhpic parameter thus need a forall to specify.
 template <int a> struct Split<List<a, Nil>> {
   using type = Pair<List<a, Nil>, Nil>;
