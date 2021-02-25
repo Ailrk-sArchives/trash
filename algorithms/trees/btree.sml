@@ -1,4 +1,3 @@
-
 signature BTREE =
 sig
   datatype tree  = Leaf | Tree of tree * int * tree;

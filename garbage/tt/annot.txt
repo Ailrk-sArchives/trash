@@ -1,0 +1,150 @@
+ID	Bioinformatic_ID	FLAG	ORF	Name	Oncogenic	Pathway
+1	Cyclin_B1-R-V		CCNB1	Cyclin_B1	1	Mitosis
+2	ACC1-R-C	Caution	ACACA	ACC1		Metabolism
+3	S6_pS240_S244-R-V		RPS6	S6_pS240_S244	1	mTOR
+4	MSH6-R-C	Caution	MSH6	MSH6	1	DNA_Repair
+5	ACC_pS79-R-V		ACACA	ACC_pS79		Metabolism
+6	Bcl-2-M-V		BCL2	Bcl-2	1	Apoptosis
+7	MSH2-M-C	Caution	MSH2	MSH2	1	DNA_Repair
+8	Rb_pS807_S811-R-V		RB1	Rb_pS807_S811		Mitosis
+9	PCNA-M-V		PCNA	PCNA	1	Hormone
+10	4E-BP1-R-V		EIF4EBP1	4E-BP1	-1	mTOR
+11	Chk2-M-C	Caution	CHEK2	Chk2	-1	Mitosis
+12	EGFR_pY1068-R-V		EGFR	EGFR_pY1068	1	mTOR
+13	HER3-R-V		ERBB3	HER3	1	mTOR
+14	ASNS-R-NA_GBL9021138		ASNS	ASNS		Miscellaneous
+15	S6_pS235_S236-R-V		RPS6	S6_pS235_S236	1	mTOR
+16	4E-BP1_pS65-R-V		EIF4EBP1	4E-BP1_pS65	1	mTOR
+17	PKC-alpha-M-V		PRKCA	PKC-alpha		Miscellaneous
+18	eEF2K-R-V		EEF2	eEF2K	1	Miscellaneous
+19	AIB1-M-V		NCOA3	AIB1	1	Jak_STAT
+20	c-Myc-R-C	Caution	MYC	c-Myc		Miscellaneous
+21	mTOR-R-C	Caution	MTOR	mTOR	1	mTOR
+22	eIF4E-R-V		EIF4E	eIF4E	1	mTOR
+23	NF-kB-p65_pS536-R-C	Caution	NFKB1	NF-kB-p65_pS536	1	NF_KAPPA_B
+24	Smac-M-V		DIABLO	Smac	-1	Apoptosis
+25	eEF2-R-V		EEF2	eEF2		Miscellaneous
+26	Rad50-M-C	Caution	RAD50	Rad50		DNA_Repair
+27	Notch1-R-V		NOTCH1	Notch1	1	Notch
+28	AXL_pT702-R-NA_GBL9021151		AXL	AXL_pT702		Miscellaneous
+29	XRCC1-R-C	Caution	XRCC1	XRCC1		DNA_Repair
+30	VASP-R-C	Caution	VASP	VASP		Miscellaneous
+31	Claudin-7-R-V		CLDN7	Claudin-7		Adhesion
+32	YAP-R-V		YAP1	YAP	1	Apoptosis
+33	Src_pY416-R-C	Caution	SRC	Src_pY416	1	Jak_STAT
+34	AXL-M-NA_GBL9021150		AXL	AXL		Miscellaneous
+35	Bim-R-V		BID	Bim	-1	Apoptosis
+36	Cyclin_E1-M-V		CCNE1	Cyclin_E1	1	Mitosis
+37	p53-R-V		TP53	p53	-1	Mitosis
+38	PI3K-p110-alpha-R-C	Caution	PIK3CA	PI3K-p110-alpha	1	mTOR
+39	PARP_cleaved-M-C	Caution	PARP1	PARP_cleaved	-1	Apoptosis
+40	Snail-M-C	Caution	SNAI2	Snail		Miscellaneous
+41	Smad1-R-V		SMAD1	Smad1		Miscellaneous
+42	GSK3-alpha-beta_pS21_S9-R-V		GSK3A	GSK3-alpha-beta_pS21_S9	1	mTOR
+43	INPP4B-G-C	Caution	INPP4B	INPP4B		Miscellaneous
+44	IRS1-R-V		IRS1	IRS1	1	mTOR
+45	PKC-alpha_pS657-R-V		PRKCA	PKC-alpha_pS657		Miscellaneous
+46	PRAS40_pT246-R-V		AKT1S1	PRAS40_pT246	1	mTOR
+47	Tuberin-R-C	Caution	TSC2	Tuberin	-1	mTOR
+48	PR-R-V		PGR	PR	1	Hormone
+49	GSK3_pS9-R-V		GSK3A	GSK3_pS9	1	mTOR
+50	CDK1-R-V		CDC2	CDK1	-1	Mitosis
+51	c-Kit-R-V		KIT	c-Kit	1	mTOR
+52	E-Cadherin-R-V		CDH1	E-Cadherin	-1	Adhesion
+53	Akt_pT308-R-V		AKT1	Akt_pT308	1	mTOR
+54	p70S6K-R-V		RPS6KB1	p70S6K	1	mTOR
+55	Smad3-R-V		SMAD3	Smad3		Miscellaneous
+56	Bcl-xL-R-V		BCL2L1	Bcl-xL	1	Apoptosis
+57	Caspase-3_active-R-C	Caution	CASP3	Caspase-3_active	-1	Apoptosis
+58	alpha-Catenin-M-V		CTNNA1	alpha-Catenin		Miscellaneous
+59	mTOR_pS2448-R-C	Caution	MTOR	mTOR_pS2448	1	mTOR
+60	p90RSK_pT359_S363-R-C	Caution	RPS6KB1	p90RSK_pT359_S363	1	mTOR
+61	Caveolin-1-R-V		CAV1	Caveolin-1	-1	MAPK
+62	TIGAR-R-V_GBL9021153		C12orf5	TIGAR		Miscellaneous
+63	Stathmin-R-V		STMN1	Stathmin		Miscellaneous
+64	EGFR_pY992-R-V		EGFR	EGFR_pY992	1	mTOR
+65	MIG-6-M-V		ERRFI1	MIG-6	-1	mTOR
+66	C-Raf-R-V		RAF1	C-Raf	1	MAPK
+67	XIAP-R-C	Caution	XIAP	XIAP	1	Apoptosis
+68	Chk2_pT68-R-C	Caution	CHEK2	Chk2_pT68	-1	Mitosis
+69	HER3_pY1298-R-C	Caution	ERBB3	HER3_pY1298	1	mTOR
+70	beta-Catenin-R-V		CTNNB1	beta-Catenin	1	Hormone
+71	Rb-M-V		RB1	Rb	-1	Mitosis
+72	Chk1_pS345-R-C	Caution	CHEK1	Chk1_pS345	-1	Mitosis
+73	TFF1-R-V_GBL9021148		TFF1	TFF1		Apoptosis
+74	p27_pT157-R-C	Caution	CDKN1B	p27_pT157	-1	Mitosis
+75	c-Jun_pS73-R-C	Caution	JUN	c-Jun_pS73		Miscellaneous
+76	p27-R-V		CDKN1B	p27	-1	Mitosis
+77	53BP1-R-C	Caution	TP53BP1	53BP1	-1	Mitosis
+78	C-Raf_pS338-R-C	Caution	RAF1	C-Raf_pS338	1	MAPK
+79	Rab25-R-C	Caution	RAB25	Rab25		Miscellaneous
+80	HER2_pY1248-R-V		ERBB2	HER2_pY1248	1	mTOR
+81	PDK1_pS241-R-V		PDK1	PDK1_pS241	1	mTOR
+82	Caspase-7_cleavedD198-R-C	Caution	CASP7	Caspase-7_cleavedD198	-1	Apoptosis
+83	EGFR-R-C	Caution	EGFR	EGFR	1	mTOR
+84	JNK_pT183_Y185-R-NA	Caution	MAPK9	JNK_pT183_Y185	1	Miscellaneous
+85	IGF-1R-beta-R-C	Caution	IGF1R	IGF-1R-beta	1	mTOR
+86	p70S6K_pT389-R-V		RPS6KB1	p70S6K_pT389	1	mTOR
+87	GSK3-alpha-beta-M-V		GSK3A	GSK3-alpha-beta	-1	mTOR
+88	AMPK_alpha-R-C	Caution	PRKAA1	AMPK_alpha	-1	mTOR
+89	Rad51-M-C	Caution	RAD51	Rad51		DNA_Repair
+90	NF2-R-C	Caution	NF2	NF2	-1	MAPK
+91	TAZ_pS89-R-C	Caution	WWTR1	TAZ_pS89		Miscellaneous
+92	N-Cadherin-R-V		CDH2	N-Cadherin		Adhesion
+93	GATA3-M-V		GATA3	GATA3		Miscellaneous
+94	ERCC1-M-C	Caution	ERCC1	ERCC1		Miscellaneous
+95	FOXO3a-R-C	Caution	FOXO3	FOXO3a	-1	mTOR
+96	ER-alpha_pS118-R-V		ESR1	ER-alpha_pS118	1	Hormone
+97	JNK2-R-C	Caution	MAPK9	JNK2	1	Miscellaneous
+98	Bcl-X-R-C	Caution	BCL2L1	Bcl-X	1	Apoptosis
+99	Collagen_VI-R-V		COL6A1	Collagen_VI		Adhesion
+100	Bad_pS112-R-V_GBL9020977		BAD	Bad_pS112		Miscellaneous
+101	Chk1-R-C		CHEK1	Chk1	-1	Mitosis
+102	Tau-M-C	Caution	MAPT	Tau		Miscellaneous
+103	Beclin-G-V		BECN1	Beclin		Autophagy
+104	Bak-R-C	Caution	BAK1	Bak	-1	Apoptosis
+105	YB-1-R-V		YBX1	YB-1	1	Adhesion
+106	P-Cadherin-R-C	Caution	CDH3	P-Cadherin		Adhesion
+107	VEGFR2-R-V		KDR	VEGFR2	1	Angiogenesis
+108	DJ-1-R-C	Caution	PARK7	DJ-1	1	Hormone
+109	FOXO3a_pS318_S321-R-C	Caution	FOXO3	FOXO3a_pS318_S321	1	mTOR
+110	c-Met_pY1235-R-C	Caution	Met	c-Met_pY1235	1	mTOR
+111	PI3K-p85-R-V		PIK3R1	PI3K-p85	1	mTOR
+112	p27_pT198-R-V		CDKN1B	p27_pT198	-1	Mitosis
+113	Cyclin_D1		CCND1	Cyclin_D1	1	Mitosis
+114	Src-M-V		SRC	Src	1	Jak_STAT
+115	MEK1-R-V		MAP2K1	MEK1	1	MAPK
+116	Notch3-R-C	Caution	NOTCH3	Notch3	1	Notch
+117	AMPK_pT172-R-V		PRKAA1	AMPK_pT172	-1	mTOR
+118	STAT5-alpha-R-V		STAT5A	STAT5-alpha	1	Jak_STAT
+119	Mre11-R-C	Caution	MRE11A	Mre11		Miscellaneous
+120	COX-2-R-C	Caution	PTGS2	COX-2		Miscellaneous
+121	cIAP-R-V		BIRC2	cIAP	-1	Mitosis
+122	p38_MAPK-R-C	Caution	MAPK14	p38_MAPK		Miscellaneous
+123	HER2-M-V		ERBB2	HER2	1	mTOR
+124	EGFR_pY1173-R-C	Caution	EGFR	EGFR_pY1173	1	mTOR
+125	Bax-R-V		BAX	Bax	-1	Apoptosis
+126	c-Met-M-C	Caution	MET	c-Met	1	mTOR
+127	Bid-R-C	Caution	BID	Bid	-1	Apoptosis
+128	YAP_pS127-R-C	Caution	YAP1	YAP_pS127	1	Apoptosis
+129	Caspase-9_cleavedD330-R-C	Caution	CASP9	Caspase-9_cleavedD330	-1	Apoptosis
+130	MEK1_pS217_S221-R-V		MAP2K1	MEK1_pS217_S221	1	MAPK
+131	Dvl3-R-V		DVL3	Dvl3	1	Hormone
+132	PTCH-R-C	Caution	PTCH1	PTCH	1	Hedgehog
+133	ER-alpha-R-V		ESR1	ER-alpha	1	Hormone
+134	Src_pY527-R-V		SRC	Src_pY527	-1	Jak_STAT
+135	p38_pT180_Y182-R-V		MAPK14	p38_pT180_Y182		Miscellaneous
+136	AR-R-V		AR	AR	1	Hormone
+137	IGFBP2-R-V		IGFBP2	IGFBP2	1	mTOR
+138	Annexin_I-R-V		ANXA1	Annexin		Miscellaneous
+139	PTEN-R-V		PTEN	PTEN	1	mTOR
+140	FAK-R-C		PTK2	FAK	1	mTOR
+141	YB-1_pS102-R-V		YBX1	YB-1_pS102	1	Adhesion
+142	STAT3_pY705-R-V		STAT3	STAT3_pY705	1	Jak_STAT
+143	Rab11-R-V		RAB11A	Rab11		Miscellaneous
+144	Akt_pS473-R-V		AKT1	Akt_pS473	1	mTOR
+145	Paxillin-R-V		PXN	Paxillin		mTOR
+146	p21-R-C	Caution	CDKN1B	p21	-1	Mitosis
+147	Fibronectin-R-C	Caution	FN1	Fibronectin		Adhesion
+148	Syk-M-V		SYK	Syk		Miscellaneous
+149	Akt-R-V		AKT1	Akt	1	mTOR

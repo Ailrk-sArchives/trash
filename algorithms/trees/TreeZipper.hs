@@ -128,11 +128,11 @@ toTree z = case toRoot z of
              IsTZ (TreeZipper t _) -> t
 
 moveLeft :: TreeZipper a -> MaybeTreeZipper a
-moveLeft (TreeZipper (Branch x l r) bs) = IsTZ $ TreeZipper l ((TreeLeft x r) : bs)
+moveLeft (TreeZipper (Branch x l r) bs) = IsTZ $ TreeZipper l (TreeLeft x r : bs)
 moveLeft (TreeZipper Leaf _) = NotTZ
 
 moveRight :: TreeZipper a -> MaybeTreeZipper a
-moveRight (TreeZipper (Branch x l r) bs) = IsTZ $ TreeZipper r ((TreeRight x l) : bs)
+moveRight (TreeZipper (Branch x l r) bs) = IsTZ $ TreeZipper r (TreeRight x l : bs)
 moveRight (TreeZipper Leaf _) = NotTZ
 
 moveUp :: TreeZipper a -> MaybeTreeZipper a
@@ -144,7 +144,7 @@ modify f (TreeZipper (Branch x l r) bs) = TreeZipper (Branch (f x) l r) bs
 modify _ (TreeZipper Leaf bs)           = TreeZipper Leaf bs
 
 set :: a -> TreeZipper a -> TreeZipper a
-set a t = modify (const a) t
+set a = modify (const a)
 
 attach :: BinaryTree a -> TreeZipper a -> TreeZipper a
 attach t (TreeZipper Leaf bs) = TreeZipper t bs

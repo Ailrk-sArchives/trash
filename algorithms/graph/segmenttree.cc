@@ -21,8 +21,8 @@
 //
 // Analysis:
 //  Index:
-//    If represent the tree with an array, let the root node be d[1], then we have
-//    left child d[2i], right child d[2i+1].
+//    If represent the tree with an array, let the root node be d[1], then we
+//    have left child d[2i], right child d[2i+1].
 //
 //  Space:
 //    let n be number of leaves.
@@ -31,7 +31,6 @@
 //    full binary tree =>    total # of nodes = 2^(log(n) + 1) - 1
 //
 //  imperical value for n: set length = 4n
-
 
 template <typename T, size_t Size> class SegTree {
 private:
