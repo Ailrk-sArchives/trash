@@ -73,6 +73,12 @@ R lengthCPS(T a, Fn k) {
   return k(a.size());
 }
 
+template <typename T, typename Fn,
+          typename R = typename lambda_traits<Fn>::return_type>
+std::function<R(T)> makeCPS(Fn g) {
+  return [](auto x, auto g) { return g(f(x)); };
+}
+
 auto id = [](auto a) { return a; };
 
 int main(void) {
@@ -82,9 +88,7 @@ int main(void) {
   auto a = doubleCPS(10, [](int a) {
     return doubleCPS(a, [](int b) {
       return stringCPS(b, [](std::string c) {
-        return lengthCPS(c, [](int sz) {
-          return sz;
-        });
+        return lengthCPS(c, [](int sz) { return sz; });
       });
     });
   });

@@ -202,6 +202,7 @@
     nil))
 
 ; shift value one to the right.
+;; a = 10, b = a
 (defun try-shift (a b)
   (shiftf a b 10)
   (list a b))
