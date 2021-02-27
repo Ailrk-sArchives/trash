@@ -15,7 +15,7 @@ data Node = Tag String [Node]
 
 -- first defien a normal parser
 textNode :: Parser Node
-textNode = Text <$> (many1 $ satisfy (/= '<'))
+textNode = Text <$> many1 (satisfy (/= '<'))
 
 tagNode :: Parser Node
 tagNode = do

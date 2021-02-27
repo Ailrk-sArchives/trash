@@ -48,6 +48,7 @@ library
       Monads.ReadP
       Monads.Arrows
       Monads.ArrowPractice
+      Monads.FreeMonad
 
       Types.DependentType
       Types.DependentTypeSing

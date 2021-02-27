@@ -30,6 +30,11 @@ addA' f g = arr (\x -> (x, x)) >>>
   first g >>> arr (\(z, y) -> y + z)
 
 addA'' :: Arrow a => a b Int -> a b Int -> a b Int
-addA'' f g = f &&& g >>> arr (\ (y, z) -> y + z)
+addA'' f g = f &&& g >>> arr (uncurry (+))
+
+
+{-@ Mini arrow tutorial from
+    https://stackoverflow.com/questions/4191424/what-are-arrows-and-how-can-i-use-them
+@-}
 
 {-@ Circuit practice from haskell wiki @-}

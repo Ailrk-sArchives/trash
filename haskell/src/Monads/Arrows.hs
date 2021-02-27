@@ -1,9 +1,10 @@
-{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE DeriveFunctor      #-}
 {-# LANGUAGE DeriveGeneric      #-}
 {-# LANGUAGE GADTs              #-}
 {-# LANGUAGE PolyKinds          #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -fenable-rewrite-rules #-}
+{-# OPTIONS_GHC -Wno-inline-rule-shadowing #-}
 module Monads.Arrows where
 
 {-@ Arrow, new abstracation!
@@ -33,9 +34,9 @@ class Category cat where
 -- rewrite rules, helps you to optimize your program.
 -- rule name + rule form
 {-# RULES
-"identity/left"  forall p . id . p = p
-"identity/right" forall p . p . id = p
-"association"    forall p q r . (p . q) . r = p . (q . r)
+"identity/left"  forall p. id . p = p
+"identity/right" forall p. p . id = p
+"association"    forall p q r. (p . q) . r = p . q . r
 #-}
 
 instance Category (->) where
@@ -77,8 +78,9 @@ class Category a => Arrow a where
 
 -- some nice optimization
 {-# RULES
-"compose/arr"   forall f g . (arr f) . (arr g) = arr (f . g)
+"compose/arr"   forall f g . arr f . arr g = arr (f . g)
 #-}
+
 
 instance Arrow (->) where
   arr f = f
