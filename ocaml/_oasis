@@ -14,3 +14,9 @@ Plugins: META (0.4), DevFiles (0.4)
 Executable "dfs"
   Path: .
   MainIs: dfs.ml
+
+Executable "gdemo"
+  Path: .
+  MainIs: gdemo.ml
+  BuildDepends:
+    graphics

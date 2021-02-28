@@ -73,6 +73,7 @@ library
       Libs.Refs
       Libs.MyArray
 
+      Other.Defunctionalization
       Other.TicTacToe
       Other.AbstractAlgebra
       Other.Testing

@@ -13,3 +13,4 @@ template <typename T> void say(T t) {
   std::cout << value << std::endl;
   std::cout << "  " << t << std::endl;
 }
+

@@ -40,7 +40,7 @@ curryN n = do
   f <- newName "f"
   xs <- replicateM n (newName "x")
   let args = map VarP (f:xs)
-      ntup = TupE (map VarE xs)
+      ntup = TupE (map  (Just . VarE) xs)
   return $ LamE args (AppE (VarE f) ntup)
 
 -- use abstract syntax directly
