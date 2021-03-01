@@ -5,6 +5,7 @@
 -- https://www.youtube.com/watch?v=vNwukfhsOME
 -- https://ncatlab.org/nlab/show/defunctionalization
 -- https://homepages.inf.ed.ac.uk/wadler/papers/papers-we-love/reynolds-definitional-interpreters-1998.pdf
+-- http://www.mlton.org/References.attachments/060916-mlton.pdf
 
 -- Def: convert higher order function in to data type.
 -- so you don't have higher order fuction in the program
