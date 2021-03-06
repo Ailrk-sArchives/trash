@@ -52,7 +52,7 @@ Engine Facts:
     Executing via Engine directly is called connectionless exection.
     Engine connect and disconect for us.
 
-    Using Connection is explict execution. we control thhe span of
+    Using Connection is explict execution. we control the span of
     a connection in use.
 
     Engine ususally use a connection pool, which means "disconecting"
