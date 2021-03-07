@@ -36,8 +36,9 @@ void free_write_req(uv_write_t *req) {
 void on_stdout_write(uv_write_t *req, int status) { free_write_req(req); }
 void on_file_write(uv_write_t *req, int status) { free_write_req(req); }
 
-// copy the data from buf to dest.
 void write_data(uv_stream_t *dest, ssize_t size, uv_buf_t buf, uv_write_cb cb) {
+  // copy the data from buf to dest.
+  // once the data is copied, buf is no only required.
   write_req_t *req = (write_req_t *)malloc(sizeof(write_req_t));
   char *mem = (char *)malloc(size);
   req->buf = uv_buf_init(mem, size);
@@ -51,6 +52,7 @@ void read_stdin(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
   if (nread < 0) {
     if (nread == UV_EOF) {
       // end of file
+      // uv_close is a generic close function to close all types of handles.
       uv_close((uv_handle_t *)&stdin_pipe, NULL);
       uv_close((uv_handle_t *)&stdout_pipe, NULL);
       uv_close((uv_handle_t *)&file_pipe, NULL);
@@ -61,6 +63,7 @@ void read_stdin(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
     write_data((uv_stream_t *)&file_pipe, nread, *buf, on_file_write);
   }
 
+  // free the buffer one read.
   if (buf->base) {
     free(buf->base);
   }
@@ -77,6 +80,7 @@ int main(int argc, char *argv[]) {
   uv_pipe_open(&stdout_pipe, 1); // open fd 1. The pipe is writeable.
 
   uv_fs_t file_req; // create a file handle
+
   // just open the file. set callback to NULL so no function will be called.
   int fd = uv_fs_open(loop, &file_req, argv[1], O_CREAT | O_RDWR, 0644, NULL);
 
@@ -102,6 +106,8 @@ int main(int argc, char *argv[]) {
   uv_pipe_open(&file_pipe, fd);
 
   // uv_read_start is a stream handle to read an incoming stream.
+  // it will keep reading data until no more to read.
+  // each time read new data, it calls the alloc_buffer to store the data.
   uv_read_start((uv_stream_t *)&stdin_pipe, alloc_buffer, read_stdin);
 
   uv_run(loop, UV_RUN_DEFAULT);

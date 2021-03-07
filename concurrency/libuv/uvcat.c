@@ -45,7 +45,7 @@ void on_read(uv_fs_t *req) {
 
 // open handler
 void on_open(uv_fs_t *req) {
-  assert(req == &open_req);
+  assert(req == &open_req);   // this is the same req we passed to uv_fs_open.
 
   if (req->result >= 0) {
     iov = uv_buf_init(buffer, sizeof(buffer));
