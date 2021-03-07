@@ -1,0 +1,9 @@
+Sometext
+some more text
+These text are written with libuv.
+We created three pipes first.
+stdin, stdout, and fileppipe
+of cousethe file pipe pipes to this file.
+the program's stdin will read stuffs, and write them to stdout
+where the stdout is redirected to file's fd 0.
+pretty neet

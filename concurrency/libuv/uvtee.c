@@ -43,6 +43,7 @@ void write_data(uv_stream_t *dest, ssize_t size, uv_buf_t buf, uv_write_cb cb) {
   req->buf = uv_buf_init(mem, size);
   memcpy(req->buf.base, buf.base, size);
 
+  // libuv's generic stream write function. write req->buf to req.
   uv_write((uv_write_t *)req, (uv_stream_t *)dest, &req->buf, 1, cb);
 }
 
@@ -66,20 +67,41 @@ void read_stdin(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
 }
 
 int main(int argc, char *argv[]) {
-  loop = uv_default_loop();
+  loop = uv_default_loop(); // create event loop.
 
+  // create a pipe. 0 indicates no ipc.
   uv_pipe_init(loop, &stdin_pipe, 0);
-  uv_pipe_open(&stdin_pipe, 0);
+  uv_pipe_open(&stdin_pipe, 0); // open fd 0. the pipe is readable.
 
   uv_pipe_init(loop, &stdout_pipe, 0);
-  uv_pipe_open(&stdout_pipe, 1);
+  uv_pipe_open(&stdout_pipe, 1); // open fd 1. The pipe is writeable.
 
-  uv_fs_t file_req;
+  uv_fs_t file_req; // create a file handle
+  // just open the file. set callback to NULL so no function will be called.
   int fd = uv_fs_open(loop, &file_req, argv[1], O_CREAT | O_RDWR, 0644, NULL);
 
   uv_pipe_init(loop, &file_pipe, 0);
-  uv_pipe_open(&file_pipe, 0);
+  // open fd to fd.
+  // the fd I tried is always 10. here is the fd table for proc/<pid>/fd:
+  //
+  // 0 -> /dev/pts/24
+  // 1 -> /dev/pts/24
+  // 2 -> /dev/pts/24
+  // 3 -> 'anon_inode:[eventpoll]'
+  // 4 -> 'pipe:[10332419]'
+  // 5 -> 'pipe:[10332419]'
+  // 6 -> 'pipe:[10332420]'
+  // 7 -> 'pipe:[10332420]'
+  // 8 -> 'anon_inode:[eventfd]'
+  // 9 -> /dev/null
+  // 10 -> /home/jimmy/newDisk/Repo/misc/concurrency/libuv/good1
+  //
+  // we can see fd 0, 1, 2 all open to /dev/pts/24, which is our terminal.
+  // other than these three, there are also bunch of other file descriptors
+  // being used before we get our fd for the file.
+  uv_pipe_open(&file_pipe, fd);
 
+  // uv_read_start is a stream handle to read an incoming stream.
   uv_read_start((uv_stream_t *)&stdin_pipe, alloc_buffer, read_stdin);
 
   uv_run(loop, UV_RUN_DEFAULT);
