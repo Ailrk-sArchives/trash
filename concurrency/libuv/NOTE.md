@@ -35,10 +35,3 @@ We already saw in libuv we register a callback to handle the result. But why not
 We can think the watcher takes the continuation of the rest of our main thread. It not really because while it's waiting for task done the main thread is free to whatever. But once its' done it will invoke the continuation pass in earlier, our main thread will continue by the callback setup earlier.
 
 One noticeable difference from normal continuation is that now multiple watchers takes the continuation at the same time. They run task on another thread (not necessarily but they can), and don't invoke the continuation right ahead. Instead they put the continuation on the queue and let the main thread jump into the continuation by polling over the queue.
-
-
-#### About libuv
-
-Libuv provides the underlying facilities of the evenloop we described above. A looping mechanism loop over the queue and fetch tasks to run.
-
-
