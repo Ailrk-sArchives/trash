@@ -12,17 +12,20 @@ uv_fs_t read_req;
 uv_fs_t write_req;
 
 static char buffer[1024];
+
+// uv_buf_t can be cast to iovec.
 static uv_buf_t iov;
 
 void on_write(uv_fs_t *req) {
   if (req->result < 0) {
-
     // if an error occur, the result will be the error code.
     fprintf(stderr, "Write error: %s\n", uv_strerror((int)req->result));
+
   } else {
     // write to the opened file, which is open_req.result.
     uv_fs_read(uv_default_loop(), &read_req, open_req.result, &iov, 1, -1,
                on_read);
+
   }
 }
 
