@@ -61,14 +61,14 @@ mysqrtCPS a k = k (sqrt a)
 
 fact :: Integral a => a -> a
 fact 0 = 1
-fact n = n * (fact $ n - 1)
+fact n = n * fact (n - 1)
 
 factCPS :: Integral a => a -> (a -> r) -> r
 factCPS 0 k = k 1
-factCPS n k = k (n * (fact $ n - 1) )
+factCPS n k = k (n * fact (n - 1))
 
 main :: IO ()
-main = putStrLn . show $ factCPS 10 (\a -> mysqrtCPS (fromIntegral a) id)
+main = print $ factCPS 10 (\a -> mysqrtCPS (fromIntegral a) id)
 
 -- intermediate structures
 multiCont :: [(r -> a) -> a] -> ([r] -> a) -> a
@@ -80,8 +80,8 @@ withCStringArray0 strings act =
 -- write some functions in continuation passing style.
 pythagorasCPS :: Int -> Int -> Cont r Int
 pythagorasCPS x y = do
-  xsquared <- pure $ (x ^ 2)
-  ysqyared <- pure $ (y ^ 2)
+  let xsquared = x ^ 2
+  let ysqyared = y ^ 2
   s <- add_cont xsquared ysqyared
   fmap floor (sqrt_cont $ fromIntegral s)
   where
@@ -101,9 +101,10 @@ gcdCPS x y = if y == 0 then return x else do
 
 lcmCPS :: Int -> Int -> Cont r Int
 lcmCPS x y  = do
-  mul_cont x y >>= \m -> abs_cont m >>= \a -> do
+  mul_cont x y >>=
+    (abs_cont >=> \a -> do
     gcd <- gcdCPS x y
-    div_cont a gcd
+    div_cont a gcd)
   where
     abs_cont :: Int -> Cont r Int
     abs_cont x = pure ((\x -> if x >= 0 then x else negate x) x)
@@ -115,10 +116,10 @@ lcmCPS x y  = do
 -- write it without make everthing cps.
 lcmCPS' :: Int -> Int -> Cont r Int
 lcmCPS' x y = do
-  m <- pure $ (x * y)
-  a <- pure $ (abs m)
+  let m = x * y
+      a = abs m
   gcd <- gcdCPS x y
-  return $ (a `div` gcd)
+  return (a `div` gcd)
 
 {-@ continuation monad @-}
 -- let's define our own continuation monad.
@@ -159,14 +160,14 @@ fun n = (`runCont` id) $ do
     when (n < 10) (exit1 (show n))
     let ns = map digitToInt (show (n `div` 2))
     n' <- callCC $ \exit2 -> do           -- define exit2
-      when ((length ns) < 3) (exit2 (length ns))
-      when ((length ns) < 5) (exit2 n)
-      when ((length ns) < 7) $
+      when (length ns < 3) (exit2 (length ns))
+      when (length ns < 5) (exit2 n)
+      when (length ns < 7) $
         do let ns' = map intToDigit (reverse ns)
            exit1 (dropWhile (=='0') ns')   -- escape 2 levels
       return $ sum ns
 
-    return $ "(ns = " ++ (show ns) ++ ")" ++ (show n')
+    return $ "(ns = " ++ show ns ++ ")" ++ show n'
   return $ "Answer: " ++ str
 
 
@@ -206,7 +207,7 @@ loopyWithcallCC = do
   flip runContT return $ do
     k <- getCC  -- goto
     traverse liftIO [ (putStrLn "Hello1"), modifyIORef c $ (\x -> x-1) ]
-    liftIO $ (putStrLn "Hello2") >> (modifyIORef c $ (\x -> x-1))
+    liftIO $ putStrLn "Hello2" >> modifyIORef c (\x -> x-1)
     c' <- liftIO . readIORef $ c
     when (c' > 0) k
     liftIO . putStrLn $ "counter is zero now"

@@ -49,4 +49,4 @@ template <typename T> explicit A(T &&, T &&) -> A<T>;
 // it's because according to the deduction guide, we
 // A a5 = {0, 1};
 
-A a6{1,1};  // #4 best fit, use #2 to initialize.
+A a6{1, 1}; // #4 best fit, use #2 to initialize.
