@@ -1,9 +1,12 @@
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE RankNTypes          #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Dijkstra where
 
 import           Data.Foldable
 import           Data.List
+
+-- ------------------------------------------------------------------------------
 
 -- little priority queue.
 -- we maintain a mean heap of DistanceEntry: each nodes and their distance
@@ -44,14 +47,38 @@ extractMin :: (Ord a) => SkewHeap a -> Maybe (a, SkewHeap a)
 extractMin Empty            = Nothing
 extractMin (SkewNode x l r) = Just (x, l <> r)
 
-isEmpty :: SkewHeap a -> Bool
-isEmpty Empty = True
-isEmpty _     = False
+-- true logn
+
+-- can only delete by key
+heapDelete :: (Ord a) => a -> SkewHeap a -> SkewHeap a
+heapDelete = heapDeleteBy id
+
+heapDeleteBy :: (Ord a, Ord k) => (a -> k) -> k -> SkewHeap a -> SkewHeap a
+heapDeleteBy _ _ Empty = Empty
+heapDeleteBy getkey key t@(SkewNode x l r) =
+  case compare (getkey x) key of
+    GT -> SkewNode x l (heapDeleteBy getkey key r)
+    LT -> SkewNode x (heapDeleteBy getkey key l) r
+    EQ -> l <> r
+
+-- filter based on arbitrary predicate.
+heapFilter :: forall a. (a -> Bool) -> SkewHeap a -> SkewHeap a
+heapFilter pred = heapFilter' []
+  where
+    heapFilter' :: forall a. [a] -> SkewHeap a -> SkewHeap a
+    heapFilter' _ Empty = Empty
+    heapFilter' (x:xs) hs@(SkewNode a l r)
+      | pred a = undefined
+      | otherwise = undefined
+
+
+-- ------------------------------------------------------------------------------
 
 newtype Vertex = Vertex String deriving (Show, Eq)
 
 instance Ord Vertex where
   compare _ _ = EQ
+
 
 type Neighbours = (Vertex, [(Vertex, Weight)])
 
@@ -70,6 +97,53 @@ instance Ord DistanceEntry where
 
 type DistanceTable = [DistanceEntry]
 
+initTable :: Vertex -> Graph -> DistanceTable
+initTable (Vertex s) = map (\(v@(Vertex lbl), _) ->
+  DistanceEntry { vertex = v
+                , distance = if lbl == s then 0 else maxBound :: Int
+                , prev = Nothing
+                })
+
+
+tb = initTable (Vertex "A") graph
+
+-- ------------------------------------------------------------------------------
+
+-- don't worry about performance. the dompiler handles it
+update :: (Eq key) => (key, value) -> [(key, value)] -> [(key, value)]
+update (k, v) xs = (k, v) : filter (\(k', _) -> k' /= k) xs
+
+-- do we need to rebuild a min heap everytime?
+-- no? if so why not just sort.
+
+-- ok first we add all nodes to the queue.
+-- at the beginning s will be at the top. with d(s) = 0;
+-- then we relax each neigbour of the min, update the queue for any changes
+--
+-- how to update? first remove old nodes from the queue, maintain the order, and
+-- add a new node simply with <>.
+--
+-- recurse until the queue is empty.
+
+-- relax the shortest path next to the min.
+relax :: Graph -> Vertex -> SkewHeap DistanceEntry -> SkewHeap DistanceEntry
+relax g v = undefined
+  where
+    adjacents = lookup v g
+
+
+dijkstra :: Vertex -> Graph -> DistanceTable
+dijkstra v graph = search mempty queue
+  where
+    queue = foldl' (<>) Empty (fmap pure (initTable v graph))
+
+    search :: DistanceTable -> SkewHeap DistanceEntry -> DistanceTable
+    search table queue | queue == Empty = table
+      | otherwise = undefined
+
+-- ------------------------------------------------------------------------------
+
+-- tester
 --  A-6--B
 --  |   /| \ 5
 --  1  2 |  C
@@ -94,45 +168,4 @@ graph = [ (Vertex "A", [ (Vertex "B", 6)
                        , (Vertex "C", 5)])
         ]
 
-initTable :: Vertex -> Graph -> DistanceTable
-initTable (Vertex s) = map (\(v@(Vertex lbl), _) ->
-  DistanceEntry { vertex = v
-                , distance = if lbl == s then 0 else maxBound :: Int
-                , prev = Nothing
-                })
 
-tb = initTable (Vertex "A") graph
-
--- don't worry about performance. the dompiler handles it
-update :: (Eq key) => (key, value) -> [(key, value)] -> [(key, value)]
-update (k, v) xs = (k, v) : filter (\(k', _) -> k' /= k) xs
-
-relax :: Vertex -> Vertex -> Vertex
-relax = undefined
-
--- { v, d, p }
-
--- tace back to starting node
-traceBack :: Vertex -> Vertex -> DistanceTable
-traceBack = undefined
-
--- do we need to rebuild a min heap everytime?
--- no? if so why not just sort.
-
--- ok first we add all nodes to the queue.
--- at the beginning s will be at the top. with d(s) = 0;
--- then we relax each neigbour of the min, update the queue for any changes
---
--- how to update? first remove old nodes from the queue, maintain the order, and
--- add a new node simply with <>.
---
--- recurse until the queue is empty.
-
-dijkstra :: Vertex -> Graph -> DistanceTable
-dijkstra v graph = search mempty queue
-  where
-    queue = foldl' (<>) Empty (fmap pure (initTable v graph))
-
-    search :: DistanceTable -> SkewHeap DistanceEntry -> DistanceTable
-    search table queue | queue == Empty = table
-      | otherwise = undefined
