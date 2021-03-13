@@ -26,7 +26,7 @@
 //   2   7
 //
 // operations on binary heap
-//  1. insertion O(1)                     | Swim up
+//  1. insertion O(1) average, O(logn)                    | Swim up
 //      add to bottom of the tree first.
 //      If it's not correct order swap; Recurse until the order is right.
 //  2. extract the maximums (delete the root.) O(logn)    | Sink down
@@ -106,7 +106,7 @@ bool BinHeap<T, Size>::swim_up(T &o, size_t idx) {
   Parent parent = parent_(idx);
 
   // keep the order invariant.
-  if (parent.value < o || parent.value < o) {
+  if (parent.value < o) {
     std::swap(parent.value, o);
     return swim_up(parent.value, parent.idx);
   } else {
