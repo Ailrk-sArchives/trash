@@ -28,6 +28,18 @@ instance (Ord a) => Semigroup(SkewHeap a) where
 instance (Ord a) => Monoid (SkewHeap a) where
   mempty = Empty
 
+-- implement
+instance Foldable SkewHeap where
+  foldr _ b Empty            = b
+  foldr f b (SkewNode x l r) = f x (foldr f (foldr f b l) r)
+
+-- instance Traversable SkewHeap where
+instance Traversable SkewHeap where
+  traverse f = undefined
+
+-- a -> f b -> t a -> f (t b)
+-- traverse f (x:xs) = (fmap (f a : ) traverse f xs)
+
 extractMin :: (Ord a) => SkewHeap a -> Maybe (a, SkewHeap a)
 extractMin Empty            = Nothing
 extractMin (SkewNode x l r) = Just (x, l <> r)
@@ -36,12 +48,10 @@ isEmpty :: SkewHeap a -> Bool
 isEmpty Empty = True
 isEmpty _     = False
 
-
 newtype Vertex = Vertex String deriving (Show, Eq)
 
 instance Ord Vertex where
   compare _ _ = EQ
-
 
 type Neighbours = (Vertex, [(Vertex, Weight)])
 
@@ -90,6 +100,8 @@ initTable (Vertex s) = map (\(v@(Vertex lbl), _) ->
                 , distance = if lbl == s then 0 else maxBound :: Int
                 , prev = Nothing
                 })
+
+tb = initTable (Vertex "A") graph
 
 -- don't worry about performance. the dompiler handles it
 update :: (Eq key) => (key, value) -> [(key, value)] -> [(key, value)]
