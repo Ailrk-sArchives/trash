@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP                 #-}
 {-# LANGUAGE RankNTypes          #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -Wno-deferred-type-errors #-}
@@ -76,17 +77,17 @@ heapDeleteBy pred h = runST $ do
     go _ Empty              = pure Empty
     go modify t@(SkewNode x l r) =
       if pred x
-         then do
-           modify x
-           (<>) <$> go modify l <*> go modify r
+         then modify x >> (<>) <$> go modify l <*> go modify r
            else do
              l' <- go modify l
              SkewNode x l' <$> go modify r
 
 
 -- update a node that satisfied the preidcate.
-heapUpdate :: Ord a => (a -> Bool) -> (a -> a) -> SkewHeap a -> SkewHeap a
-heapUpdate pred f = undefined
+heapModify :: Ord a => (a -> Bool) -> (a -> a) -> SkewHeap a -> SkewHeap a
+heapModify pred f h = case heapDeleteBy pred h of
+                        Nothing       -> h
+                        Just (xs, h') -> mconcat (fmap (pure . f) xs) <> h'
 
 -- find node by predicate and retreive information from the node with get
 heapFind :: (a -> Bool) -> (a -> k) -> SkewHeap a -> Maybe k
@@ -128,9 +129,6 @@ initTable (Vertex s) = map (\(v@(Vertex lbl), _) ->
                 , prev = Nothing
                 })
 
-
-tb = initTable (Vertex "A") graph
-
 -- ------------------------------------------------------------------------------
 
 update :: (Eq key) => (key, value) -> [(key, value)] -> [(key, value)]
@@ -148,24 +146,56 @@ update (k, v) xs = (k, v) : filter (\(k', _) -> k' /= k) xs
 --
 -- recurse until the queue is empty.
 
--- TODO 2021-03-13
--- relax the shortest path next to the min.
-relax :: Graph -> Vertex -> SkewHeap DistanceEntry -> SkewHeap DistanceEntry
-relax g v = undefined
-  where
-    adjacents = lookup v g
-
 
 dijkstra :: Vertex -> Graph -> DistanceTable
-dijkstra v graph = search mempty queue
+dijkstra v graph = foldr (:) [] (search queue)
   where
     queue = foldl' (<>) Empty (fmap pure (initTable v graph))
+    search :: SkewHeap DistanceEntry -> SkewHeap DistanceEntry
+    search table | table == Empty = table
+      | otherwise =
+        case extractMin table of
+          Nothing -> table
+          Just (v, t') ->
+            let k = vertex v
+                dv = distance v
+                adjs = lookup k graph
+             in case adjs of
+                  Nothing -> error "never happen"
+                  Just us -> foldl'
+                    (\h (uk, uv) ->
+                      heapModify ((uk ==) . vertex)
+                      (\e -> e { distance = dv + uv }) h) table us
 
-    search :: DistanceTable -> SkewHeap DistanceEntry -> DistanceTable
-    search table queue | queue == Empty = table
-      | otherwise = undefined
 
 -- ------------------------------------------------------------------------------
+
+#define TEST
+#ifdef TEST
+
+-- test input
+-- A E D C B
+testHeadModify :: IO ()
+testHeadModify = do
+  let h1 = heapModify (pred "B") (\e -> e { distance = 10 }) queue
+      h2 = heapModify (pred "C") (\e -> e { distance = 8 }) h1
+      h3 = heapModify (pred "D") (\e -> e { distance = 3 }) h2
+      h4 = heapModify (pred "E") (\e -> e { distance = 2 }) h3
+  print h4
+  let Just (a, xs) = extractMin h4
+  print a
+  let Just (a, xs') = extractMin xs
+  print a
+  let Just (a, xs) = extractMin xs'
+  print a
+  let Just (a, xs') = extractMin xs
+  print a
+  let Just (a, xs) = extractMin xs'
+  print a
+ where
+   pred l = (\(Vertex v) -> v == l) . vertex
+   v = Vertex "A"
+   queue = foldl' (<>) Empty (fmap pure (initTable v graph))
 
 -- tester
 --  A-6--B
@@ -191,3 +221,12 @@ graph = [ (Vertex "A", [ (Vertex "B", 6)
                        , (Vertex "B", 2)
                        , (Vertex "C", 5)])
         ]
+
+testDijkstra :: IO ()
+testDijkstra = do
+  let s = Vertex "A"
+      q = dijkstra s graph
+  print q
+
+
+#endif
