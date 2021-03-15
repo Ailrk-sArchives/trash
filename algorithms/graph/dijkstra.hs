@@ -186,5 +186,11 @@ testDijkstra = do
       q = dijkstra s graph
   putStr (showDistanceTable q)
 
+-- -- output
+-- DistanceEntry {vertex = Vertex "C", distance = 7, prev = Just (Vertex "E")}
+-- DistanceEntry {vertex = Vertex "B", distance = 3, prev = Just (Vertex "D")}
+-- DistanceEntry {vertex = Vertex "E", distance = 2, prev = Just (Vertex "D")}
+-- DistanceEntry {vertex = Vertex "D", distance = 1, prev = Just (Vertex "A")}
+-- DistanceEntry {vertex = Vertex "A", distance = 0, prev = Nothing}
 
 #endif
