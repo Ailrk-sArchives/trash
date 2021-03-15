@@ -37,7 +37,6 @@ instance (Ord a) => Semigroup(SkewHeap a) where
 instance (Ord a) => Monoid (SkewHeap a) where
   mempty = Empty
 
--- implement
 instance Foldable SkewHeap where
   foldr _ b Empty            = b
   foldr f b (SkewNode x l r) = f x (foldr f (foldr f b l) r)
@@ -46,8 +45,7 @@ extractMin :: (Ord a) => SkewHeap a -> Maybe (a, SkewHeap a)
 extractMin Empty            = Nothing
 extractMin (SkewNode x l r) = Just (x, l <> r)
 
--- delete by a key and a predicate.
--- a node will only be deleted if both key and predicates are satisfied.
+-- filter a skew heap
 heapDeleteBy :: forall a. (Ord a)
              => (a -> Bool) -- whether delete the node if hit the key
              -> SkewHeap a
@@ -68,7 +66,7 @@ heapDeleteBy pred h = runST $ do
              SkewNode x l' <$> go modify r
 
 
--- update a node that satisfied the preidcate.
+-- update a vertex that satisfied the preidcate.
 heapModify :: Ord a => (a -> Bool) -> (a -> a) -> SkewHeap a -> SkewHeap a
 heapModify pred f h = case heapDeleteBy pred h of
                         Nothing       -> h
@@ -80,7 +78,6 @@ newtype Vertex = Vertex String deriving (Show, Eq)
 
 instance Ord Vertex where
   compare _ _ = EQ
-
 
 type Neighbours = (Vertex, [(Vertex, Weight)])
 
