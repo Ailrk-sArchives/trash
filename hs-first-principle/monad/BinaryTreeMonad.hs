@@ -1,6 +1,6 @@
 module BinaryTreeMonad where
 
-import Data.Maybe
+import           Data.Maybe
 
 data BinaryTree a =
     Leaf
@@ -15,15 +15,15 @@ treeInsert a (Node l b r)
   | otherwise = Node l b r
 
 preorderHead :: BinaryTree a -> Maybe a
-preorderHead Leaf = Nothing
+preorderHead Leaf         = Nothing
 preorderHead (Node _ a _) = Just a
 
 preorderLeft :: BinaryTree a -> BinaryTree a
-preorderLeft Leaf = Leaf
+preorderLeft Leaf         = Leaf
 preorderLeft (Node l _ _) = l
 
 preorderRight :: BinaryTree a -> BinaryTree a
-preorderRight Leaf = Leaf
+preorderRight Leaf         = Leaf
 preorderRight (Node _ _ r) = r
 
 preorderTraverse :: BinaryTree a -> [a]
@@ -31,10 +31,10 @@ preorderTraverse t = go t []
   where go tree acc =
           case tree of
             Node Leaf a Leaf -> a : acc
-            Node l a Leaf -> a : go l acc
-            Node Leaf a r -> a : go r acc
-            Node l a r -> a : go l acc ++ go r acc
-            Leaf -> acc
+            Node l a Leaf    -> a : go l acc
+            Node Leaf a r    -> a : go r acc
+            Node l a r       -> a : go l acc ++ go r acc
+            Leaf             -> acc
 
 instance Ord a => Monoid (BinaryTree a) where
   mempty = Leaf
@@ -70,8 +70,8 @@ instance Foldable BinaryTree where
 instance Applicative BinaryTree where
   -- TODO: mapping applicative, now it doesn't works as expected
   pure a = Node Leaf a Leaf
-  Leaf <*> _ = Leaf
+  Leaf <*> _                       = Leaf
   Node Leaf f Leaf <*> Node _ a' _ = Node Leaf (f a') Leaf
-  Node lf af rf <*> Node l' a' r' = Node (lf <*> l') (af a') (rf <*> r')
+  Node lf af rf <*> Node l' a' r'  = Node (lf <*> l') (af a') (rf <*> r')
 
 

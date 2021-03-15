@@ -1,2 +1,0 @@
--- strongly connected component
-

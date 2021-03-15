@@ -15,7 +15,7 @@ import           Data.STRef
 -- ------------------------------------------------------------------------------
 
 -- little priority queue.
--- we maintain a mean heap of DistanceEntry: each nodes and their distance
+-- we maintain a mean heap of Vertex': each nodes and their distance
 -- to starting node.
 data SkewHeap a = Empty | SkewNode a (SkewHeap a) (SkewHeap a) deriving (Show, Eq)
 
@@ -84,34 +84,42 @@ type Neighbours = (Vertex, [(Vertex, Weight)])
 type Weight = Int
 type Graph = [Neighbours]
 
-data DistanceEntry = DistanceEntry
+-- vertex augmented with distance and path info.
+data Vertex' = Vertex'
   { vertex   :: Vertex
   , distance :: Int   -- distance from the source vertex.
   , prev     :: Maybe Vertex
   }
   deriving (Show, Eq)
 
-instance Ord DistanceEntry where
+instance Ord Vertex' where
   compare a b = compare (distance a) (distance b)
 
-type DistanceTable = [DistanceEntry]
+type Vertex'Table = [Vertex']
 
-showDistanceTable = foldr (\e b -> show e ++ "\n" ++ b) ""
+showVertex'Table = foldr (\e b -> show e ++ "\n" ++ b) ""
 
-initTable :: Vertex -> Graph -> DistanceTable
+initTable :: Vertex -> Graph -> Vertex'Table
 initTable (Vertex s) = map (\(v@(Vertex lbl), _) ->
-  DistanceEntry { vertex = v
+  Vertex' { vertex = v
                 , distance = if lbl == s then 0 else maxBound :: Int
                 , prev = Nothing
                 })
 
 -- ------------------------------------------------------------------------------
+-- Dijkstra is greedy algorithm, it always takes the next shortest path. This
+-- sometimes doesn't yield the best solution.
+-- For example, a path:
+--      +-1-x--2--x-+
+--    A              B
+--      +-----2-----+
+-- The path below is shorter, but dijkstra algorithm will try the above one first.
 
-dijkstra :: Vertex -> Graph -> DistanceTable
+dijkstra :: Vertex -> Graph -> Vertex'Table
 dijkstra v graph = search [] queue
   where
     queue = foldl' (<>) Empty (fmap pure (initTable v graph))
-    search :: DistanceTable -> SkewHeap DistanceEntry -> DistanceTable
+    search :: Vertex'Table -> SkewHeap Vertex' -> Vertex'Table
     search table queue | queue == Empty = table
       | otherwise = fromJust $ do
         (v, queue') <- extractMin queue
@@ -184,13 +192,13 @@ testDijkstra :: IO ()
 testDijkstra = do
   let s = Vertex "A"
       q = dijkstra s graph
-  putStr (showDistanceTable q)
+  putStr (showVertex'Table q)
 
 -- -- output
--- DistanceEntry {vertex = Vertex "C", distance = 7, prev = Just (Vertex "E")}
--- DistanceEntry {vertex = Vertex "B", distance = 3, prev = Just (Vertex "D")}
--- DistanceEntry {vertex = Vertex "E", distance = 2, prev = Just (Vertex "D")}
--- DistanceEntry {vertex = Vertex "D", distance = 1, prev = Just (Vertex "A")}
--- DistanceEntry {vertex = Vertex "A", distance = 0, prev = Nothing}
+-- Vertex' {vertex = Vertex "C", distance = 7, prev = Just (Vertex "E")}
+-- Vertex' {vertex = Vertex "B", distance = 3, prev = Just (Vertex "D")}
+-- Vertex' {vertex = Vertex "E", distance = 2, prev = Just (Vertex "D")}
+-- Vertex' {vertex = Vertex "D", distance = 1, prev = Just (Vertex "A")}
+-- Vertex' {vertex = Vertex "A", distance = 0, prev = Nothing}
 
 #endif
