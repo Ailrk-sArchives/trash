@@ -55,12 +55,6 @@ extractMin :: (Ord a) => SkewHeap a -> Maybe (a, SkewHeap a)
 extractMin Empty            = Nothing
 extractMin (SkewNode x l r) = Just (x, l <> r)
 
--- true logn
-
--- can only delete by key
--- heapDelete :: (Ord a) => a -> SkewHeap a -> SkewHeap a
--- heapDelete = heapDeleteBy id (const True)
-
 -- delete by a key and a predicate.
 -- a node will only be deleted if both key and predicates are satisfied.
 heapDeleteBy :: forall a. (Ord a)
@@ -138,20 +132,6 @@ initTable (Vertex s) = map (\(v@(Vertex lbl), _) ->
 update :: (Eq key) => (key, value) -> [(key, value)] -> [(key, value)]
 update (k, v) xs = (k, v) : filter (\(k', _) -> k' /= k) xs
 
--- do we need to rebuild a min heap everytime?
--- no? if so why not just sort.
-
--- ok first we add all nodes to the queue.
--- at the beginning s will be at the top. with d(s) = 0;
--- then we relax each neigbour of the min, update the queue for any changes
---
--- how to update? first remove old nodes from the queue, then just
--- add the new node to the tree with the old node removed.
---
--- recurse until the queue is empty.
-
--- TODO: now it calcualte the distance right next to s.
--- but still need to back trace.
 dijkstra :: Vertex -> Graph -> DistanceTable
 dijkstra v graph = search [] queue
   where
