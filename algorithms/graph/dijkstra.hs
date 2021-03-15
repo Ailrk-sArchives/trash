@@ -1,10 +1,15 @@
 {-# LANGUAGE RankNTypes          #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# OPTIONS_GHC -Wno-deferred-type-errors #-}
+{-# OPTIONS_GHC -Wincomplete-patterns #-}
 
 module Dijkstra where
 
+import           Control.Monad.ST
 import           Data.Foldable
 import           Data.List
+import           Data.Maybe
+import           Data.STRef
 
 -- ------------------------------------------------------------------------------
 
@@ -38,7 +43,9 @@ instance Foldable SkewHeap where
 
 -- instance Traversable SkewHeap where
 instance Traversable SkewHeap where
-  traverse f = undefined
+  traverse _ Empty = pure Empty
+  traverse f (SkewNode x l r) = SkewNode <$> f x <*> traverse f l <*> traverse f r
+
 
 -- a -> f b -> t a -> f (t b)
 -- traverse f (x:xs) = (fmap (f a : ) traverse f xs)
@@ -50,27 +57,44 @@ extractMin (SkewNode x l r) = Just (x, l <> r)
 -- true logn
 
 -- can only delete by key
-heapDelete :: (Ord a) => a -> SkewHeap a -> SkewHeap a
-heapDelete = heapDeleteBy id
+-- heapDelete :: (Ord a) => a -> SkewHeap a -> SkewHeap a
+-- heapDelete = heapDeleteBy id (const True)
 
-heapDeleteBy :: (Ord a, Ord k) => (a -> k) -> k -> SkewHeap a -> SkewHeap a
-heapDeleteBy _ _ Empty = Empty
-heapDeleteBy getkey key t@(SkewNode x l r) =
-  case compare (getkey x) key of
-    GT -> SkewNode x l (heapDeleteBy getkey key r)
-    LT -> SkewNode x (heapDeleteBy getkey key l) r
-    EQ -> l <> r
-
--- filter based on arbitrary predicate.
-heapFilter :: forall a. (a -> Bool) -> SkewHeap a -> SkewHeap a
-heapFilter pred = heapFilter' []
+-- delete by a key and a predicate.
+-- a node will only be deleted if both key and predicates are satisfied.
+heapDeleteBy :: forall a. (Ord a)
+             => (a -> Bool) -- whether delete the node if hit the key
+             -> SkewHeap a
+             -> Maybe ([a], SkewHeap a)
+heapDeleteBy pred h = runST $ do
+  ref <- newSTRef []
+  h' <- go (\x -> modifySTRef ref (x:)) h
+  acc <- readSTRef ref
+  return $ Just (acc, h')
   where
-    heapFilter' :: forall a. [a] -> SkewHeap a -> SkewHeap a
-    heapFilter' _ Empty = Empty
-    heapFilter' (x:xs) hs@(SkewNode a l r)
-      | pred a = undefined
-      | otherwise = undefined
+    go :: (Monad m) => (a -> m ()) -> SkewHeap a -> m (SkewHeap a)
+    go _ Empty              = pure Empty
+    go modify t@(SkewNode x l r) =
+      if pred x
+         then do
+           modify x
+           (<>) <$> go modify l <*> go modify r
+           else do
+             l' <- go modify l
+             SkewNode x l' <$> go modify r
 
+
+-- update a node that satisfied the preidcate.
+heapUpdate :: Ord a => (a -> Bool) -> (a -> a) -> SkewHeap a -> SkewHeap a
+heapUpdate pred f = undefined
+
+-- find node by predicate and retreive information from the node with get
+heapFind :: (a -> Bool) -> (a -> k) -> SkewHeap a -> Maybe k
+heapFind pred get h = let hs = foldl' (flip (:)) [] h
+                     in case filter pred hs of
+                          []   -> Nothing
+                          [x]  -> Just (get x)
+                          x:xs -> Just (get x)
 
 -- ------------------------------------------------------------------------------
 
@@ -93,7 +117,7 @@ data DistanceEntry = DistanceEntry
   deriving (Show, Eq)
 
 instance Ord DistanceEntry where
-  compare a b = compare (vertex a) (vertex b)
+  compare a b = compare (distance a) (distance b)
 
 type DistanceTable = [DistanceEntry]
 
@@ -109,7 +133,6 @@ tb = initTable (Vertex "A") graph
 
 -- ------------------------------------------------------------------------------
 
--- don't worry about performance. the dompiler handles it
 update :: (Eq key) => (key, value) -> [(key, value)] -> [(key, value)]
 update (k, v) xs = (k, v) : filter (\(k', _) -> k' /= k) xs
 
@@ -120,11 +143,12 @@ update (k, v) xs = (k, v) : filter (\(k', _) -> k' /= k) xs
 -- at the beginning s will be at the top. with d(s) = 0;
 -- then we relax each neigbour of the min, update the queue for any changes
 --
--- how to update? first remove old nodes from the queue, maintain the order, and
--- add a new node simply with <>.
+-- how to update? first remove old nodes from the queue, then just
+-- add the new node to the tree with the old node removed.
 --
 -- recurse until the queue is empty.
 
+-- TODO 2021-03-13
 -- relax the shortest path next to the min.
 relax :: Graph -> Vertex -> SkewHeap DistanceEntry -> SkewHeap DistanceEntry
 relax g v = undefined
@@ -167,5 +191,3 @@ graph = [ (Vertex "A", [ (Vertex "B", 6)
                        , (Vertex "B", 2)
                        , (Vertex "C", 5)])
         ]
-
-
