@@ -122,6 +122,10 @@ instance Ord DistanceEntry where
 
 type DistanceTable = [DistanceEntry]
 
+showDistanceTable = foldr (\e b -> show e ++ "\n" ++ b) ""
+
+
+
 initTable :: Vertex -> Graph -> DistanceTable
 initTable (Vertex s) = map (\(v@(Vertex lbl), _) ->
   DistanceEntry { vertex = v
@@ -146,27 +150,26 @@ update (k, v) xs = (k, v) : filter (\(k', _) -> k' /= k) xs
 --
 -- recurse until the queue is empty.
 
-
+-- TODO: now it calcualte the distance right next to s.
+-- but still need to back trace.
 dijkstra :: Vertex -> Graph -> DistanceTable
-dijkstra v graph = foldr (:) [] (search queue)
+dijkstra v graph = search [] queue
   where
     queue = foldl' (<>) Empty (fmap pure (initTable v graph))
-    search :: SkewHeap DistanceEntry -> SkewHeap DistanceEntry
-    search table | table == Empty = table
-      | otherwise =
-        case extractMin table of
-          Nothing -> table
-          Just (v, t') ->
-            let k = vertex v
-                dv = distance v
-                adjs = lookup k graph
-             in case adjs of
-                  Nothing -> error "never happen"
-                  Just us -> foldl'
-                    (\h (uk, uv) ->
-                      heapModify ((uk ==) . vertex)
-                      (\e -> e { distance = dv + uv }) h) table us
-
+    search :: DistanceTable -> SkewHeap DistanceEntry -> DistanceTable
+    search table queue | queue == Empty = table
+      | otherwise = fromJust $ do
+        (v, queue') <- extractMin queue
+        adjs <- lookup (vertex v) graph
+        let dv = distance v
+            modify h uk uv e =
+              if dv + uv < distance e
+                 then e { distance = dv + uv, prev = Just (vertex v) }
+                 else e
+            f h (uk, uv) =
+              heapModify ((uk ==) . vertex) (modify h uk uv) h
+            queue'' = foldl' f queue' adjs
+        return (search (v : table) queue'')
 
 -- ------------------------------------------------------------------------------
 
@@ -226,7 +229,7 @@ testDijkstra :: IO ()
 testDijkstra = do
   let s = Vertex "A"
       q = dijkstra s graph
-  print q
+  putStr (showDistanceTable q)
 
 
 #endif
