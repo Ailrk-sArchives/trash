@@ -42,15 +42,6 @@ instance Foldable SkewHeap where
   foldr _ b Empty            = b
   foldr f b (SkewNode x l r) = f x (foldr f (foldr f b l) r)
 
--- instance Traversable SkewHeap where
-instance Traversable SkewHeap where
-  traverse _ Empty = pure Empty
-  traverse f (SkewNode x l r) = SkewNode <$> f x <*> traverse f l <*> traverse f r
-
-
--- a -> f b -> t a -> f (t b)
--- traverse f (x:xs) = (fmap (f a : ) traverse f xs)
-
 extractMin :: (Ord a) => SkewHeap a -> Maybe (a, SkewHeap a)
 extractMin Empty            = Nothing
 extractMin (SkewNode x l r) = Just (x, l <> r)
@@ -83,14 +74,6 @@ heapModify pred f h = case heapDeleteBy pred h of
                         Nothing       -> h
                         Just (xs, h') -> mconcat (fmap (pure . f) xs) <> h'
 
--- find node by predicate and retreive information from the node with get
-heapFind :: (a -> Bool) -> (a -> k) -> SkewHeap a -> Maybe k
-heapFind pred get h = let hs = foldl' (flip (:)) [] h
-                     in case filter pred hs of
-                          []   -> Nothing
-                          [x]  -> Just (get x)
-                          x:xs -> Just (get x)
-
 -- ------------------------------------------------------------------------------
 
 newtype Vertex = Vertex String deriving (Show, Eq)
@@ -118,8 +101,6 @@ type DistanceTable = [DistanceEntry]
 
 showDistanceTable = foldr (\e b -> show e ++ "\n" ++ b) ""
 
-
-
 initTable :: Vertex -> Graph -> DistanceTable
 initTable (Vertex s) = map (\(v@(Vertex lbl), _) ->
   DistanceEntry { vertex = v
@@ -128,9 +109,6 @@ initTable (Vertex s) = map (\(v@(Vertex lbl), _) ->
                 })
 
 -- ------------------------------------------------------------------------------
-
-update :: (Eq key) => (key, value) -> [(key, value)] -> [(key, value)]
-update (k, v) xs = (k, v) : filter (\(k', _) -> k' /= k) xs
 
 dijkstra :: Vertex -> Graph -> DistanceTable
 dijkstra v graph = search [] queue
