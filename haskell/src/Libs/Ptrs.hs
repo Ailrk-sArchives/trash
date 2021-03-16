@@ -36,14 +36,17 @@ import           System.IO.MMap        (Mode (..), mmapFileForeignPtr)
 -- FunPtr a
 --  - A ptr to a function callable from foreign code.
 --    e.g pfree :: FunPtr (Ptr a -> IO ())
+
 foreign import ccall "stdlib.h &free"
   pfree :: FunPtr (Ptr a -> IO ())
+
 -- this can be an example of finalizer from other language.
 --
 -- Example of using pfree as finalizer for a foreign ptr
 -- This function takes a heap allocated integer, read it's
 -- value, add 10 to it and store it back.
 -- Finally when the function is finished free the mem of the integer.
+
 readStuff :: Ptr Word8 -> IO ()
 readStuff p = do
   val <- peek p               -- Storable peek.
@@ -54,7 +57,9 @@ readStuff p = do
   -- there are also peekEleOff, peekByteOff etc for c ptr arrays.
   poke p $ 10 + val           -- Storable poke.
 
+
 -- allocate stuffs
+
 allocateStuff :: IO ()
 allocateStuff = do
   p <- malloc :: IO (Ptr Word8)
@@ -66,6 +71,7 @@ allocateStuff = do
   putStrLn $ "new value is of malloced word8 is " ++ show newval
   free p
 
+
 doStuff :: ForeignPtr Word8 -> Int -> IO ()
 doStuff fp i =
   withForeignPtr fp $ \p -> do
@@ -75,12 +81,12 @@ doStuff fp i =
     readStuff p
     return ()
 
+
 run :: IO ()
 run = do
   (p, offset, size) <- mmapFileForeignPtr path mode range
   forM_ [0 .. size - 1] $ \i -> do
     doStuff p (offset + i)
-
   mapM_(\_ -> do allocateStuff) [0..10]
   where
     path = "/tmp/input.dat"

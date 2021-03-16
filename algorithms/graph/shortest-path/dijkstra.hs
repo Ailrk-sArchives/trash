@@ -12,9 +12,12 @@ import           Data.List
 import           Data.Maybe
 import           Data.STRef
 
+
+-- ------------------------------------------------------------------------------
+-- little priority queue.
 -- ------------------------------------------------------------------------------
 
--- little priority queue.
+
 -- we maintain a mean heap of Vertex': each nodes and their distance
 -- to starting node.
 data SkewHeap a = Empty | SkewNode a (SkewHeap a) (SkewHeap a) deriving (Show, Eq)
@@ -72,7 +75,11 @@ heapModify pred f h = case heapDeleteBy pred h of
                         Nothing       -> h
                         Just (xs, h') -> mconcat (fmap (pure . f) xs) <> h'
 
+
 -- ------------------------------------------------------------------------------
+-- adjacent table
+-- ------------------------------------------------------------------------------
+
 
 newtype Vertex = Vertex String deriving (Show, Eq)
 
@@ -85,12 +92,11 @@ type Weight = Int
 type Graph = [Neighbours]
 
 -- vertex augmented with distance and path info.
-data Vertex' = Vertex'
-  { vertex   :: Vertex
-  , distance :: Int   -- distance from the source vertex.
-  , prev     :: Maybe Vertex
-  }
-  deriving (Show, Eq)
+data Vertex' = Vertex' { vertex   :: Vertex
+                       , distance :: Int   -- distance from the source vertex.
+                       , prev     :: Maybe Vertex
+                       }
+                       deriving (Show, Eq)
 
 instance Ord Vertex' where
   compare a b = compare (distance a) (distance b)
@@ -100,13 +106,19 @@ type Vertex'Table = [Vertex']
 showVertex'Table = foldr (\e b -> show e ++ "\n" ++ b) ""
 
 initTable :: Vertex -> Graph -> Vertex'Table
-initTable (Vertex s) = map (\(v@(Vertex lbl), _) ->
-  Vertex' { vertex = v
-          , distance = if lbl == s then 0 else maxBound :: Int
-          , prev = Nothing
-          })
+initTable (Vertex s) = map f
+  where
+    f (v@(Vertex lbl), _) = Vertex' { vertex = v
+                                    , distance = if lbl == s then 0 else maxBound :: Int
+                                    , prev = Nothing
+                                    }
+
 
 -- ------------------------------------------------------------------------------
+-- Dijkstra
+-- ------------------------------------------------------------------------------
+
+
 -- Dijkstra is greedy algorithm, it always takes the next shortest path. This
 -- sometimes doesn't yield the best solution.
 -- For example, a path:
@@ -134,7 +146,11 @@ dijkstra v graph = search [] queue
             queue'' = foldl' f queue' adjs
         return (search (v : table) queue'')
 
+
 -- ------------------------------------------------------------------------------
+-- Testing
+-- ------------------------------------------------------------------------------
+
 
 #define TEST
 #ifdef TEST

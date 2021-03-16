@@ -72,6 +72,7 @@ library
       Libs.StgDumpExperiment
       Libs.Refs
       Libs.MyArray
+      Libs.Lens2048
 
       Other.Defunctionalization
       Other.TicTacToe
@@ -88,10 +89,30 @@ library
   build-depends:
       base >=4.7 && <5
     , mtl
+
+    -- mmap wrapper
     , mmap
+
     , containers
     , singletons
+
+    -- lens
+    , lens
+
+    -- simple linear algebra
+    , linear
+
+    -- 2d pretty printing lib
+    , boxes
+
+    , ansi-terminal
+
+    -- class for type with default value
+    , data-default
+
     , stm
+
+    -- deterministic resource handling data stream.-- deterministic resource handling data stream.
     , conduit
     , pretty
     , QuickCheck
