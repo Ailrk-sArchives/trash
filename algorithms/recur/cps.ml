@@ -1,6 +1,5 @@
 (* test some continuations *)
 
-
 (* straightforward continuation *)
 let rec sum1 s =
   match s with

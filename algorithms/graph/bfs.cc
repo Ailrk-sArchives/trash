@@ -1,3 +1,6 @@
+// src:
+//    MIT algorithm book chapter 22
+
 // A different way of thinking about breath first search.
 // 1. white: default for all nodes at the beginning
 // 2. black: nodes that are not connected with white
@@ -10,6 +13,8 @@
 //    g   g
 //   / \   \
 //   w w    w
+
+// TODO: optional with reference.
 
 #include <deque>
 #include <iostream>

@@ -106,4 +106,3 @@ match table str = [ 0 | len table == 0 ] ++ go (1 - len table) 0 str
 --     |abxababxab
 --     |     abxab  -> [0, 5]
 --    4. Find another match, end.
-

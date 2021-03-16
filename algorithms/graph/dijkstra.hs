@@ -61,9 +61,9 @@ heapDeleteBy pred h = runST $ do
     go modify t@(SkewNode x l r) =
       if pred x
          then modify x >> (<>) <$> go modify l <*> go modify r
-           else do
-             l' <- go modify l
-             SkewNode x l' <$> go modify r
+         else do
+           l' <- go modify l
+           SkewNode x l' <$> go modify r
 
 
 -- update a vertex that satisfied the preidcate.
@@ -102,9 +102,9 @@ showVertex'Table = foldr (\e b -> show e ++ "\n" ++ b) ""
 initTable :: Vertex -> Graph -> Vertex'Table
 initTable (Vertex s) = map (\(v@(Vertex lbl), _) ->
   Vertex' { vertex = v
-                , distance = if lbl == s then 0 else maxBound :: Int
-                , prev = Nothing
-                })
+          , distance = if lbl == s then 0 else maxBound :: Int
+          , prev = Nothing
+          })
 
 -- ------------------------------------------------------------------------------
 -- Dijkstra is greedy algorithm, it always takes the next shortest path. This

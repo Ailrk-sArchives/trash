@@ -1,6 +1,8 @@
 #include <array>
 #include <iostream>
 
+// TODO
+
 // fenwick tree (binary index tree) BIT.
 //
 // Motivation:
@@ -35,8 +37,6 @@
 // This structure has both problem we had above, because whenever we do an O(1)
 // operation we need to trgger the O(n) on the other array to keep everything
 // update to date.
-//
-//              a
 //
 
 #define lowbit(x) ((x) & (-x))

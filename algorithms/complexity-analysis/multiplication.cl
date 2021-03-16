@@ -1,5 +1,7 @@
 ;; Analysis on the compleixty of Multiplication
 
+;; TODO karatsuba
+
 ;; note common lisp is 2 lisp, value and functions are in different namespaces.
 
 ;;;; hand written multiplication

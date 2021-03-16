@@ -3,6 +3,8 @@
 #include <memory>
 #include <optional>
 
+// TODO
+
 // tail is persistent, so we don't need to make a copy.
 template <typename T> class List {
   struct Element {

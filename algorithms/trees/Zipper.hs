@@ -115,10 +115,10 @@ setFocus = withFocus . const
 (.=) = flip setFocus
 
 hasLeft :: ListZipper a -> Bool
-hasLeft (ListZipper l _ _) = not (length l == 0)
+hasLeft (ListZipper l _ _) = not (null l)
 
 hasRight :: ListZipper a -> Bool
-hasRight (ListZipper _ _ r) = not (length r == 0)
+hasRight (ListZipper _ _ r) = not (null r)
 
 -- find from the left and gives you a new zipper focus on the
 -- target found.
@@ -205,7 +205,7 @@ moveRightN' n z = moveRightN'' n z 0
       | n' < 0 = moveLeftN' (negate n') z'
       | otherwise = case moveRight z' of
                       IsZ z'' -> moveRightN'' (n' - 1) z'' (q + 1)
-                      IsNotZ -> Left q
+                      IsNotZ  -> Left q
 
 -- index in the zipper.
 -- if i > a, move to the right by (i - a)
@@ -219,7 +219,7 @@ nth :: Int -> ListZipper a -> MaybeListZipper a
 nth i z
   | i < 0 = IsNotZ
   | otherwise = case moveLeftN' i z of
-                  Left a -> moveRightN (i - a) z
+                  Left a                   -> moveRightN (i - a) z
                   Right (ListZipper l _ _) -> moveLeftN (length l) z
 
 index :: ListZipper a -> Int

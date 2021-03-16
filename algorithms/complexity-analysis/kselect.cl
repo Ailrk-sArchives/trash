@@ -1,4 +1,6 @@
-;; select nth biggest element in a sequence.
+;; select nth biggest element in a sequence. in O(n)
+
+;; TODO doesn't seems right.
 
 
 ;; calcualte the pivot

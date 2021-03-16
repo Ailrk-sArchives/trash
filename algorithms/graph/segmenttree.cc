@@ -1,6 +1,8 @@
 #include <array>
 #include <iostream>
 
+// TODO
+
 // Segment tree can be used to maintain information of intervals.
 // O(logN) modify single element, modify range, and query in intervals.
 // Segment tree is a static data structure, it can't be modified once it's
