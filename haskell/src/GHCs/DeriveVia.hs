@@ -11,7 +11,10 @@ module GHCs.DeriveVia where
 
 import           Data.Coerce
 
--- some heat up
+-- --------------------------------------------------------------------------
+-- heat up
+-- --------------------------------------------------------------------------
+
 -- first rule: we can't derive things witout an implementation of course. no magic
 -- second rule: we can derive things based on default implementation
 class Pretty a where
@@ -22,8 +25,12 @@ class Pretty a where
 data T = MkT1 Int | MkT2 Bool deriving Show
 instance Pretty T
 
+
+-- --------------------------------------------------------------------------
 -- use derive via.
--- first, defien a wrapper newtype
+-- --------------------------------------------------------------------------
+
+-- first, define a wrapper newtype
 -- we can parameterized this X.
 newtype X a = X a
 instance Show a => Pretty (X a) where

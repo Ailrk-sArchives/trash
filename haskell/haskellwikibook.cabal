@@ -31,6 +31,7 @@ flag dump
 
 library
   exposed-modules:
+
       Algorithms.MergeSort
       Algorithms.Other
 
@@ -72,10 +73,12 @@ library
       Libs.StgDumpExperiment
       Libs.Refs
       Libs.MyArray
-      Libs.Lens2048
+
+      MiniProject.EchoServer
+      MiniProject.Lens2048
+      MiniProject.TicTacToe
 
       Other.Defunctionalization
-      Other.TicTacToe
       Other.AbstractAlgebra
       Other.Testing
       Other.FFI

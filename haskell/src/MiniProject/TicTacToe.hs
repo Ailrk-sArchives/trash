@@ -7,11 +7,13 @@
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE RankNTypes                 #-}
 {-# LANGUAGE TypeFamilies               #-}
-module Other.TicTacToe where
+
+module MiniProject.TicTacToe where
 import           Control.Monad       (join, when)
 import           Control.Monad.State
 import           Data.Foldable       (fold)
 import           Data.List           (subsequences, (\\))
+import           Data.Maybe
 import           Debug.Trace         (trace)
 
 
@@ -23,15 +25,18 @@ traceThis msg x = trace (msg ++ " " ++ show x) x
 --  -OOO-
 --  -XXX-
 
+
 -- | Tictactoe game
 -- v: phamtom type for solution
 -- a: return type
+
 newtype TicTacToe' v a = TicTacToe (Three -> Three -> a) deriving Functor
 type TicTacToe v = TicTacToe' v (Maybe Bool)
 type Board = [(Three, Three, Maybe Bool)]
 
 -- (Z3, +)
 data Three  = Zero | One | Two deriving (Eq, Show, Enum)
+
 
 -- board
 instance Semigroup (TicTacToe v) where
@@ -41,14 +46,14 @@ instance Semigroup (TicTacToe v) where
       Just v  -> Just v
 instance Monoid (TicTacToe v) where mempty = TicTacToe . const . const $ Nothing
 
+
 -- utils
-showXO n = if n then "X" else "O"
+showXO n | n = "X" | otherwise = "O"
+
 instance Show (TicTacToe v) where
-  show (TicTacToe b) = concat . fmap draw $ positions where
+  show (TicTacToe b) = concatMap draw positions where
       positions = zip [1..9] [(n, m) | n <- enumFrom Zero,  m <- enumFrom Zero]
-      draw (idx, (x, y)) = let marker =  case b x y of
-                                           Nothing -> "_"
-                                           Just n  -> showXO n
+      draw (idx, (x, y)) = let marker =  maybe "_" showXO (b x y)
                             in if idx `mod` 3 == 0 then marker <> "\n" else marker
 
 combinations :: Int -> [a] -> [[a]]
@@ -58,7 +63,10 @@ fullBoard :: TicTacToe v -> Board
 fullBoard (TicTacToe b) = [(n, m, b n m) | n <- enumFrom Zero,  m <- enumFrom Zero]
 
 maskBoard :: Bool -> Three -> Three -> TicTacToe v
-maskBoard v x y = TicTacToe $ \i j -> if x==i && y==j then Just v else Nothing
+maskBoard v x y = TicTacToe go
+  where
+    go i j | x==i && y==j = Just v
+      | otherwise =  Nothing
 
 printBoard :: TicTacToe v -> IO ()
 printBoard = putStr . show
@@ -119,14 +127,14 @@ excludeDiagonalSymmetric = filter needToExclude
 instance HasKebab (TicTacToe Symmetric) where
   type KebabStrategy (TicTacToe Symmetric) = Symmetric
   hasKebab marker b | hasKebab' = Kebab
-    | length [v | (_, _, v) <- fullBoard b, v == Nothing] == 1 = NoMoreKebab
+    | length [v | (_, _, v) <- fullBoard b, isNothing v] == 1 = NoMoreKebab
     | otherwise = NoKebab
     where
         roll f = join
                $ (fmap . fmap) (\(a, b) -> a <> b )
                $ excludeDiagonalSymmetric . combinations 3
                $ [ (x, y) | (x, y, v) <- fullBoard (f b), v == Just marker ]
-        hasKebab' = any (==(Zero, Zero)) (zip (roll id) (roll rotateTicTacToe))
+        hasKebab' = elem (Zero, Zero) (zip (roll id) (roll rotateTicTacToe))
   whatStrategy _ = "Symmetic"
 
 instance HasKebab (TicTacToe LinAlg) where
@@ -144,10 +152,10 @@ instance HasKebab (TicTacToe TreePrunning) where
 --
 checkKebab :: Bool -> TicTacToe Symmetric -> KebabState
 checkKebab marker b | hasKebab' = Kebab
-  | length [v | (_, _, v) <- fullBoard b, v == Nothing] == 1 = NoMoreKebab
+  | length [v | (_, _, v) <- fullBoard b, isNothing v] == 1 = NoMoreKebab
   | otherwise = NoKebab
   where markers = [ x <> y | (x, y, v) <- fullBoard b, v == Just marker ]
-        hasKebab' = any (==Zero) (fold (combinations 3 markers))
+        hasKebab' = Zero `elem` fold (combinations 3 markers)
 
 -- linear algebra
 
@@ -164,12 +172,12 @@ newtype Game v a = Game { unGame :: GM v a }
 
 tictactoeLoop :: HasKebab (TicTacToe v) => Game v ()
 tictactoeLoop = do
-      t <- turn <$> get
+      t <- gets turn
       liftIO . putStr $ showXO t <> "> "
-      input <- liftIO $ readInput
+      input <- liftIO readInput
       case input of
         [x, y] -> do
-            games <- gameHistory <$> get
+            games <- gets gameHistory
             let game = head games
                 newgame = maskBoard t x y <> game
             liftIO . printBoard $ newgame
@@ -180,7 +188,7 @@ tictactoeLoop = do
               Kebab       -> liftIO . putStrLn $ (showXO t <> " Get kebab!!")
               NoMoreKebab -> liftIO . putStrLn $ "No more Kebab TAT"
   where
-    readInput = (fmap (toEnum . read) . words <$> getLine :: IO ([Three]))
+    readInput = fmap (toEnum . read) . words <$> getLine :: IO [Three]
 
 runTicTacToe :: IO (GameState Symmetric)
 runTicTacToe = execStateT (unGame tictactoeLoop) (GameState [mempty] False)

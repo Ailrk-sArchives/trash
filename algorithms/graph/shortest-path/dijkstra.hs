@@ -44,9 +44,11 @@ instance Foldable SkewHeap where
   foldr _ b Empty            = b
   foldr f b (SkewNode x l r) = f x (foldr f (foldr f b l) r)
 
+
 extractMin :: (Ord a) => SkewHeap a -> Maybe (a, SkewHeap a)
 extractMin Empty            = Nothing
 extractMin (SkewNode x l r) = Just (x, l <> r)
+
 
 -- filter a skew heap
 heapDeleteBy :: forall a. (Ord a)

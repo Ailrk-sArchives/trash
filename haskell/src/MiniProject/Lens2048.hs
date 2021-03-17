@@ -4,7 +4,7 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE ViewPatterns         #-}
 
-module Libs.Lens2048 where
+module MiniProject.Lens2048 where
 
 -- TODO this is incomplete, still need to add logic to add cubes
 

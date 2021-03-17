@@ -57,6 +57,7 @@ completeBinaryTree = go 0 1
 
 
 -- O(1) enqueue and dequeue.
+-- but it's not necesary here
 
 data Queue a = Queue { front :: [a]
                      , back  :: [a]
@@ -64,3 +65,22 @@ data Queue a = Queue { front :: [a]
 
 
 
+-- tile the nodes
+-- use lazyness to get priority queue ...
+
+bfs :: Tree -> [Tree]
+bfs root =
+  let
+    nodes = root : children
+    children = concatMap (\t -> [l t, r t]) nodes
+   in nodes
+
+
+distance :: Integer -> Integer -> Maybe Integer
+distance x0 xf = go nodes
+  where
+    nodes = bfs $ mkTree x0
+    go (t:ts)
+      | value t == xf = Just $ depth t
+      | value t > 4 * xf = Nothing
+      | otherwise = go ts
