@@ -26,15 +26,15 @@
 //   2   7
 //
 // operations on binary heap
-//  1. insertion O(1) average, O(logn)                    | Swim up
+//  1. insertion O(1) average, O(logn) *                    | Swim up
 //      add to bottom of the tree first.
 //      If it's not correct order swap; Recurse until the order is right.
-//  2. extract the maximums (delete the root.) O(logn)    | Sink down
+//  2. extract the maximums (delete the root.) O(logn) *    | Sink down
 //      replace the root with the last element in the  last level.
 //      sink the root down if the order is wrong.
 //      recurse until the heap property is restored.
 //  3. search
-//      just as normal binary tree.
+//      search over the array O(n) *
 
 // T needs to be total order.
 
@@ -43,8 +43,8 @@ private:
   std::array<T, Size> data;
   size_t bottom;
 
-  constexpr inline size_t left_(size_t i) noexcept { return i * 2 + 1; };
-  constexpr inline size_t right_(size_t i) noexcept { return i * 2 + 2; };
+  inline size_t left_(size_t i) noexcept { return i * 2 + 1; };
+  inline size_t right_(size_t i) noexcept { return i * 2 + 2; };
 
   // given node, we want to know it's parent idx, value, and
   // whether the node is left or right child of the parent.
@@ -56,18 +56,21 @@ private:
   inline Parent parent_(size_t i) {
     if (i == 0)
       return {0, data.at(0)};
-
     size_t idx = static_cast<size_t>((i - 1) / 2);
-
     return {idx, data.at(idx)};
   }
 
-  // maintain the invariant.
   bool swim_up(T &o, size_t idx);
   void sink_down(size_t idx);
 
 public:
   BinHeap() : data(), bottom(0) {}
+  inline bool is_full() noexcept { return bottom >= data.size() - 1; };
+  inline bool is_empty() noexcept { return bottom == 0; };
+  inline bool in_range(size_t i) noexcept { return i < data.size(); }
+  inline bool insert(T o);
+  inline std::optional<T> extract() noexcept;
+  inline std::optional<size_t> search(const T &o) noexcept;
 
 #ifdef Debug
   inline void print_data() {
@@ -77,21 +80,13 @@ public:
     std::cout << "\n";
   }
 #endif
-
-  inline bool is_full() noexcept { return bottom >= data.size() - 1; };
-  inline bool is_empty() noexcept { return bottom == 0; };
-  inline bool in_range(size_t i) noexcept { return i < data.size(); }
-
-  inline bool insert(T o);
-  inline std::optional<T> extract() noexcept;
-  inline std::optional<size_t> search(const T &o) noexcept;
 };
 
 template <typename T, size_t Size>
 inline std::optional<size_t> BinHeap<T, Size>::search(const T &o) noexcept {
 
   for (size_t i = 0; i <= bottom; ++i) {
-    if (data.at(i) == o) {
+    if (data[i] == o) {
       return i;
     }
   }
@@ -120,23 +115,23 @@ void BinHeap<T, Size>::sink_down(size_t idx) {
   size_t right = right_(idx);
   size_t largest = idx;
 
-  if (in_range(left) && data.at(left) > data.at(largest)) {
+  if (in_range(left) && data[left] > data[largest]) {
     largest = left;
   }
 
-  if (in_range(right) && data.at(right) > data.at(largest)) {
+  if (in_range(right) && data[right] > data[largest]) {
     largest = right;
   }
 
   if (largest != idx) {
-    std::swap(data.at(idx), data.at(largest));
+    std::swap(data[idx], data[largest]);
     sink_down(largest);
   }
 }
 
 template <typename T, size_t Size> inline bool BinHeap<T, Size>::insert(T o) {
   if (is_empty()) {
-    data.at(bottom) = o;
+    data[bottom] = o;
     bottom++;
     return true;
   }
@@ -149,10 +144,10 @@ template <typename T, size_t Size> inline bool BinHeap<T, Size>::insert(T o) {
     return false;
   }
 
-  data.at(bottom) = o;
+  data[bottom] = o;
   bottom++;
 
-  return swim_up(data.at(bottom - 1), bottom - 1);
+  return swim_up(data[bottom - 1], bottom - 1);
 }
 
 // sink
@@ -162,8 +157,8 @@ inline std::optional<T> BinHeap<T, Size>::extract() noexcept {
     return {};
   }
 
-  T top = std::move(data.at(0));
-  data.at(0) = std::move(data.at(bottom));
+  T top = std::move(data[0]);
+  data[0] = std::move(data[bottom]);
   bottom--;
 
   sink_down(0);

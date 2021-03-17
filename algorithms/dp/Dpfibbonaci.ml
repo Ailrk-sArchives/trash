@@ -1,14 +1,16 @@
+(* To link with unix, run ocamlc unix.cma % *)
+
 open Hashtbl;;
 open List;;
 open Unix;;
 
-let n = 37
+let n = 40
 
 (* the dp implementation, loop also uses recursion
  * It's actually quite easy to achieve the same effect as
  * a normal loop.
  * *)
-let fib_dp (n: int) : int =
+let fib_dp_rec (n: int) : int =
   let a : int ref = ref 0 in
   let b : int ref = ref 1 in
   let rec loop i =
@@ -18,6 +20,19 @@ let fib_dp (n: int) : int =
             a := tmp;
             loop (i + 1)
   in !(loop 0)
+
+
+(* dp 2 with for loop *)
+let fib_dp_loop (n: int) : int =
+  let a : int ref = ref 0 in
+  let b : int ref = ref 1 in
+  let tmp : int = 0
+  in for i = 0 to n do
+    let tmp = !b in
+    b := !a + !b;
+    a := tmp;
+  done;
+  !b
 
 
 (* naive recursion impelementation *)
@@ -61,11 +76,12 @@ let fib_cps (n: int) =
 let timer name f =
   let t = Unix.gettimeofday () in
   let res = f n in
-  Printf.printf "%s:, value: %d Excution time %f" name res (Unix.gettimeofday () -. t)
+  Printf.printf "%s:, value: %d Excution time %f\n" name res (Unix.gettimeofday () -. t)
 
 
 let main () =
-  timer "fib_dp" fib_dp;
+  timer "fib_dp_rec" fib_dp_rec;
+  timer "fib_dp_loop" fib_dp_loop;
   timer "fib_cps" fib_cps;
   timer "fib_rec" fib_rec;
   timer "fib_rec_mem" fib_rec_mem;

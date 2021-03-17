@@ -20,13 +20,4 @@
 //                           1  2  3  4   5  6   7   8
 std::array<int, 8> rod_price{1, 5, 8, 9, 10, 17, 17, 20};
 
-// for rod with length 4, we can cut it into:
-// 2 + 2, 1 + 3, 4 + 0, 1 + 1 + 1 + 1, ...with price
-//   10,    9,     9,        4, ...
-//   and the result is obviiouly 5, 5
-
-//  if the input is larger, we need to come up with an algorihtm
-//  that computes the best solution for us.
-
-
 
