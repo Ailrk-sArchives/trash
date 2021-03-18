@@ -19,5 +19,9 @@ import qualified Control.Monad.ST.Lazy as Lazy (ST)
 import           Data.Ix               (Ix, index, range, rangeSize)
 import           Foreign.C.Types
 import           Foreign.Storable
-import           GHC.Base              (IO (..), divInt#)
+import           GHC.Base              (IO (..), divInt#, Array#)
 import           GHC.ST                (ST (..), runST)
+
+
+data MyArray i e = MyArray !i !i {-# UNPACK #-} !Int (Array# e)
+

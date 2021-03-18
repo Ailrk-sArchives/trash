@@ -1,8 +1,8 @@
 {-# LANGUAGE QuasiQuotes     #-}
 {-# LANGUAGE TemplateHaskell #-}
-module Other.QQHtmlRunner where
+module Libs.TH.QQHtmlRunner where
 
-import           Other.QQHtml
+import           Libs.TH.QQHtml
 
 {-@ Using the quasi quoters from QQHtml.
     process:

@@ -57,7 +57,8 @@ completeBinaryTree = go 0 1
 
 
 -- O(1) enqueue and dequeue.
--- but it's not necesary here
+-- The natural next step might be breaking out a state monad
+-- and writer monad, but not necessary here.
 
 data Queue a = Queue { front :: [a]
                      , back  :: [a]

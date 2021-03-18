@@ -1,11 +1,12 @@
 {-# LANGUAGE GADTs           #-}
+{-# LANGUAGE LambdaCase      #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Other.TemplateH where
+module Libs.TH.TemplateH where
 
 import           Control.Monad
 import           Language.Haskell.TH
-import           Other.QQHtml
+import           Libs.TH.QQHtml
 
 
 {-@ play with template haskell
@@ -67,12 +68,11 @@ fstN n = do
 
 -- use syntax bracket
 getId :: Q Exp
-getId = [| \x -> x |]
+getId = [| id |]
 
 -- a longer exaple
 getTrueCase :: Q Exp
-getTrueCase = [| \x ->
-    case x of
+getTrueCase = [| \case
       True -> True
       _    -> error "not true"
   |]
@@ -85,10 +85,10 @@ getHOAS =  [d|
     App :: ExprHOAS (a -> b) -> ExprHOAS a -> ExprHOAS b
 
   i :: ExprHOAS (a -> a)
-  i = Lam (\x -> x)
+  i = Lam id
 
   k :: ExprHOAS (a -> b -> a)
-  k = Lam (\x -> Lam (\_ -> x))
+  k = Lam (\x -> Lam . const)
 
   s :: ExprHOAS ((a -> b -> c) -> (a -> b) -> (a -> c))
   s = Lam (\x -> Lam (\y -> Lam (\z -> App (App x z) (App y z))))
@@ -97,7 +97,7 @@ getHOAS =  [d|
 
   eval :: ExprHOAS a -> a
   eval (Con v)     = v
-  eval (Lam f)     = \x -> eval (f (Con x))
-  eval (App e1 e2) = (eval e1) (eval e2)
+  eval (Lam f)     = \x -> eval . f . Con
+  eval (App e1 e2) = eval e1 (eval e2)
   |]
 

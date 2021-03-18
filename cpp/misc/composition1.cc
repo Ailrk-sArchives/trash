@@ -47,7 +47,7 @@ template <typename Fn1, typename Fn2> struct composition {
 // }
 
 template <typename Fn1, typename Fn2> auto operator<(Fn1 f, Fn2 g) {
-  return [=](auto &&... a) { return f(g(a...)); };
+  return [=](auto &&...a) { return f(g(a...)); };
 }
 
 int main(void) {

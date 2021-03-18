@@ -24,7 +24,8 @@
 // so we can only use two variables to save the state.
 
 // use dp to construct solution button up.
-int fib_dp(int n) { int a = 0, b = 1, tmp;
+int fib_dp(int n) {
+  int a = 0, b = 1, tmp;
   for (int i = 0; i < n; ++i) {
     tmp = b;
     b = a + b;

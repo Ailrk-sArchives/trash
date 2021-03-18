@@ -74,6 +74,10 @@ library
       Libs.Refs
       Libs.MyArray
 
+      Libs.TH.TemplateH
+      Libs.TH.QQHtml
+      Libs.TH.QQHtmlRunner
+
       MiniProject.EchoServer
       MiniProject.Lens2048
       MiniProject.TicTacToe
@@ -82,9 +86,6 @@ library
       Other.AbstractAlgebra
       Other.Testing
       Other.FFI
-      Other.TemplateH
-      Other.QQHtml
-      Other.QQHtmlRunner
   other-modules:
       Paths_haskellwikibook
   hs-source-dirs:
