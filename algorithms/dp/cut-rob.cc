@@ -19,5 +19,3 @@
 // index is the length of a rod, the value at that index is the price.
 //                           1  2  3  4   5  6   7   8
 std::array<int, 8> rod_price{1, 5, 8, 9, 10, 17, 17, 20};
-
-

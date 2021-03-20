@@ -10,8 +10,14 @@ void mk_string() {
   std::string s4 = s3;
 
   // ptr
-  const char *se = "abc";
-  std::string s5{se, 10};
+  const uint8_t *arrs = new uint8_t(4);
+  const_cast<uint8_t *>(arrs)[0] = 'a';
+  const_cast<uint8_t *>(arrs)[1] = 'b';
+  const_cast<uint8_t *>(arrs)[2] = 'c';
+  const_cast<uint8_t *>(arrs)[3] = 'z';
+
+  const char *se = reinterpret_cast<const char *>(arrs);
+  std::string s5{se, 5};
 
   // fill
   std::string s6{10, 'a'};

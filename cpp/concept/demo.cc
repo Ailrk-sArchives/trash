@@ -3,5 +3,8 @@
 #include <iostream>
 #include <string>
 
-using namespace std::literals;
+int main(void)
+{
 
+  return 0;
+}

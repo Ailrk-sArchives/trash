@@ -1,2 +1,2 @@
 include_directories($(SOURCE_DIR))
-add_executable(constexpr demo.cc)
+add_executable(cpp20 demo.cc)
