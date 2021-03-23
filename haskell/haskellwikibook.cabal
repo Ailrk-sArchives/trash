@@ -86,6 +86,23 @@ library
       Other.AbstractAlgebra
       Other.Testing
       Other.FFI
+      Other.ProbabilityMonad
+
+      Notes.All.Dice
+      Notes.All.Files
+      Notes.All.Fundeps
+      Notes.Lang.Applicative.Interactive
+      Notes.Lang.GHCLangExtensions.GADTs
+      Notes.Lang.GHCLangExtensions.OverloadedStrings
+      Notes.Lang.GHCLangExtensions.RankNTypes
+      Notes.Lang.Monads.IO
+      Notes.Lang.Monads.ListMonad
+      Notes.Lang.Monads.MaybeMonad
+      Notes.Lang.Monads.Monads
+      Notes.Lang.Monads.StateMonad
+      Notes.NoPrelude.State
+      Notes.Perf.Wc
+
   other-modules:
       Paths_haskellwikibook
   hs-source-dirs:
@@ -93,6 +110,9 @@ library
   build-depends:
       base >=4.7 && <5
     , mtl
+    , random
+    , bytestring
+    , text
 
     -- mmap wrapper
     , mmap
@@ -103,13 +123,13 @@ library
     -- lens
     , lens
 
-    -- simple linear algebra
     , linear
 
     -- 2d pretty printing lib
     , boxes
 
     , ansi-terminal
+
 
     -- class for type with default value
     , data-default
@@ -125,6 +145,14 @@ library
     , array
     , template-haskell
     , parsec
+
+  if impl(ghc >= 9.0.1)
+      build-depends:
+        linear-base
+
+      exposed-modules:
+        Types.LinearTypeQSort
+
   default-language: Haskell2010
   -- if flag(dump)
   --   ghc-options:
