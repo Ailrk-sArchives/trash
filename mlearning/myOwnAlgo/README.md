@@ -10,7 +10,7 @@
     - K means
     - Linear regression
     - back propagation network
-    - SVM 
+    - SVM
     - hierachical clustring
 
 * ensemble

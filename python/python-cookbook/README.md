@@ -1,3 +1,3 @@
 ### python cookbook
 
-This book has such a high reputation that it almost makes you feel bad for not reading it. Cover topics on "python" side of python, but there is not much discussion about the c innard. One of the author David Beazley is a very funny guy, and I learnt a lot from his talks on Pycon.
+Advance is relative. IMO If you're already an experienced programmer in languages say c++, this book is better to serve as intro to python then fluent python.

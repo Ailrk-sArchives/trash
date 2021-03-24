@@ -1,12 +1,11 @@
+#include <iostream>
 #include <opencv4/opencv2/core.hpp>
 #include <opencv4/opencv2/highgui.hpp>
-#include <opencv4/opencv2/imgproc.hpp>
 #include <opencv4/opencv2/imgcodecs.hpp>
-#include <iostream>
-
+#include <opencv4/opencv2/imgproc.hpp>
 
 int main(int argc, char *argv[]) {
-  char* imageName = argv[1];
+  char *imageName = argv[1];
   cv::Mat image;
   image = cv::imread(imageName, 1);
   if (argc != 2 || !image.data) {
@@ -23,6 +22,7 @@ int main(int argc, char *argv[]) {
   cv::imshow(imageName, image);
   cv::imshow("Gray image", gray_image);
 
-  while(int key = (cv::waitKey()) != 27);  // 27 for esc
+  while (int key = (cv::waitKey()) != 27)
+    ; // 27 for esc
   return 0;
 }

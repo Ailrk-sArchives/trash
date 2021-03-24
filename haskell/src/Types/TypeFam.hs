@@ -1,16 +1,14 @@
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE GADTs             #-}
-{-# LANGUAGE TypeApplications  #-}
-{-# LANGUAGE TypeFamilies      #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module Types.TypeFam where
 
-
-
-import           Control.Exception
-import           Control.Monad.Except
-import           Data.Char            (ord)
-import qualified Data.IntMap          as M
+import Control.Exception
+import Control.Monad.Except
+import Data.Char (ord)
+import qualified Data.IntMap as M
 
 -- how you normall define a list with gadt??
 data GList a where
@@ -32,6 +30,7 @@ data family XList a :: *
 -- at their underlying value. But at the type level they are both
 -- XList.
 data instance XList Char = XCons !Char !(XList Char) | XNil
+
 data instance XList () = XListUnit !Int
 
 {-@ More example with the SK evaluator defined previously. @-}
@@ -39,20 +38,23 @@ data TermGADT a where
   K' :: TermGADT (a -> b -> a)
   S' :: TermGADT ((a -> b -> c) -> (a -> b) -> a -> c)
   (:@) :: TermGADT (a -> b) -> TermGADT a -> TermGADT b
+
 infixl 6 :@
 
 evalgadt :: TermGADT a -> TermGADT a
-evalgadt (K' :@ x :@ _)      = x
+evalgadt (K' :@ x :@ _) = x
 evalgadt (S' :@ x :@ y :@ z) = x :@ z :@ (y :@ z)
-evalgadt x                   = x
+evalgadt x = x
 
 -- you can't realy simulate this gadt though, because data family implies
 -- that data instances has the same arity.
 data family Fam a :: *
-data instance Fam () = FamA Int Int
-data instance Fam Int = FamB Char
-data instance Fam (a -> b) = FamC (a -> b)
 
+data instance Fam () = FamA Int Int
+
+data instance Fam Int = FamB Char
+
+data instance Fam (a -> b) = FamC (a -> b)
 
 -----------------------------------------------------------------------
 
@@ -68,13 +70,13 @@ class GMapKey k where
   insert :: k -> v -> GMap k v -> GMap k v
 
 instance GMapKey Int where
-  data  GMap Int v = GMapInt (M.IntMap v) deriving Show
+  data GMap Int v = GMapInt (M.IntMap v) deriving (Show)
   empty = GMapInt M.empty
   lookup k (GMapInt m) = M.lookup k m
   insert k v (GMapInt m) = GMapInt $ M.insert k v m
 
 instance GMapKey Char where
-  data GMap Char v = GMapChar (M.IntMap v) deriving Show
+  data GMap Char v = GMapChar (M.IntMap v) deriving (Show)
   empty = GMapChar M.empty
   lookup k (GMapChar m) = M.lookup (ord k) m
   insert k v (GMapChar m) = GMapChar $ M.insert (ord k) v m
@@ -87,26 +89,30 @@ class Zippers c where
   modify :: (Focus c -> Focus c) -> c -> c
 
 data ListZipper a = ListZipper [a] a [a]
+
 data Tree a = Branch a (Tree a) (Tree a) | Leaf
-data TreeDir a = TreeLeft a (Tree a)
-               | TreeRight a (Tree a)
+
+data TreeDir a
+  = TreeLeft a (Tree a)
+  | TreeRight a (Tree a)
+
 type TreeDirs a = [TreeDir a]
+
 data TreeZipper a = TreeZipper (Tree a) (TreeDirs a)
 
 instance Zippers (ListZipper a) where
   type Focus (ListZipper a) = a
   type Context (ListZipper a) = ([a], [a])
-  moveLeft (ListZipper (l:ls) x rs) = ListZipper ls l (x:rs)
-  moveRight (ListZipper ls x (r:rs)) = ListZipper (x:ls) r rs
+  moveLeft (ListZipper (l : ls) x rs) = ListZipper ls l (x : rs)
+  moveRight (ListZipper ls x (r : rs)) = ListZipper (x : ls) r rs
   modify f (ListZipper ls x rs) = ListZipper ls (f x) rs
 
 instance Zippers (TreeZipper a) where
   type Focus (TreeZipper a) = a
   type Context (TreeZipper a) = TreeDirs a
-  moveLeft (TreeZipper (Branch a lt rt) bs) = TreeZipper lt ((TreeLeft a rt) : bs)
-  moveRight (TreeZipper (Branch a lt rt) bs) = TreeZipper rt ((TreeRight a lt) : bs)
-  modify f (TreeZipper (Branch a lt rt) bs) = (TreeZipper (Branch (f a) lt rt) bs)
-
+  moveLeft (TreeZipper (Branch a lt rt) bs) = TreeZipper lt (TreeLeft a rt : bs)
+  moveRight (TreeZipper (Branch a lt rt) bs) = TreeZipper rt (TreeRight a lt : bs)
+  modify f (TreeZipper (Branch a lt rt) bs) = TreeZipper (Branch (f a) lt rt) bs
 
 m :: GMap Char Int
 m = insert 'a' 10 empty
@@ -126,28 +132,32 @@ class Collects c where
 instance Collects [a] where
   type Elem [a] = a
   cempty = []
-  cinsert a as = a:as
+  cinsert a as = a : as
 
 -- use top level type family
 type family Thing c
+
 class Container c where
   conempty :: c
   coninsert :: Thing c -> c -> c
 
 type instance Thing [c] = c
+
 instance Container [a] where
   conempty = []
-  coninsert a as = a:as
-
+  coninsert a as = a : as
 
 {-@ Do some type level operations
     It's here again, but let's do some peano number
  @-}
 data Zero
+
 data Succ n
 
 type family Pred' n
+
 type instance Pred' (Succ n) = n
+
 type instance Pred' Zero = Zero
 
 -- you can write type family in one place.
@@ -157,14 +167,16 @@ type family Pred n where
   Pred n = n
 
 -- ambigious type
-data KebabState = Kebab | NoKebab | NoMoreKebab  deriving (Show, Eq)
+data KebabState = Kebab | NoKebab | NoMoreKebab deriving (Show, Eq)
+
 class HasKebab a where
   type KGame a :: *
   hasKebab :: KGame a -> a
-    {-@ hasKebab :: KGame a -> KebabState @-}
-  -- this will cause a can't deduce Kebab a warning.
-  -- Imagine writing typeclass without type family, of course you need to
-  -- have the type parameter a some where to indicate which oveload to use.
+
+{-@ hasKebab :: KGame a -> KebabState @-}
+-- this will cause a can't deduce Kebab a warning.
+-- Imagine writing typeclass without type family, of course you need to
+-- have the type parameter a some where to indicate which oveload to use.
 
 class HasKebab' a where
   hasKebab' :: a -> a
@@ -179,8 +191,10 @@ class HasKebab' a where
 @-}
 
 type family FTypeApp a
+
 -- only have two overloads here.
 type instance FTypeApp Char = Bool
+
 type instance FTypeApp Bool = Bool
 
 functionApp = l $ ord h
@@ -198,4 +212,4 @@ functionApp = l $ ord h
 
     x :: Enum b => b -> b
     x = undefined
-    l = x @Int  -- here specify l with use the Int overload.
+    l = x @Int -- here specify l with use the Int overload.
