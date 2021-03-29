@@ -87,6 +87,7 @@ library
       Other.Testing
       Other.FFI
       Other.ProbabilityMonad
+      Other.FixPoint
 
       Notes.All.Dice
       Notes.All.Files

@@ -1,0 +1,34 @@
+#include <iostream>
+#include <memory>
+#include <unordered_map>
+#include <variant>
+#include <vector>
+
+
+enum jvalue_tag { O, A, N, B, JNULL };
+
+struct jvalue_t;
+using jobject_t = std::unordered_map<std::string, jvalue_t>;
+using jarray_t = std::vector<jvalue_t>;
+struct jnull_t {};
+struct jvalue_t {
+    jvalue_tag tag;
+    union {
+        jobject_t object;
+        jarray_t array;
+        std::string string;
+        int number;
+        bool boolean;
+    } value;
+};
+
+jvalue_t
+mk_jboolean(bool b) {
+    return { .tag = B, .value = { .boolean = b } };
+};
+jvalue_t
+mk_jnumer(int n) {
+    return { .tag = N, .value ={ .number = n } };
+};
+
+
