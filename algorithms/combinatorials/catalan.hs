@@ -1,6 +1,5 @@
 module Catalan where
 
-
 -- https://www.youtube.com/watch?v=GlI17WaMrtw
 -- https://en.wikipedia.org/wiki/Catalan_number
 
@@ -23,14 +22,13 @@ module Catalan where
 -- associative binary operations, e.g how many ways to parenthesis a chain of
 -- binops.
 
-
 factCPS :: Int -> (Int -> Int) -> Int
-factCPS n k | n == 1 = k 1
+factCPS n k
+  | n == 1 = k 1
   | otherwise = factCPS (n - 1) (\x -> k (x * n))
 
 factorial :: Int -> Int
 factorial = flip factCPS id
-
 
 -- we can prove that a catalan number is always an integer.
 
@@ -40,4 +38,4 @@ catalan n = fromIntegral divident `div` fromIntegral divisor
     divident = factorial (2 * n)
     divisor = factorial (n + 1) * factorial n
 
-catalanNumbers = [catalan n | n <- [1..10]]
+catalanNumbers = [catalan n | n <- [1 .. 10]]

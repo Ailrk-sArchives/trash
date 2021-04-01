@@ -73,6 +73,7 @@ library
       Libs.StgDumpExperiment
       Libs.Refs
       Libs.MyArray
+      Libs.Seq
 
       Libs.TH.TemplateH
       Libs.TH.QQHtml

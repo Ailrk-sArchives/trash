@@ -3,6 +3,7 @@
 #include <vector>
 using std::function;
 using std::vector;
+
 template <typename... P> struct parameter_pack {
   template <template <typename...> typename T> using apply = T<P...>;
 };

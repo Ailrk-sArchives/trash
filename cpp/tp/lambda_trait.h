@@ -38,6 +38,7 @@ template <typename F> struct lambda_traits {
 
 auto foo = [](int, double, char) -> int { return 1; };
 
+#define TEST
 #ifdef TEST
 static_assert(std::is_same_v<lambda_traits<decltype(foo)>::return_type, int>);
 static_assert(std::is_same_v<lambda_traits<decltype(foo)>::parameter<0>, int>);
