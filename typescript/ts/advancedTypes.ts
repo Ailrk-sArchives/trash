@@ -96,9 +96,3 @@ let s = people.name;
 s = people.next.name;
 s = people.next.next.next.name;
 
-
-
-
-
-
-

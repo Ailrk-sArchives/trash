@@ -85,7 +85,7 @@ void spare_cash2() {
 
     int cost = INT8_MAX;
     if (n - 1 >= 0)
-      cost = min(cost, rec(n - 1) + 1);
+      cost = min(cost, rec(n - 2) + 1);
     if (n - 5 >= 0)
       cost = min(cost, rec(n - 5) + 1);
     if (n - 11 >= 0)

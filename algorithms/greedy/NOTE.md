@@ -5,6 +5,7 @@
 Given a problem, there can be many solutions. But if we imporse some constraints, there will be some solutions that are feasible, and some that are not.
 
 - feasible solution: solutions that satisfy some constraint.
+
 - optimal solution: feasible solution that is optmized.
 
 ```
@@ -30,5 +31,17 @@ Greedy (a, n)
     if feasible(x) then
       solution = solution + x;
 }
-
 ```
+
+
+#### Elements of greedy strategy
+- Formulate the optimization problem into a form that we can solve it by making choice from sub optimal solutions.
+- Prove there is always an optimal solution that makes the greedy choice, so we can safely make a greedy choice.
+- Inductively prove making greedy choice for each step yields the optimal solution.
+
+
+#### Key ingredients
+- Greedy choice property
+  - local optmial solutions can lead to global optmial solution.
+- Optimal substructure
+  -
