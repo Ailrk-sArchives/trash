@@ -106,9 +106,12 @@ struct
                     | T of 'a * 'a tree * 'a tree
 
    fun bfsQ (q  : 'a tree Q.queue)  : 'a list =
-     if Q.isEmpty q then [] else let val (t, q') = Q.remove q in case t of E => bfsQ q'
-                                                                    | T (x, l, r) => let
-                                                                      val q'' = Q.insert (r, Q.insert (l, q')) in
-                                                                        x  :: bfsQ q'' end end
+     if Q.isEmpty q
+     then []
+     else let val (t, q') = Q.remove q in
+       case t of E => bfsQ q'
+          | T (x, l, r) => let
+            val q'' = Q.insert (r, Q.insert (l, q')) in
+              x  :: bfsQ q'' end end
    fun bfs t = bfsQ (Q.singleton t)
-                                 end
+  end

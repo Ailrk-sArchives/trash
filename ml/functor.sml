@@ -86,7 +86,7 @@ end
 functor BinarySearchTreeFn(O:ORDER) =
 struct
   datatype 'a tree = Leaf
-                   | Tree of 'a tree * 'a  *'a tree
+                   | Tree of 'a tree * 'a  * 'a tree
 end
 
 functor Dinctionary(O:ORDER) =
