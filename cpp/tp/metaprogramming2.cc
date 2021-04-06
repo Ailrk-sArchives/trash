@@ -53,6 +53,8 @@ template <typename T> struct lazy<alreay_lazy<T>> { using type = T; };
 template <template <typename...> typename F, typename... Ts>
 struct lazy<F<Ts...>> : F<typename lazy<Ts>::type...> {};
 
+// curry<times>::apply<int_<1>>::apply<int_<2>>::type
+
 #ifdef TESTING
 namespace app {
 template <typename N>
@@ -67,6 +69,7 @@ struct fact : lazy<typename
                        times<N, fact<minus<N, int_<1>>>>
 
                        >::type> {};
+
 constexpr int fact10 = fact<int_<10>>::value;
 
 } // namespace app

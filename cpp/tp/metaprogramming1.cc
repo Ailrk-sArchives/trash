@@ -1,6 +1,6 @@
 #include <type_traits>
 
-/* This version shows all bad practices... */
+/* This version */
 
 // template meta function.
 // template meta function should always take a type as paramter.
