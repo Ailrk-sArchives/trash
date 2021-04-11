@@ -9,6 +9,13 @@ void template_fn(Fn fn) {
   std::cout << "succeed: " << i << std::endl;
 }
 
+struct nil {};
+template <typename...> struct head;
+template <typename T, typename... Ts> struct head<T, Ts...> { using type = T; };
+template <> struct head<> { using type = nil; };
+
+head<>::type;
+
 int main(void) {
 
   auto fn1 = [](int a) { return a + 1; };

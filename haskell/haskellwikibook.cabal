@@ -60,6 +60,7 @@ library
       Types.ThinkingWithTypes
       Types.ExSubTyping
       Types.Ex
+      Types.DataKinds
 
       PL.Lam
       PL.ScottEncoding
