@@ -1,6 +1,7 @@
 {-# LANGUAGE BangPatterns #-}
 
 -- just make a simple map for the environment.
+-- binary tree, no balance.
 
 module Map where
 

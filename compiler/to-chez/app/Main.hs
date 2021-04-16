@@ -9,6 +9,8 @@ import Text.Parsec.Char
 import Text.Parsec.String
 import Text.Parsec.Token
 
+-- parse into expression.
+
 type Name = String
 
 data Lit
@@ -30,6 +32,7 @@ litP = intP <|> strP
     intP = LitInt . read . (: "") <$> digit
     strP = LitStr . T.pack <$> (char '"' *> many anyChar <* char '"')
 
+-- TODO not necessarily correct.
 exprP :: Parser Expr
 exprP = varp
   where
