@@ -63,6 +63,27 @@ eval (as, xs) = mconcat (zipWith3 term as xs [0 ..])
 -- also because we can always factoring out the constant polynomial, we can assume
 -- poynomial are monic, that is, the leading coefficient is 1.
 
+-----------------------------------------------------------
+-- What are values in a polynomial ring?
+-- 1. constant are polynomials too
+-- 2. x is a polynomial
+-- 3. 0 is the zero polynomial
+
+-----------------------------------------------------------
+-- if for R[x], R is a field, call it F with identity 1.
+-- then units of F[x] can only be constant polynomial, because only constant polynomial
+-- will multiple to yield one.
+--
+-- because for a field all non zero elements are units, so for F[x] all non constant
+-- polynomials are unit.
+-- Or in another word, polynomials with degree larger than one can't be unit
+--
+-- That means, the only possible factors of an irreducible polynomial are non zero constants.
+-- e.g (x^2 - 2) is irreducible over Q[x] = 1 . (x^2 - 2)
+
+-----------------------------------------------------------
+-- concept:
+-- A polynomial f(x) has a linear (degree 1) factor (x - a) iff p(a) = 0.
 
 -----------------------------------------------------------
 -- ring of integer Z and Polynomial over field F F[x] --
@@ -88,3 +109,12 @@ eval (as, xs) = mconcat (zipWith3 term as xs [0 ..])
 -- - prime and irreducible makes a field
 -- p prime <=> Zp is a field       f(x) irreducible <=> F[x]/(f(x))l is irreducible.
 
+
+-----------------------------------------------------------
+-- generator polynomial and ideal
+
+-----------------------------------------------------------
+-- every euclidean domain is a principle ideal domain.
+-- meaning, all ideals has a generator polynomial
+-- meaning, exists a generator polynomial that repeately multiple itself generate
+--          the entire ideal

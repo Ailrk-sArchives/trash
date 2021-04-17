@@ -1,5 +1,17 @@
 module FiniteField where
 
+-- polynomial ring.
+--
+
+class Monoid r => Group r where
+  invA :: r -> r -- additive inverse
+
+class (Monoid r) => Ring r where
+  (<@>) :: r -> r -> r
+  rempty :: r -- 1
+
+class Ring r => CommutativeRing r
+
 -- recall:
 -- polynomial ring R[x] is a ring of polynomials with coefficient
 -- from R.
@@ -27,6 +39,7 @@ module FiniteField where
 -- that it's power generate the entire field.
 -- If that's the case, we call f(x) a primitive polynomial
 -- x, as the primitive element of the
+data Bin = O | I deriving (Show, Enum)
 
 -----------------------------------------------------------
 -- what makes Zp[x]/(f(x)) a finite field?

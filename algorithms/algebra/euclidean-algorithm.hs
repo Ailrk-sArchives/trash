@@ -132,7 +132,6 @@ extendedEuclidean' (_, r, s, t) (q', r', s', t') =
    in extendedEuclidean' c1 c2
 
 extendedEuclidean :: Integer -> Integer -> (Integer, Integer)
-extendedEuclidean a b | a < b = error "a must > b"
 extendedEuclidean a b = extendedEuclidean' (undefined, a, 1, 0) (a `div` b, b, 0, 1)
 
 -- When gcd(a, b) = 1, or a, b are coprime, we have
@@ -154,4 +153,3 @@ congInv a n = snd (extendedEuclidean a n)
 -- so in ring of integers, only 1 and -1 have multiplicative inverse.
 -- note all elements have additive inverse because to be a ring it needs to be
 -- a group at the first place.
-
