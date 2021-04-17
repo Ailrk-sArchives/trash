@@ -14,40 +14,49 @@
 ;;  other one,
 ;;  O(n^2)
 
-(defun grade-school-multiplication (a b)
-  (let*
-   ((stra (reverse (write-to-string a)))
-    (strb (reverse (write-to-string b)))
-    (len (length stra))
-    ;; to make the vector mutable we needs to set fill-pointer.
-    (intermediates (make-array len :element-type 'string :fill-pointer 0))
-    (padding -1)) ;; (loop for from 0 to -1 return nil)
-   (labels
-    ((once (digit)  ; digit * stra
-           (let
-            ((carry 0)
-             (acc ""))
-            (loop for sa across stra do
-                  (let*
-                   ((a (parse-integer (string sa)))
-                    (product (if (= carry 0)
-                                 (* a digit)
-                                 (+ (* a digit) carry))))
-                   (if (> product 10)
-                       (setf carry (floor product 10))
-                       (setf carry 0))
-                   (setf acc (concatenate 'string
-                                          (write-to-string (mod product 10))
-                                          acc
-                                          (format nil "~{~A~}"
-                                                  (loop for i from 0 to
-                                                        padding collecting "0"))))))
-            (vector-push acc intermediates))))
-    (when (not (= (length stra) (length strb)))
-          (error "lenth a and b needs to have same digits"))
 
-    (loop for sb across strb do
-          (progn
-           (once (parse-integer (string sb)))
-           (incf padding)))
-    (loop for n across intermediates summing (parse-integer n)))))
+; (defun one-digit-mult (a b)
+;   (declare (type sequence a)
+;            (type integer b))
+;   (cond
+;     ((< (length a) 1) (error "a must be at least one digit"))
+;     (t (let* ((carry 0)
+;               (buffer '()))
+;          (loop for n in (reverse a) do
+;                (let ((nb (* n b)))
+;                  (multiple-value-bind (q r) (floor (* nb) 10)
+;                    (progn
+;                      (setf buffer
+;                            (cons
+;                              (if (= carry 0) r
+;                                  (progn
+;                                    (multiple-value-bind
+;                                      (q1 r1) (floor (+ nb carry) 10)
+;                                      (setf carry q1)
+;                                      r1)))
+;                              buffer))))))))))
+
+; (one-digit-mult '(1 2 3) 9)
+
+
+
+(defun mult-one (as a)
+  (declare (type list as)
+           (type integer a))
+  (let ((result nil)
+        (carry 0)
+        (sa (reverse as)))
+    (loop for n in sa do
+          (let* ((product (+ carry (* n a)))
+                 (r (mod product 10))
+                 (q (floor product 10)))
+            (if (> q 0) (setf carry q) (setf carry 0))
+            (setf result (cons r result))))
+    (format t "~A" result)))
+
+(mult-one '(1 2 3) 9)
+
+(loop for i from 0 to 10
+      for j from 0 to 10
+      for k = 0 do
+      (format t "~a ~a ~a" i j k))

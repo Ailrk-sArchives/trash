@@ -1,4 +1,10 @@
+{-# LANGUAGE BinaryLiterals #-}
+
 module AES where
+
+import Data.Bits
+import Data.Maybe
+import Data.List
 
 -- baby AES
 --
@@ -35,3 +41,31 @@ module AES where
 --  matrix
 --
 -- The process is repeated in 10 rounds to finally encrypt the block.
+
+-- baby AES
+
+-- field table with p(x) = x^4 + x + 1
+fieldTableF16 =
+  [ 0b0001,
+    0b0010,
+    0b0100,
+    0b1000,
+    0b0011,
+    0b0110,
+    0b1100,
+    0b1011,
+    0b0101,
+    0b1010,
+    0b0111,
+    0b1110,
+    0b1111,
+    0b1101,
+    0b1001
+  ]
+
+byteSubM =
+  [ [1, 0, 1, 1],
+    [1, 1, 0, 1],
+    [1, 1, 1, 0],
+    [0, 1, 1, 1]
+  ]

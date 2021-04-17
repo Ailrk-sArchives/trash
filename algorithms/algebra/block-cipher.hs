@@ -19,5 +19,3 @@ module BlockCipher where
 --  if M h has inverse matrix, det(M) must have inverse in the ring Zm.
 
 -- hill cipher is a block cipher, meaning you encrypt a block of text at a time.
---
---
