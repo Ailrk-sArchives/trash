@@ -39,6 +39,19 @@
       (g . (f e))
       (h . (f e)))))
 
+(defparameter *bird-graph*
+  (init-hash-table
+    '((a . (b c))
+      (b . (a f g))
+      (c . (a d))
+      (d . (e))
+      (e . (d f g))
+      (g . (b e))
+      (f . (b e)))))
+
+;; output
+;; (C . 1) (A . 0) (D . 0) (F . 0) (G . 0) (B . 1) (E . 1)
+
 (defparameter *fish-fight-counter-example-graph*
   (init-hash-table
     '((a . (b c))
@@ -50,9 +63,7 @@
       (g . (f e))
       (h . (f e)))))
 
-
-;; a simple assoc list
-
+;; output nil
 
 (defun bipartite-* (graph root)
   "if the graph is biartite, return the coloring"
@@ -73,6 +84,7 @@
       (block done
              (loop while queue do
                (let ((v (dequeue queue)))
+                 ;; u's color should be the reverse of v's color.
                  (setf color (next-color (cdr (assoc v color-table))))
                  (loop for u in (gethash v graph) do
                        (if (not (member u visited))
@@ -85,7 +97,6 @@
                                  (progn
                                    (return-from done nil))))))))
              color-table))))
-
 
 (defun bipartite (graph)
   "find a node with no in degree as the starting node"
