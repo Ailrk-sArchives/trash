@@ -31,8 +31,7 @@
 
 (defun toposort-dfs (graph)
   "find a node with no in degree as the starting node"
-  (let* (
-         (non-zero-indegrees
+  (let* ((non-zero-indegrees
            (remove-duplicates
              (apply #'append
                     (loop for v being the hash-values in graph
@@ -44,7 +43,7 @@
                non-zero-indegrees)))
 
          (zero-indegrees (set-difference allnodes non-zero-indegrees)))
-    (dfs graph (car allnodes))))
+    (dfs graph (car zero-indegrees))))
 
 
 (format t "~a~%" (toposort-dfs *dependencies*))

@@ -39,30 +39,54 @@
       (g . (f e))
       (h . (f e)))))
 
+(defparameter *fish-fight-counter-example-graph*
+  (init-hash-table
+    '((a . (b c))
+      (b . (a d c))
+      (c . (a d b))
+      (d . (b c e f))
+      (e . (d g h))
+      (f . (d g h))
+      (g . (f e))
+      (h . (f e)))))
+
+
 ;; a simple assoc list
-(defparameter *color-table*
-  (let ((keys (remove-duplicates
-    (append (loop for k being the hash-keys in *fish-fight-graph*)
-            (apply #'append
-                   (loop for v being the hash-values in *fish-fight-graph*
-                         collect v)) ))))
-    (mapcar (lambda (n) (cons n -1)) keys)))
 
-(defun set-color (node color) (setf (cdr (assoc node *color-table*)) color))
 
-(defun next-color (n) (mod n 2))
-
-(defun bipartite (graph root)
+(defun bipartite-* (graph root)
+  "if the graph is biartite, return the coloring"
   (let* ((queue `(,root))
          (visited `(,root))
+         (color-table
+           (let ((keys (remove-duplicates
+                         (append
+                           (loop for k being the hash-keys in graph)
+                           (apply #'append
+                                  (loop for v being the hash-values in graph
+                                        collect v)) ))))
+             (mapcar (lambda (n) (cons n -1)) keys)))
          (color 0))
-    (set-color v color)
-    (loop while queue do
-          (let ((v (dequeue queue)))
-            (setf color (next-color color))
-            (loop for u in (gethash v graph) do
-                  (if (not (member u visited))
-                      (append visited `(,u))
-                      (if (not (equal (assoc u *color-table*) -1))
-                          (error "found cycle")
-                          (set-color u color))))))))
+    (labels ((set-color (node color) (setf (cdr (assoc node color-table)) color))
+             (next-color (n) (mod (+ n 1) 2)))
+      (set-color root color)
+      (block done
+             (loop while queue do
+               (let ((v (dequeue queue)))
+                 (setf color (next-color (cdr (assoc v color-table))))
+                 (loop for u in (gethash v graph) do
+                       (if (not (member u visited))
+                           (progn
+                             (push u visited)
+                             (enqueue u queue)
+                             (set-color u color))
+                           (progn
+                             (if (not (equal (cdr (assoc u color-table)) color))
+                                 (progn
+                                   (return-from done nil))))))))
+             color-table))))
+
+
+(defun bipartite (graph)
+  "find a node with no in degree as the starting node"
+  (bipartite-* graph (car (loop for k being the hash-keys in graph collect k))))
