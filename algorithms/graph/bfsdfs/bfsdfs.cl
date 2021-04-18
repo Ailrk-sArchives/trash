@@ -17,6 +17,7 @@
         (12 14) (13 15) (14)         ;; 13 - 15
         ))
 
+;; dfs: find a topological order of the graph.
 (defun dfs (graph root)
   (let* ((visited `(,root))
          (stack `(,root)))
@@ -31,6 +32,8 @@
 
 ;; to mutate outside world you need to use macro.
 (defmacro dequeue (queue)
+  "common lisp can't mutate parameter, so this sort of mutation operations
+   are normally made as macro"
   (let ((v (gensym)))
     `(let ((,v (car (last ,queue))))
        (setf ,queue (butlast ,queue))
@@ -39,6 +42,7 @@
 (defmacro enqueue (queue x)
   `(setf ,queue (cons ,x ,queue)))
 
+;; bfs: find all nodes reachable from the starting point.
 (defun bfs (graph root)
   (let* ((visited `(,root))
          (queue `(,root)))
