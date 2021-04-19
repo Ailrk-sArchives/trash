@@ -27,7 +27,6 @@
 
 
 (defun mult-chopped (x y)
-
   (let* ((x1 (chop x))
          (y1 (chop y))
          (a (splited-a x1))

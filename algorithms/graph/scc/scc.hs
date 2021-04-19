@@ -17,5 +17,3 @@ type Graph = [Neighbours]
 
 instance Ord Vertex where
   compare _ _ = EQ
-
-

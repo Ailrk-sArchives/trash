@@ -19,6 +19,9 @@
 ;;  4. pop element from the stack, dfs from the element on Gt to collect
 ;;     strongly connected components.
 
+;; strongly connected components themselves generates a new graph, where
+;; each scc themselves are considered as a node.
+
 (defmacro init-hash-table (xs)
   `(let ((m (make-hash-table)))
      (loop for kv in ,xs do
