@@ -9,8 +9,8 @@
 
 (defmacro init-hash-table (xs)
   `(let ((m (make-hash-table)))
-     (loop for kv in ,xs do
-           (setf (gethash (car kv) m) (cdr kv)))
+     (dolist (kv ,xs)
+       (setf (gethash (car kv) m) (cdr kv)))
      m))
 
 ;; min heap
@@ -46,10 +46,9 @@
 (defmethod swimup ((o min-heap) i)
   "i is the index of the element to swim up"
   (with-accessors ((data data)) o
-    (if (< (elt data i) (elt data (parent i)))
-        (progn
-          (rotatef (elt data i) (elt data (parent i)))
-          (swimup o (parent i))))))
+    (when (< (elt data i) (elt data (parent i)))
+      (rotatef (elt data i) (elt data (parent i)))
+      (swimup o (parent i)))))
 
 (defmethod sinkdown ((o min-heap) i)
   "sink down while keep the order invariant"
@@ -62,33 +61,29 @@
              (left (elt-or-nil data left-idx))
              (right-idx (right-child i))
              (right (elt-or-nil data right-idx)))
-        (if e
-          (progn
-            (if (and left (> e left)) (setf largest-idx left-idx))
-            (if (and right (> e right)) (setf largest-idx right-idx))
-            (if (not (= largest-idx i))
-                (progn
-                  (rotatef (elt data largest-idx) (elt data i))
-                  (sinkdown o i)))))))))
+        (when e
+          (when (and left (> e left)) (setf largest-idx left-idx))
+          (when (and right (> e right)) (setf largest-idx right-idx))
+          (when (not (= largest-idx i))
+            (rotatef (elt data largest-idx) (elt data i))
+            (sinkdown o i)))))))
 
 (defmethod insert-heap ((o min-heap) e)
   "insert into the bottom of the heap then swimup"
   (with-accessors ((data data)) o
     (let ((was-empty (is-empty o)))
       (vector-push-extend e data)
-      (if (not was-empty) (swimup o (- (length data) 1))))))
+      (when (not was-empty) (swimup o (- (length data) 1))))))
 
 (defmethod extract-heap ((o min-heap))
   "extract the min element, move bottom to top and sinkdown"
   (with-accessors ((data data)) o
-    (if (is-empty o)
-        nil
-        (let ((top (elt data 0))
-              (bottom (vector-pop data)))
-          (if (not (is-empty o))
-              (setf (elt data 0) bottom))
-          (sinkdown o 0)
-          top))))
+    (when (not (is-empty o))
+      (let ((top (elt data 0))
+            (bottom (vector-pop data)))
+        (when (not (is-empty o)) (setf (elt data 0) bottom))
+        (sinkdown o 0)
+        top))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; dijkstra
@@ -163,26 +158,22 @@
 ;; define graph
 (defparameter *graph-1-all-nodes*
   (init-hash-table
-    (loop for i from 1 to 6 collect (new-node i))))
+    (loop :for i :from 1 :to 6 :collect (new-node i))))
 
 
 ;; lemma. the relaxation operation maintains the invaraint
 ;; that d[v] >= δ(s, v) for all v ∈ V.
 (defmacro relaxf (u v w)
   "relax adjacent nodes"
-  `(progn
-     (if (> (distance ,v) (+ (distance ,u) ,w))
-         (progn
-           (setf (distance ,v) (+ (distance ,u) ,w))
-           (setf (predecessor ,v) ,u)
-           t)
-         nil)))
+  `(when (> (distance ,v) (+ (distance ,u) ,w))
+     (setf (distance ,v) (+ (distance ,u) ,w))
+     (setf (predecessor ,v) ,u)))
 
 (defun backtrace (n)
   "once find the target, collecting the result back til the source"
   (let ((xs nil)
         (v n))
-    (loop while v do
+    (loop :while v do
           (push v xs)
           (setf v (predecessor v)))
     xs))
@@ -199,21 +190,21 @@
   (let ((visited `(,s))   ; avoid visit visited nodes.
         (queue (make-instance 'min-heap)))
     (insert-heap queue (gethash s info))
+
     (block done
-           (loop while queue do
+           (loop :while queue do
                  (let* ((u (extract-heap queue))
                         (adjacents (gethash (name u) graph)))
 
                    ;; return if find the target
-                   (if (equal (name u) d) (return-from done (backtrace u)))
+                   (when (equal (name u) d) (return-from done (backtrace u)))
 
-                   (loop for a in adjacents do
-                         (macrolet ((v () `(gethash (car a) info)))
-                           (relaxf u (v) (cdr a))
-                           (if (not (member (car a) visited))
-                               (progn
-                                 (push (car a) visited)
-                                 (insert-heap queue (v)))))))))))
+                   (dolist (a adjacents)
+                     (macrolet ((v () `(gethash (car a) info)))
+                       (relaxf u (v) (cdr a))
+                       (when (not (member (car a) visited))
+                         (push (car a) visited)
+                         (insert-heap queue (v))))))))))
 
 (defun print-hash (m)
   (maphash (lambda (k v)
@@ -221,3 +212,5 @@
                (write (list k v))
                (format t "~%")))
            m))
+
+(dijkstra *graph-1* *graph-1-all-nodes* 1 5)

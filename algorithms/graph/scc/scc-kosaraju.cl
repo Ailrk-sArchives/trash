@@ -1,3 +1,7 @@
+(defpackage #:kosaraju
+  (:use "COMMON-LISP"))
+
+(in-package #:kosaraju)
 ;;;; Strongly connected components.
 
 ;; it's not necessarily for you to be able to reach all nodes in a
@@ -24,7 +28,7 @@
 
 (defmacro init-hash-table (xs)
   `(let ((m (make-hash-table)))
-     (loop for kv in ,xs do
+     (loop :for kv :in ,xs do
            (setf (gethash (car kv) m) (cdr kv)))
      m))
 
@@ -70,26 +74,27 @@
 (defun all-nodes (graph)
   (remove-duplicates
     (append
-      (loop for k being the hash-keys in graph collect k)
-      (apply #'append (loop for v being the hash-values in graph collect v)))))
+      (loop :for k :being :the :hash-keys :in graph :collect k)
+      (apply #'append (loop :for v :being :the :hash-values :in graph
+                            :collect v)))))
 
 
 (defun transpose-graph (g)  ;; compute transpose graph
   (let ((m (make-hash-table)))
     (maphash
       (lambda (k v)
-        (loop for n in v do
-              (setf (gethash n m)
-                    (cons k (gethash n m))))) g) m))
+        (dolist (n v)
+          (setf (gethash n m)
+                (cons k (gethash n m))))) g) m))
 
 
 (defun dfs-tree (graph root &optional visited)
   (let* ((visited visited)
          (result nil)
          (stack `(,root)))
-    (loop while stack do
+    (loop :while stack do
           (let ((v (pop stack)))
-            (loop for u in (gethash v graph) do
+            (dolist (u (gethash v graph))
                   (if (not (member u visited))
                       (progn
                         (push u stack))))
@@ -104,7 +109,7 @@
   (let* ((stack nil)
          (visited `(,root))
          (unvisited (all-nodes graph)))
-    (loop while (not (null unvisited)) do
+    (loop :while (not (null unvisited)) do
           (multiple-value-bind (v s) (dfs-tree graph root visited)
             (push s stack)
             (setf visited v))
@@ -119,7 +124,7 @@
          (transposed (transpose-graph graph))
          (result nil)
          (visited nil))
-    (loop while stack do
+    (loop :while stack do
           (let* ((n (pop stack)))
             (multiple-value-bind (v connected)
               (dfs-tree transposed n visited)
@@ -130,7 +135,8 @@
 
 
 (defun ssc-kosaraju (graph)
-  (ssc-kosaraju-* graph (car (loop for k being the hash-keys in graph collect k))))
+  (ssc-kosaraju-* graph (car (loop :for k :being :the :hash-keys :in graph
+                                   :collect k))))
 
 (defun print-hash (m)
   (maphash (lambda (k v)

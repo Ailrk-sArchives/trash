@@ -10,7 +10,7 @@
 
 (defmacro init-hash-table (xs)
   `(let ((m (make-hash-table)))
-     (loop for kv in ,xs do
+     (loop :for kv :in ,xs do
            (setf (gethash (car kv) m) (cdr kv)))
      m))
 
@@ -27,9 +27,9 @@
 (defun dfs (graph root)
   (let* ((visited `(,root))
          (stack `(,root)))
-    (loop while stack do
+    (loop :while stack do
           (let ((v (pop stack)))
-            (loop for u in (gethash v graph) do
+            (loop :for u :in (gethash v graph) do
                   (if (not (member u visited))
                       (progn
                         (pushnew u visited)
@@ -41,12 +41,12 @@
   (let* ((non-zero-indegrees
            (remove-duplicates
              (apply #'append
-                    (loop for v being the hash-values in graph
-                          collect v))))
+                    (loop :for v :being :the :hash-values :in graph
+                          :collect v))))
          (allnodes
            (remove-duplicates
              (append
-               (loop for k being the hash-keys in graph collect k)
+               (loop :for k :being :the :hash-keys :in graph :collect k)
                non-zero-indegrees)))
 
          (zero-indegrees (set-difference allnodes non-zero-indegrees)))
