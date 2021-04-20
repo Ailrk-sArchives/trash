@@ -2,9 +2,16 @@
 ;; O(VlogV + E) // dominated by E in lots of cases.
 (defpackage #:dijkstra
   (:use "COMMON-LISP")
-  (:shadow "+"))
+  (:shadow ">")
+  (:shadow "<"))
 
 (in-package #:dijkstra)
+
+(defmacro init-hash-table (xs)
+  `(let ((m (make-hash-table)))
+     (loop for kv in ,xs do
+           (setf (gethash (car kv) m) (cdr kv)))
+     m))
 
 ;; min heap
 (defclass min-heap ()
@@ -50,11 +57,10 @@
     o
     (macrolet ((elt-or-nil (seq i)
                  `(if (>= ,i (length ,seq)) nil (elt ,seq ,i))))
-      (let* ((largest-idx i)
-             (e (elt-or-nil data i))
+      (let* ((largest-idx i) (e (elt-or-nil data i))
              (left-idx (left-child i))
-             (right-idx (right-child i))
              (left (elt-or-nil data left-idx))
+             (right-idx (right-child i))
              (right (elt-or-nil data right-idx)))
         (if e
           (progn
@@ -85,8 +91,8 @@
           (sinkdown o 0)
           top))))
 
-(defmethod search-heap ((o min-heap))
-  (format t "search"))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; dijkstra
 
 ;; test
 ; (defparameter *m* (make-instance 'min-heap))
@@ -94,18 +100,7 @@
 ;   (loop for i in xs do
 ;         (insert-heap *m* i)))
 
-;; overload the operator
-
-(defun + (&rest addends)
-  (reduce 'binary+ (cdr addends) :initial-value (car addends)))
-
-(defgeneric binary+ (a b)
-  (:documentation "overload add operator"))
-
-(defmethod binary+ ((a number) (b number))
-  (cl:+ a b))
-
-
+;; define nodes we will be using
 (defclass node ()
   ((name
      :type symbol
@@ -116,20 +111,89 @@
      :type number
      :initarg :distance
      :accessor distance
-     :initform most-positive-word)
+     :initform most-positive-fixnum)
    (predecessor
      :type node
      :initarg :predecessor
      :accessor predecessor
      :initform nil)))
 
+(defmethod print-object ((obj node) stream)
+  "print the node"
+  (print-unreadable-object (obj stream :type t)
+    (with-accessors ((name name)
+                     (distance distance))
+      obj
+      (format stream "<~a,~a>" name distance))))
 
-; (defmacro relax (u v w)
-;   "relax adjacent nodes"
-;   `())
 
-; (defun dijkstra (graph)
-;   "shortest path"
-;   (let ((mh (make-instance 'min-heap)))
+;; overload the operator
+;; todo make it a macro
 
-;     ))
+(defun > (&rest ts)
+  (reduce 'binary> (cdr ts) :initial-value (car ts)))
+(defgeneric binary> (a b)
+  (:documentation "overload >")
+  (:method ((a number) (b number)) (cl:> a b))
+  (:method ((a node) (b node)) (cl:> (distance a) (distance b))))
+
+(defun < (&rest ts)
+  (reduce 'binary< (cdr ts) :initial-value (car ts)))
+(defgeneric binary< (a b)
+  (:documentation "overload <")
+  (:method ((a number) (b number)) (cl:> a b))
+  (:method ((a node) (b node)) (cl:> (distance a) (distance b))))
+
+
+;; undirected weighted graph. nodes info is stored in the
+;; corresponding info table.
+;; (2 . 7) means edge to 2 has weight 7.
+(defparameter *graph-1*
+  (init-hash-table
+    '((1 . ((2 . 7) (3 . 9) (6 . 11)))
+      (2 . ((1 . 7) (3 . 10) (4 . 15)))
+      (3 . ((1 . 9) (2 . 10) (6 . 2) (4 . 11)))
+      (4 . ((2 . 15) (3 . 11) (5 . 6)))
+      (5 . ((6 . 9) (4 . 6)))
+      (6 . ((1 . 14) (3 . 2) (5 . 9))))))
+
+(defmacro new-node (a &optional distance)
+  `(cons ,a (make-instance 'node :name ,a :distance ,distance)))
+
+;; define graph
+(defparameter *graph-1-all-nodes*
+  (init-hash-table
+    (loop for i from 1 to 6 collect (new-node i))))
+
+
+;; lemma. the relaxation operation maintains the invaraint
+;; that d[v] >= δ(s, v) for all v ∈ V.
+(defmacro relax (u v w)
+  "relax adjacent nodes"
+  `(if (> (distance ,v) (+ (distance ,u) ,w))
+       (progn
+         (setf (distance ,v) (+ (distance ,u) ,w))
+         (setf (predecessor ,v) ,u))))
+
+(defun backtrace (n)
+  "once find the target, collecting the result back til the source"
+  (let ((xs nil)
+        (v n))
+    (loop while v do
+          (push v xs)
+          (setf v (predecessor v)))
+    xs))
+
+
+(defun dijkstra (graph s)
+  "shortest path"
+  (let ((mh (make-instance 'min-heap)))
+    ))
+
+
+(defun print-hash (m)
+  (maphash (lambda (k v)
+             (progn
+               (write (list k v))
+               (format t "~%")))
+           m))
