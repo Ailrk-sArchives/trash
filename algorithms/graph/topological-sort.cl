@@ -1,3 +1,10 @@
+(defpackage #:topological-sort
+  (:use "COMMON-LISP")
+  (:shadow "+"))
+
+(in-package #:topological-sort)
+
+
 ;; find topological order of a directed acyclic graph (DAG problem)
 ;; it's useful for many scheduling algorithms
 

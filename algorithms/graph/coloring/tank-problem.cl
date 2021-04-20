@@ -1,3 +1,7 @@
+(defpackage #:tank-problem
+  (:use "COMMON-LISP"))
+
+(in-package #:tank-problem)
 ;u some fishies
 ;; Some pair of fish fight if they are in the same tank.
 ;; put fish in two tanks so they don't fight.
