@@ -48,7 +48,7 @@
 
 (defun foo-return (n)
   (dotimes (i 10)
-    (dotimes (j 10) ; return-from a block
+    (dotimes (j 11) ; return-from a block
       (when (> (* i j) n) (return-from foo-return (list i j))))))
 
 ;;; macro gym

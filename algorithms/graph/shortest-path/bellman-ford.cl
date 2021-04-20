@@ -81,12 +81,13 @@
 ;; todo unfinished
 (defparameter *graph*
   (init-hash-table
-    '((s . ((e . 8) (a . 10)))
-      (a . ((c . 2)))
-      (b . ((a . 1)))
-      (c . ((b . -2)))
-      (d . ((a . -4) (c . -1)))
-      (e . ((e . 1))))))
+    '((#\s . ((#\e . 8) (#\a . 10)))
+      (#\a . ((#\c . 2)))
+      (#\b . ((#\a . 1)))
+      (#\c . ((#\b . -2)))
+      (#\d . ((#\a . -4) (#\c . -1)))
+      (#\e . ((#\e . 1))))))
+
 
 (defmacro alphabet (a z)
   `(loop :for i :from 0 to (- (char-code ,z) (char-code ,a))
@@ -104,26 +105,37 @@
 (defmacro relaxf (u v w)
   "relax adjacent nodes. u is the current node"
   `(when (> (distance ,v) (+ (distance ,u) ,w))
-     (setf (distance ,v) (+ distance ,u) ,w)
+     (setf (distance ,v) (+ ( distance ,u) ,w))
      (setf (predecessor ,v) ,u)))
 
-(defun bellman-ford (graph info s d)
+
+(defmacro foreach-edges ((graph table) (u v w) &body body)
+  "pass graph info and current node, work on u v w directly"
+  `(macrolet ((u* (n) `(gethash ,n ,,table))
+              (v* (m) `(gethash (car ,m) ,,table))
+              (w* (m) `(cdr ,m)))
+     (maphash (lambda (n adjs)
+                (dolist (edge adjs)
+                  ,@(nsubst '(u* n) u
+                            (nsubst '(v* edge) v
+                                    (nsubst '(w* edge) w body)))))
+              graph)))
+
+
+(defun bellman-ford (graph info s)
   "bellman-ford shortest path"
+  (declare (type hash-table graph) (type hash-table info))
   (setf (distance (gethash s info)) 0)
   (let ((vertex-num (loop :for _ :being :the :hash-keys :in info :sum 1)))
-    (macrolet ((v (n) `(car ,n))
-               (w (n) `(cdr ,n)))
-      (dotimes (i (- vertex-num 1))
-        ; relax all edges v - 1 times.
-        (maphash (lambda (u n) (relaxf k (v n) (w n))) graph))
+    (dotimes (i (- vertex-num 1))
+      (foreach-edges (graph info) (u v w) (relaxf u v w)))
+    (block cycle
+           (foreach-edges (graph info) (u v w)
+             (when (> v (+ u w)) (return-from cycle nil)))
+           (loop :for v :being :the :hash-values :in info :collect v))))
 
-      (block done ;; check for negative cycles.
-             (dotimes (i (- vertex-num 1))
-               (maphash (lambda (u n)
-                          (when (> (distance ,v) (+ (distance ,u) ,w))
-                            (return-from done nil)))))
-             (loop :for n :being :the :hash-values :in info :collect n)))))
 
+(format t "~a" (bellman-ford *graph* *graph-info* #\s))
 
 (defun print-hash (m)
   (maphash (lambda (k v)
