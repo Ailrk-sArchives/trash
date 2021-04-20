@@ -73,6 +73,7 @@
                    (:method ((a number) (b number)) (cl:< a b))
                    (:method ((a node) (b node)) (cl:< (distance a) (distance b))))
 
+
 (defmacro new-node (a &optional distance)
   `(cons ,a (make-instance 'node :name ,a
                            :distance (or ,distance most-positive-fixnum))))
@@ -111,13 +112,13 @@
 
 (defmacro foreach-edges ((graph table) (u v w) &body body)
   "pass graph info and current node, work on u v w directly"
-  `(macrolet ((u* (n) `(gethash ,n ,,table))
-              (v* (m) `(gethash (car ,m) ,,table))
+  `(macrolet ((u* (n table) `(gethash ,n ,table))
+              (v* (m table) `(gethash (car ,m) ,table))
               (w* (m) `(cdr ,m)))
      (maphash (lambda (n adjs)
                 (dolist (edge adjs)
-                  ,@(nsubst '(u* n) u
-                            (nsubst '(v* edge) v
+                  ,@(nsubst `(u* n ,table) u
+                            (nsubst `(v* edge ,table) v
                                     (nsubst '(w* edge) w body)))))
               graph)))
 
@@ -131,7 +132,7 @@
       (foreach-edges (graph info) (u v w) (relaxf u v w)))
     (block cycle
            (foreach-edges (graph info) (u v w)
-             (when (> v (+ u w)) (return-from cycle nil)))
+             (when (> (distance v) (+ (distance u) w)) (return-from cycle nil)))
            (loop :for v :being :the :hash-values :in info :collect v))))
 
 

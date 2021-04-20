@@ -10,3 +10,7 @@
        (format t "~a" x)
        (format t "~a" y)
        (values x y))))
+
+
+(defmacro listit ((a b c) (d e))
+  `(list ,a ,b ,c ,d ,e))
