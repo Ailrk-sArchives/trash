@@ -149,7 +149,7 @@
 ;; (2 . 7) means edge to 2 has weight 7.
 (defparameter *graph-1*
   (init-hash-table
-    '((1 . ((2 . 7) (3 . 9) (6 . 11)))
+    '((1 . ((2 . 7) (3 . 9) (6 . 14)))
       (2 . ((1 . 7) (3 . 10) (4 . 15)))
       (3 . ((1 . 9) (2 . 10) (6 . 2) (4 . 11)))
       (4 . ((2 . 15) (3 . 11) (5 . 6)))
@@ -168,12 +168,15 @@
 
 ;; lemma. the relaxation operation maintains the invaraint
 ;; that d[v] >= δ(s, v) for all v ∈ V.
-(defmacro relax (u v w)
+(defmacro relaxf (u v w)
   "relax adjacent nodes"
-  `(if (> (distance ,v) (+ (distance ,u) ,w))
-       (progn
-         (setf (distance ,v) (+ (distance ,u) ,w))
-         (setf (predecessor ,v) ,u))))
+  `(progn
+     (if (> (distance ,v) (+ (distance ,u) ,w))
+         (progn
+           (setf (distance ,v) (+ (distance ,u) ,w))
+           (setf (predecessor ,v) ,u)
+           t)
+         nil)))
 
 (defun backtrace (n)
   "once find the target, collecting the result back til the source"
@@ -184,9 +187,6 @@
           (setf v (predecessor v)))
     xs))
 
-;; add
-
-
 (defun dijkstra (graph info s d)
   "shortest path
    graph: a weighted graph.
@@ -196,17 +196,24 @@
    "
   (declare (type hash-table graph) (type hash-table info))
   (setf (distance (gethash s info)) 0)
-  (let ((queue (make-instance 'min-heap)))
-    (loop for n being the hash-values in info do
-          (insert-heap queue n))
+  (let ((visited `(,s))   ; avoid visit visited nodes.
+        (queue (make-instance 'min-heap)))
+    (insert-heap queue (gethash s info))
     (block done
            (loop while queue do
                  (let* ((u (extract-heap queue))
-                        (adjs (gethash (name u) graph)))
-                   (if (equal (name u) d) (return-from done (backtrace u)))
-                   (loop for n in adjs do
-                         (relax u (gethash (car n) info) (cdr n))))))))
+                        (adjacents (gethash (name u) graph)))
 
+                   ;; return if find the target
+                   (if (equal (name u) d) (return-from done (backtrace u)))
+
+                   (loop for a in adjacents do
+                         (macrolet ((v () `(gethash (car a) info)))
+                           (relaxf u (v) (cdr a))
+                           (if (not (member (car a) visited))
+                               (progn
+                                 (push (car a) visited)
+                                 (insert-heap queue (v)))))))))))
 
 (defun print-hash (m)
   (maphash (lambda (k v)
