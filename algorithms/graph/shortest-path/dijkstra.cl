@@ -44,15 +44,20 @@
   "sink down while keep the order invariant"
   (with-accessors ((data data))
     o
-    (macrolet ((e `(elt data i))
-               (left `(elt data (left-child i)))
-               (right `(elt data (right-child i))))
-      (if (> e left)
-          (setf )
-          )
-        ;; todo
-      )
-    ))
+    (let* ((largest-idx i)
+           (e (elt data i))
+           (left-idx (left-child i))
+           (right-idx (right-child i))
+           (left (elt data left-idx))
+           (right (elt data right-idx)))
+      (if (and left (> e left))
+          (setf largest-idx left-idx))
+      (if (and right (> e right))
+          (setf largest-idx right-idx))
+      (if (not (= largest-idx i))
+          (rotatef (elt data largest-idx)
+                   (elt data i))
+          (sinkdown o i)))))
 
 (defmethod insert-heap ((o minheap) e)
   "insert into the bottom of the heap then swimup"
@@ -77,8 +82,12 @@
 (defmethod search-heap ((o minheap))
   (format t "search"))
 
-
+;; test
 (defparameter *m* (make-instance 'minheap))
+(let ((xs '(8 3 7 4 12 5 1)))
+  (loop for i in xs do
+        (insert-heap *m* i)))
+
 
 (defun dijkstra (graph)
   "shortest path")
