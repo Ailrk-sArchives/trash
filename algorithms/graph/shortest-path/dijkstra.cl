@@ -80,7 +80,6 @@
 
 (defmethod extract-heap ((o min-heap))
   "extract the min element, move bottom to top and sinkdown"
-  (format t "extract")
   (with-accessors ((data data)) o
     (if (is-empty o)
         nil
@@ -141,8 +140,8 @@
   (reduce 'binary< (cdr ts) :initial-value (car ts)))
 (defgeneric binary< (a b)
   (:documentation "overload <")
-  (:method ((a number) (b number)) (cl:> a b))
-  (:method ((a node) (b node)) (cl:> (distance a) (distance b))))
+  (:method ((a number) (b number)) (cl:< a b))
+  (:method ((a node) (b node)) (cl:< (distance a) (distance b))))
 
 
 ;; undirected weighted graph. nodes info is stored in the
@@ -158,7 +157,8 @@
       (6 . ((1 . 14) (3 . 2) (5 . 9))))))
 
 (defmacro new-node (a &optional distance)
-  `(cons ,a (make-instance 'node :name ,a :distance ,distance)))
+  `(cons ,a (make-instance 'node :name ,a
+                           :distance (or ,distance most-positive-fixnum))))
 
 ;; define graph
 (defparameter *graph-1-all-nodes*
@@ -184,11 +184,28 @@
           (setf v (predecessor v)))
     xs))
 
+;; add
 
-(defun dijkstra (graph s)
-  "shortest path"
-  (let ((mh (make-instance 'min-heap)))
-    ))
+
+(defun dijkstra (graph info s d)
+  "shortest path
+   graph: a weighted graph.
+   info:  node indexed by node names
+   s:     name of the starting node
+   d:     name of the target node
+   "
+  (declare (type hash-table graph) (type hash-table info))
+  (setf (distance (gethash s info)) 0)
+  (let ((queue (make-instance 'min-heap)))
+    (loop for n being the hash-values in info do
+          (insert-heap queue n))
+    (block done
+           (loop while queue do
+                 (let* ((u (extract-heap queue))
+                        (adjs (gethash (name u) graph)))
+                   (if (equal (name u) d) (return-from done (backtrace u)))
+                   (loop for n in adjs do
+                         (relax u (gethash (car n) info) (cdr n))))))))
 
 
 (defun print-hash (m)
