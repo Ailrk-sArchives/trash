@@ -108,8 +108,8 @@
           (multiple-value-bind (v s) (dfs-tree graph root visited)
             (push s stack)
             (setf visited v))
-          (setf unvisited (set-difference unvisited visited))
-          (setf root (car unvisited)))
+          (setf unvisited (set-difference unvisited visited)
+                root (car unvisited)))
     (reverse (apply #'append (reverse stack)))))
 
 
@@ -123,8 +123,8 @@
           (let* ((n (pop stack)))
             (multiple-value-bind (v connected)
               (dfs-tree transposed n visited)
-              (setf visited v)
-              (setf stack (remove-if #'(lambda (k) (member k connected)) stack))
+              (setf visited v
+                    stack (remove-if #'(lambda (k) (member k connected)) stack))
               (push connected result))))
     result))
 
