@@ -84,7 +84,6 @@ public:
 
 template <typename T, size_t Size>
 inline std::optional<size_t> BinHeap<T, Size>::search(const T &o) noexcept {
-
   for (size_t i = 0; i <= bottom; ++i) {
     if (data[i] == o) {
       return i;

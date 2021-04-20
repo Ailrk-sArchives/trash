@@ -69,3 +69,6 @@
   (can-walk-p
     :accessor can-walk-p
     :initform t))
+
+(defmethod greet (obj)
+  (format t "You are a ~a~&" (type-of obj)))
