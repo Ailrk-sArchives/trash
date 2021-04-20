@@ -97,20 +97,14 @@
 ;; define nodes we will be using
 (defclass node ()
   ((name
-     :type symbol
-     :initarg :name
-     :accessor name
-     :initform nil)
+     :type symbol :initarg :name
+     :accessor name :initform nil)
    (distance
-     :type number
-     :initarg :distance
-     :accessor distance
-     :initform most-positive-fixnum)
+     :type number :initarg :distance
+     :accessor distance :initform most-positive-fixnum)
    (predecessor
-     :type node
-     :initarg :predecessor
-     :accessor predecessor
-     :initform nil)))
+     :type node :initarg :predecessor
+     :accessor predecessor :initform nil)))
 
 (defmethod print-object ((obj node) stream)
   "print the node"
@@ -124,19 +118,22 @@
 ;; overload the operator
 ;; todo make it a macro
 
-(defun > (&rest ts)
-  (reduce 'binary> (cdr ts) :initial-value (car ts)))
-(defgeneric binary> (a b)
-  (:documentation "overload >")
-  (:method ((a number) (b number)) (cl:> a b))
-  (:method ((a node) (b node)) (cl:> (distance a) (distance b))))
+(defmacro operator-overload (op &rest definitons)
+  (let ((fname (read-from-string (concatenate 'string "binary" (symbol-name op)))))
+    `(values
+       (defun ,op (&rest ts)
+         (reduce  (quote ,fname) (cdr ts) :initial-value (car ts)))
+       (defgeneric ,fname (a b)
+         ,@(loop :for def :in definitons :collect
+                 `(,@def))))))
 
-(defun < (&rest ts)
-  (reduce 'binary< (cdr ts) :initial-value (car ts)))
-(defgeneric binary< (a b)
-  (:documentation "overload <")
-  (:method ((a number) (b number)) (cl:< a b))
-  (:method ((a node) (b node)) (cl:< (distance a) (distance b))))
+(operator-overload >
+                   (:method ((a number) (b number)) (cl:> a b))
+                   (:method ((a node) (b node)) (cl:> (distance a) (distance b))))
+
+(operator-overload <
+                   (:method ((a number) (b number)) (cl:< a b))
+                   (:method ((a node) (b node)) (cl:< (distance a) (distance b))))
 
 
 ;; undirected weighted graph. nodes info is stored in the
@@ -164,7 +161,7 @@
 ;; lemma. the relaxation operation maintains the invaraint
 ;; that d[v] >= δ(s, v) for all v ∈ V.
 (defmacro relaxf (u v w)
-  "relax adjacent nodes"
+  "relax adjacent nodes. u is the current node"
   `(when (> (distance ,v) (+ (distance ,u) ,w))
      (setf (distance ,v) (+ (distance ,u) ,w))
      (setf (predecessor ,v) ,u)))
@@ -173,7 +170,7 @@
   "once find the target, collecting the result back til the source"
   (let ((xs nil)
         (v n))
-    (loop :while v do
+    (loop :while v :do
           (push v xs)
           (setf v (predecessor v)))
     xs))
@@ -192,7 +189,7 @@
     (insert-heap queue (gethash s info))
 
     (block done
-           (loop :while queue do
+           (loop :while queue :do
                  (let* ((u (extract-heap queue))
                         (adjacents (gethash (name u) graph)))
 

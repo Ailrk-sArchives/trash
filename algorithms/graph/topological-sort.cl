@@ -10,8 +10,8 @@
 
 (defmacro init-hash-table (xs)
   `(let ((m (make-hash-table)))
-     (loop :for kv :in ,xs do
-           (setf (gethash (car kv) m) (cdr kv)))
+     (dolist (kv ,xs)
+       (setf (gethash (car kv) m) (cdr kv)))
      m))
 
 ;; topological sort works on a directed acyclic graph.
@@ -27,13 +27,12 @@
 (defun dfs (graph root)
   (let* ((visited `(,root))
          (stack `(,root)))
-    (loop :while stack do
+    (loop :while stack :do
           (let ((v (pop stack)))
-            (loop :for u :in (gethash v graph) do
-                  (if (not (member u visited))
-                      (progn
-                        (pushnew u visited)
-                        (push u stack))))))
+            (dolist (u (gethash v graph))
+              (when (not (member u visited))
+                (pushnew u visited)
+                (push u stack)))))
     (reverse visited)))
 
 (defun toposort-dfs (graph)

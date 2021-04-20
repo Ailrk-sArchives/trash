@@ -144,5 +144,3 @@
                (write (list k v))
                (format t "~%")))
            m))
-
-;; todo can we get arbitrary key without loop over all keys?
