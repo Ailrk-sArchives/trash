@@ -46,6 +46,17 @@ output: compute a maximum flow f from s to t
 
 The path can be found bfs or dfs. The method that uses bfs is called edmonds karp algorithm.
 
+```
+Input (G(V, E), s, t, c)
+Output a flow f where maxarg |f|
+
+set f(e) = 0 for all e in E
+while there is an augmenting path P in Gf do
+  augmenting f using P
+end while
+
+return f
+```
 
 ### Cuts and flow.
 

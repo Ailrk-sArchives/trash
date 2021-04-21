@@ -61,11 +61,9 @@
 
 (defmethod mmult ((a matrix) (b matrix))
   (with-accessors ((an n) (am m) ) a
-    (with-accessors ((bn b) (bm m)) b
+    (with-accessors ((bn n) (bm m)) b
       (assert (= am bn))
       (make-instance 'matrix :n an :m bm))))
-
-(defmethod cost (o) 1)
 
 (defmethod cost ((o matrix))
   "we want to minimize this"
@@ -78,12 +76,15 @@
                    (:method ((a matrix) (b matrix)) (mmult a b)))
 
 (defparameter *ms*
-  (list (make-instance 'matrix :n 4 :m 5)
-        (make-instance 'matrix :n 5 :m 8)
-        (make-instance 'matrix :n 8 :m 3)
-        (make-instance 'matrix :n 3 :m 1)
-        (make-instance 'matrix :n 1 :m 3)
-        (make-instance 'matrix :n 3 :m 6)))
+  (list (make-instance 'matrix :n 2 :m 3)
+        (make-instance 'matrix :n 3 :m 2)))
+
+(defun flattern (xs)
+  (labels ((rec (xs acc)
+             (cond ((null xs) acc)
+                   ((atom xs) (cons xs acc))
+                   (t (rec (car xs) (rec (cdr xs) acc))))))
+    (rec xs nil)))
 
 
 (defparameter *memo* (make-hash-table))
@@ -91,15 +92,22 @@
 (defun parenthesization (xs)
   (declare (type (sequence matrix) xs))
   (let ((sz (length xs)))
-    (if (= sz 1)
-        (cost (car xs))
-        (progn
-          (loop :for k :from 1 :to (- sz 1)
-                :collect (let ((ik (subseq xs 0 k))
-                               (kj (subseq xs (+ k 1) sz)))
-                           (format t "ik ~a ~%" ik)
-                           (format t "jk ~a ~%" jk)
-                           (+ (parenthesization ik)
-                              (parenthesization kj)
-                              (* (cost (apply #'* ik))
-                                 (cost (apply #'* kj))))))))))
+    (cond
+      ((<= sz 1) (cost (car xs)))
+      (t
+       (apply #'min
+              (flattern
+                (loop :for len :from 2 :to sz :collect
+                      (loop :for i :from 0 :to (- len 1)
+                            :with j = (- (+ i len) 1)
+                            :collect
+                            (loop :for k :from i :to (- j 1) :collect
+                                  (let* ((ik (subseq xs i k))
+                                         (kj (subseq xs k j)))
+                                    (+ (parenthesization ik)
+                                       (parenthesization kj)
+                                       (* (cost (apply #'* ik))
+                                          (cost (apply #'* kj))))))))))))))
+
+;; todo debug. output behaves right but not quite
+;;      memoizartion in lisp.

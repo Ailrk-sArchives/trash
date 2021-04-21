@@ -4,6 +4,24 @@ rod_price = [-1, 1, 5, 8, 9, 10, 17, 17, 20, 24, 30]
 
 # cutting rod with constant cost on each cut
 
+# it's a maximization problem.
+# 1. subproblem: maximize the price by choosing the right length to cut.
+# 2. guessing: we can choose from length 1 - 10
+#       for f(n) we have
+#       f(n - i) for 1 <= i <= 10
+#       for each choice we have the corresponding gain
+#       g[i] from the table
+# 3. recurrence
+#       dp(i) = max {
+#           f(n - i) + g[i] for i in range(1, 11)
+#       }
+# 4. topological ordering of subproblems:
+#       f(n) needs f(n - i) for i in range(1, n)
+# 5. running time:
+#       total number of sub problems: O(n)
+#       each subproblem:              O(1)
+#       O(n)
+
 
 def maximum(a, b):
     return a if a > b else b
