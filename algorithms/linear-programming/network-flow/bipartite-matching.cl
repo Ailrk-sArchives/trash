@@ -81,18 +81,34 @@
 
 
 (defun make-residual-network (graph)
-  "make the residual network"
-  )
+  "make the residual network")
 
 (defun augmenting-path (residual-network)
-  "finding the augmenting path"
+  "finding the augmenting path")
 
-  )
+(defun edges (graph)
+  "return a list of all edges")
+
+(defun residual-capacity (edge)
+  "calculate the residual capacity")
+
+;; for ford fulkerson algorithms, all intermediate flows
+;; corresponds to the matchings.
+;; if there is a flow across an internal edge, then it belongs
+;; to the matching.
+;; In the residual network there will be a corresponding flow
+;; that goes from sink to source.
+
 
 (defun edmonds-karp (graph)
   "run edmonds karp (ford fulkerson)"
-
-  )
+  (let ((gf (make-residual-graph graph))
+        (f 0))
+    (loop :while (augmenting-path gf) :do
+          (let ((b (apply #'min (mapcar #'residual-capacity (edges graph)))))
+            ;; sete ef = f + f' where f' = { b if (u,v) in P 0 otherwise}
+            )))
+  f)
 
 
 (defun print-hash (m)
