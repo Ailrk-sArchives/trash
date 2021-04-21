@@ -8,3 +8,5 @@ module Knapsack01 where
 -- item(th)  1   2   3   4   5   6   7
 -- profit    10  5  15   7   6   18  3
 -- weight    2   3   5   7   1   4   1
+
+

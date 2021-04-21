@@ -26,32 +26,32 @@ sf =
 -- is the task you want to schedule.
 
 
-selectActivities sf = nub (mconcat [[a, b] | (a, b) <- go sf])
+selectActivities sf = nub (mconcat [[a, b] | (a, b) <- select sf])
   where
-    go :: [Activity] -> [Activity]
-    go sf = trace (show sf1) $ loop 0 0 []
+    select :: [Activity] -> [Activity]
+    select sf = trace (show sf1) $ go 0 0 []
       where
         sf1 = sortBy (\a b -> compare (snd a) (snd b)) sf
         s = fst . (sf1 !!)
         f = snd . (sf1 !!)
-        loop i j result
+        go i j result
           | j == length sf1 =  result
-          | s j >= f i = loop j (j + 1) ((i, j) : result)
-          | otherwise = loop i (j + 1) result
+          | s j >= f i = go j (j + 1) ((i, j) : result)
+          | otherwise = go i (j + 1) result
 
 run = selectActivities sf
 
-selectActivitiesReverse sf = nub (mconcat [[a, b] | (a, b) <- go sf])
+selectActivitiesReverse sf = nub (mconcat [[a, b] | (a, b) <- select sf])
   where
-    go :: [Activity] -> [Activity]
-    go sf = trace (show sf1) $ loop 0 0 []
+    select :: [Activity] -> [Activity]
+    select sf = trace (show sf1) $ go 0 0 []
       where
         sf1 = sortBy (\b a -> compare (snd a) (snd b)) sf
         s = fst . (sf1 !!)
         f = snd . (sf1 !!)
-        loop i j result
+        go i j result
           | j == length sf1 = result
-          | f j < s i = loop j (j + 1) ((i, j) : result)
-          | otherwise = loop i (j + 1) result
+          | f j < s i = go j (j + 1) ((i, j) : result)
+          | otherwise = go i (j + 1) result
 
 run1 = selectActivitiesReverse sf

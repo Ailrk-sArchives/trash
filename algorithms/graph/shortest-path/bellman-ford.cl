@@ -154,3 +154,23 @@
                (write (list k v))
                (format t "~%")))
            m))
+
+;; prove correctness.
+
+;; Lemma:
+;; 1. if d(u) is not infinity, it's the length of some path from s to u.
+;; 2. if there is a path from s to u with at most i edges, then d(u) is the most
+;;    length of the shortest path from s to u with at most i edges.
+
+;; proof:
+;; lemma 1. prove by induction.
+;; base case:       when i = 0 s is a path to s itself with lenght 0.
+;; inductive step:  let u be one vertex that is i-1 edges away. v be i away, u be
+;;                  the predecessor of v.
+;;                  d(v) =
+
+;; lemma 2. induction again.
+;;  base case d(s) = 0 is the shortest path of i = 0
+;;  inductive step;  let u be the predecessor of v which is ith edges away.
+;;                   by inductive hypothesis d(u) is the shortest path for i-1
+;;                   d(v) = d(u) + w, which is also the shortest path.

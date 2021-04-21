@@ -32,7 +32,7 @@ knapsack is weight = go byprofit 0 0
   go [] p _ = p
   go ((I p' w') : xs) p w =
     trace (printf "profit %.2f weight %.2f" p w) $ -- use trace + printf to debug.
-                                                   if w + w' > weight
+    if w + w' > weight
       then
         let wfrac = (weight - w) / w'
             pfrac = wfrac * p'
