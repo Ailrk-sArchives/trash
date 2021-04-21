@@ -139,12 +139,12 @@ dijkstra v graph = search [] queue
         (v, queue') <- extractMin queue
         adjs <- lookup (vertex v) graph
         let dv = distance v
-            modify h uk uv e =
+            relax h uk uv e =
               if dv + uv < distance e
                  then e { distance = dv + uv, prev = Just (vertex v) }
                  else e
             f h (uk, uv) =
-              heapModify ((uk ==) . vertex) (modify h uk uv) h
+              heapModify ((uk ==) . vertex) (relax h uk uv) h
             queue'' = foldl' f queue' adjs
         return (search (v : table) queue'')
 

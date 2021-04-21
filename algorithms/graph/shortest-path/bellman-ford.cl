@@ -21,6 +21,7 @@
 ;; https://www.geeksforgeeks.org/bellman-ford-algorithm-dp-23/
 ;; https://www.youtube.com/watch?v=obWXjtg0L64
 
+
 (defpackage #:bellmanford
   (:use "COMMON-LISP")
   (:shadow ">")
@@ -80,24 +81,29 @@
 
 
 ;; todo unfinished
-(defparameter *graph*
+
+;; ok graph
+(defparameter *graph-1*
   (init-hash-table
     '((#\s . ((#\e . 8) (#\a . 10)))
       (#\a . ((#\c . 2)))
       (#\b . ((#\a . 1)))
       (#\c . ((#\b . -2)))
       (#\d . ((#\a . -4) (#\c . -1)))
-      (#\e . ((#\e . 1))))))
+      (#\e . ((#\d . 1))))))
 
 
 (defmacro alphabet (a z)
   `(loop :for i :from 0 to (- (char-code ,z) (char-code ,a))
          :collect (code-char (+ i (char-code ,a)))))
 
-(defparameter *graph-info*
+(defparameter *graph-info-1*
   (init-hash-table
     (loop :for n in (cons #\s (alphabet #\a #\e)) :collect
           (new-node n))))
+
+;; negative cycle graph
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -127,16 +133,20 @@
   "bellman-ford shortest path"
   (declare (type hash-table graph) (type hash-table info))
   (setf (distance (gethash s info)) 0)
-  (let ((vertex-num (loop :for _ :being :the :hash-keys :in info :sum 1)))
-    (dotimes (i (- vertex-num 1))
-      (foreach-edges (graph info) (u v w) (relaxf u v w)))
-    (block cycle
+  (let ((vertex-number (loop :for _ :being :the :hash-keys :in info :sum 1)))
+    (dotimes (i (- vertex-number 1))
+      (foreach-edges (graph info) (u v w)
+        (relaxf u v w)))
+    (block cycle  ;; if keep looping get shorter path we have a negative cycle.
            (foreach-edges (graph info) (u v w)
              (when (> (distance v) (+ (distance u) w)) (return-from cycle nil)))
            (loop :for v :being :the :hash-values :in info :collect v))))
 
 
-(format t "~a" (bellman-ford *graph* *graph-info* #\s))
+; (format t "~a" (bellman-ford *graph* *graph-info* #\s))
+; result:
+; (#<NODE <s,0>> #<NODE <a,5>> #<NODE <b,5>> #<NODE <c,7>> #<NODE <d,9>>
+;  #<NODE <e,8>>)
 
 (defun print-hash (m)
   (maphash (lambda (k v)

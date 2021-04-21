@@ -84,4 +84,3 @@ if __name__ == "__main__":
     print("first finished")
     r1 = activity_selection_reverse(sf)
     print(f"result: {r1}")
-
