@@ -44,7 +44,12 @@
   "first make the binary matching network
    note the original bipartite graph doesn't have capacity,
    but they have implicit 1. Because you can either connect to
-   another node or not."
+   another node or not.
+
+   A flow network contains (u f . c)
+   where u is the node name, f is the current flow, and c is the
+   capacity.
+   "
   (let ((left nil)
         (right nil)
         (s* nil)
@@ -61,11 +66,27 @@
           (gethash 't bipartite) t*)
     (loop :for k :being :the :hash-keys :in bipartite :using (hash-value v)
           :do
-          (setf (gethash k bipartite) (mapcar (lambda (x) (cons x 1)) v)))
+          (setf (gethash k bipartite)
+                (mapcar (lambda (x) (cons x (cons 0 1))) v)))
     bipartite))
 
 
-(defun make-residual-graph (graph)
+;; residual network
+;;
+;; cf(u, v) = {
+;;    c(u, v) - f(u, v)  if (u, v) in E
+;;    c(v, u)            if (v, u) in E     unsend
+;;    0                  otherwise
+;; }
+
+
+(defun make-residual-network (graph)
+  "make the residual network"
+  )
+
+(defun augmenting-path (residual-network)
+  "finding the augmenting path"
+
   )
 
 (defun edmonds-karp (graph)
