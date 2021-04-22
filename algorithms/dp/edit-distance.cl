@@ -36,6 +36,4 @@
 (defun e-insert (xs))
 (defun e-replace (xs))
 
-(defun edit-distance (xs)
-
-  )
+(defun edit-distance (xs) )
