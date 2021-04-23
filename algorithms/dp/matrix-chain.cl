@@ -109,5 +109,6 @@
                                        (* (cost (apply #'* ik))
                                           (cost (apply #'* kj))))))))))))))
 
+
 ;; todo debug. output behaves right but not quite
 ;;      memoizartion in lisp.

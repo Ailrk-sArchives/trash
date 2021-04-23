@@ -5,9 +5,15 @@ module plfa.p1.Induction where
 import Relation.Binary.PropositionalEquality as Eq
 -- open the module (add names specified in using)
 open Eq using (_≡_; refl; cong; sym)
-open Eq.≡-Reasoning using (begin_; _≡⟨⟩_; _≡⟨_⟩_; _∎)
+open Eq.≡-Reasoning using (begin_; _≡⟨⟩_; step-≡; _∎)
 open import Data.Nat using (ℕ; zero; suc; _+_; _*_; _∸_)
 open import Function using (_∘_; flip)
+
+-- peano natural numbers
+data Nat : Set where
+  zero' : Nat
+  suc : Nat → Nat
+
 
 -- # Properties of operators
 
@@ -15,15 +21,16 @@ open import Function using (_∘_; flip)
 -- base case + inductive step
 -- type sig is the proposition
 -- the function definition is the evidence we provide as the proof.
+
 +-assoc : ∀ (m n p : ℕ) → (m + n) + p ≡ m + (n + p)
 +-assoc zero n p =
-    begin
-        (zero + n) + p
-    ≡⟨⟩
-        n + p
-    ≡⟨⟩
-        zero + (n + p)
-    ∎
+  begin
+    (zero + n) + p
+  ≡⟨⟩
+    n + p
+  ≡⟨⟩
+    zero + (n + p)
+  ∎
 
 +-assoc (suc m) n p =
     begin
@@ -208,6 +215,7 @@ n+n*m≡n*[1+m] zero m =
     ≡⟨⟩
         zero * suc m
     ∎
+
 n+n*m≡n*[1+m] (suc n) m =
     begin
         suc n + suc n * m

@@ -49,7 +49,7 @@
 void spare_cash1() {
 
   int f[256];
-  int cost = 0;
+  int cost;
   f[0] = 0;
 
   for (int i = 1; i <= N; ++i) {
