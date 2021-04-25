@@ -29,21 +29,64 @@ data Nat : Set where
   ≡⟨⟩
     n + p
   ≡⟨⟩
-    zero + (n + p)
+    n + (zero + p)
   ∎
 
 +-assoc (suc m) n p =
+  begin
+    (suc m) + n + p
+  ≡⟨⟩
+    suc (m + n) + p
+  ≡⟨⟩
+    suc ((m + n) + p)
+  ≡⟨⟩
+    suc ((m + n) + p)
+  ≡⟨ cong suc (+-assoc m n p) ⟩ -- inductive hypothesis
+    suc (m + (n + p))
+  ≡⟨⟩
+    suc m + (n + p)
+  ∎
+
+-- concrete example of proof by induction
++-assoc-2 : ∀ (n p : ℕ) → (2 + n) + p ≡ 2 + (n + p)
++-assoc-2 n p =
+  begin
+    (2 + n) + p
+  ≡⟨⟩
+    suc (1 + n) + p
+  ≡⟨⟩
+    suc ((1 + n) + p)
+  ≡⟨ cong suc (+-assoc-1 n p) ⟩  -- inductive hypothesis
+    suc (1 + (n + p))
+  ≡⟨⟩
+    2 + (n + p)
+  ∎
+  where
+  +-assoc-1 : ∀ (n p : ℕ) → (1 + n) + p ≡ 1 + (n + p)
+  +-assoc-1 n p =
     begin
-        (suc m + n) + p
+      (1 + n) + p
     ≡⟨⟩
-        suc (m + n) + p
+      suc (0 + n) + p
     ≡⟨⟩
-        suc ((m + n) + p)
-    ≡⟨ cong suc (+-assoc m n p) ⟩  -- provide justification. use the induction hyp
-        suc (m + (n + p))
+      suc ((0 + n) + p)
+    ≡⟨ cong suc (+-assoc-0 n p) ⟩ -- inductive hypothesis
+      suc (0 + (n + p))
     ≡⟨⟩
-        suc m + (n + p)
+      1 + (n + p)
     ∎
+    where
+    +-assoc-0 : ∀ (n p : ℕ) → (0 + n) + p ≡ 0 + (n + p)
+    +-assoc-0 n p =
+      begin
+        (0 + n) + p
+      ≡⟨⟩
+        n + p
+      ≡⟨⟩
+        0 + (n + p)
+      ∎
+
+
 
 -- cong stands for congruence.
 -- a relation is said to be congruence for a given function if it preserved by
@@ -61,20 +104,20 @@ data Nat : Set where
 -- base case of addition state zero is left-identity
 
 -- Lemma 1: proof zero is also right-identity
-+-identityτ : ∀ (m : ℕ) → m + zero ≡ m  -- <- proposition (type)
-+-identityτ zero =                      -- <- pf (function take m return evidence)
++-identityʳ : ∀ (m : ℕ) → m + zero ≡ m  -- <- proposition (type)
++-identityʳ zero =                      -- <- pf (function take m return evidence)
     begin
         zero + zero
     ≡⟨⟩
         zero
     ∎
 
-+-identityτ (suc m) =
++-identityʳ (suc m) =
     begin
         (suc m) + zero
     ≡⟨⟩
         suc (m + zero)
-    ≡⟨ cong suc (+-identityτ m) ⟩
+    ≡⟨ cong suc (+-identityʳ m) ⟩
         suc m
     ∎
 
@@ -105,7 +148,7 @@ data Nat : Set where
 +-comm m zero =
     begin
         m + zero
-    ≡⟨ +-identityτ m ⟩
+    ≡⟨ +-identityʳ m ⟩ -- you can say the reason now.
         m
     ≡⟨⟩
         zero + m
@@ -132,17 +175,19 @@ data Nat : Set where
         (m + n) + (p + q)
     ≡⟨ +-assoc m n (p + q) ⟩
         m + (n + (p + q))
-    ≡⟨ cong (m +_) (sym (+-assoc n p q)) ⟩
+    ≡⟨ cong (m +_) (sym (+-assoc n p q)) ⟩  -- use symmetry
         m + ((n + p) + q)
     ≡⟨ sym (+-assoc m (n + p) q) ⟩
         (m + (n + p)) + q
     ∎
 
+-- previous proofs are all based on a chain of equations. Here we use rewrite
+-- instead.
+
 -- ! Associativity with rewrite
 +-assoc' : ∀ (m n p : ℕ) → (m + n) + p ≡ m + (n + p)
 +-assoc' zero n p = refl
 +-assoc' (suc m) n p rewrite +-assoc' m n p = refl
--- refl: the proof taht a term is equal to itself.
 
 -- ! Commutativity with rewrite
 +-identity' : ∀ (n : ℕ) → n + zero ≡ n
@@ -165,7 +210,7 @@ data Nat : Set where
         m + (n + p)
     ≡⟨ sym (+-assoc m n p) ⟩
         (m + n) + p
-    ≡⟨ cong (_+ p) (+-comm m n) ⟩  -- NOTE
+    ≡⟨ cong (_+ p) (+-comm m n) ⟩  -- (_+ p) as the function takes m n as parameters
         (n + m) + p
     ≡⟨ +-assoc n m p ⟩
         n + (m + p)

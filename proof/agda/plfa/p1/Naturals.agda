@@ -75,6 +75,7 @@ _ =
         5
     ∎
 
+
 -- check reflexive
 -- agda compute 2 + 3 and compare the value with 5 immediately
 -- (a binary relation is reflexive if every value relates to itself)
@@ -95,17 +96,20 @@ _ = refl
 -- Exercise 3 add 4
 _ : 3 + 4 ≡ 7
 _ =
-    begin
-        3 + 4
-    ≡⟨⟩
-        suc (2 + 4)
-    ≡⟨⟩
-        suc (suc 1 + 4)
-    ≡⟨⟩
-        suc (suc (suc 0 + 4))
-    ≡⟨⟩
-        7
-    ∎
+  begin
+    3 + 4
+  ≡⟨⟩
+    suc (2 + 4)
+  ≡⟨⟩
+    suc (suc (1 + 4))
+  ≡⟨⟩
+    suc (suc (suc (0 + 4)))
+  ≡⟨⟩
+    suc (suc (suc 4))
+  ≡⟨⟩
+    7
+  ∎
+
 
 -- # Multiplication #
 _*_ : ℕ → ℕ → ℕ
@@ -113,7 +117,8 @@ zero * n = zero
 (suc m) * n = n + (m * n)
 
 _^_ : ℕ → ℕ → ℕ
-m ^ zero = 1
+m ^ 0 = 1
+m ^ 1 = m
 m ^ (suc n) = n * (m ^ n)
 
 -- # Monus #
@@ -121,6 +126,18 @@ _∸_ : ℕ → ℕ → ℕ
 m ∸ zero = m
 zero ∸ suc n = zero
 suc m ∸ suc n = m ∸ n
+
+_ =
+  begin
+    3 ∸ 2
+  ≡⟨⟩
+    2 ∸ 1
+  ≡⟨⟩
+    1 ∸ 0
+  ≡⟨⟩
+    1
+  ∎
+
 
 -- # Precedence #
 -- provide specific precedence for operators.
@@ -133,9 +150,9 @@ infixl 7 _*_
 -- a unary system.
 
 data Bin : Set where
-    ⟨⟩ : Bin
-    _O : Bin → Bin
-    _I : Bin → Bin
+  ⟨⟩ : Bin
+  _O : Bin → Bin
+  _I : Bin → Bin
 
 -- 1001 can be represented as  ⟨⟩ I O O I
 inc : Bin -> Bin
