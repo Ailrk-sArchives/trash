@@ -306,5 +306,6 @@ n+n*m≡n*[1+m] (suc n) m =
     ≡⟨ sym (0∸n≡0 (n + p)) ⟩
         zero ∸ (n + p)
     ∎
+
 ∸-+-assoc (suc m) zero p = refl
 ∸-+-assoc (suc m) (suc n) p = ∸-+-assoc m n p

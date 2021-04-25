@@ -21,8 +21,8 @@ trans : ∀ {A : Set} {x y z : A} → x ≡ y → y ≡ z → x ≡ z
 trans refl refl = refl
 
 -- congruence and substitution --
-cong : ∀ {A B : Set} {f : A → B} {x y : A} → x ≡ y → f x ≡ f y
-cong refl = refl
+cong : ∀ {A B : Set} (f : A → B) {x y : A} → x ≡ y → f x ≡ f y
+cong f refl = refl
 
 cong2 : ∀ {A B C : Set} {f : A → B → C} {u x : A} {v y : B}
   → u ≡ x
@@ -61,4 +61,66 @@ module ≡-Reasoning {A : Set} where
     → x ≡ y
   begin x≡y = x≡y
 
-  _≡⟨⟩_
+  -- x => y
+  _≡⟨⟩_ : ∀ (x : A) {y : A}
+    → x ≡ y
+    → x ≡ y
+  x ≡⟨⟩ x≡y = x≡y
+
+  --   x=y
+  -- x ---> y=z : x=z
+  _≡⟨_⟩_ : ∀ (x : A) {y z : A}
+    → x ≡ y
+    → y ≡ z
+    → x ≡ z
+  x ≡⟨ x≡y ⟩ y≡z = trans x≡y y≡z
+
+  _∎ : ∀ (x : A) → x ≡ x
+  x ∎ = refl
+
+open ≡-Reasoning  -- open the module
+
+trans' : ∀ {A : Set} → {x y z : A}
+  → x ≡ y → y ≡ z → x ≡ z
+trans' {A} {x} {y} {z} x≡y y≡z =
+  begin x ≡⟨ x≡y ⟩ y ≡⟨ y≡z ⟩ z ∎
+
+-- the fixity:
+-- begin (x ≡⟨ x≡y ⟩ (y ≡⟨ y≡z ⟩ (z ∎)))
+
+data ℕ : Set where
+  zero : ℕ
+  suc : ℕ → ℕ
+
+_+_ : ℕ → ℕ → ℕ
+zero + n = n
+(suc m) + n = suc (m + n)
+
+-- claim without proof. This is very bad...
+-- use it unless you're sure these are correct lemmas.
+postulate
+  +-identity : ∀ (m : ℕ) → m + zero ≡ m
+  +-suc : ∀ (m n : ℕ) → m + suc n ≡ suc (m + n)
+
++-comm : ∀ (m n : ℕ) → m + n ≡ n + m
++-comm m zero =
+  begin
+    m + zero
+  ≡⟨ +-identity m ⟩
+    m
+  ≡⟨⟩
+    zero + m
+  ∎
+
++-comm m (suc n) =
+  begin
+    m + suc n
+  ≡⟨ +-suc m n ⟩
+    suc (m + n)
+  ≡⟨ cong suc (+-comm m n) ⟩
+    suc (n + m)
+  ≡⟨⟩
+    suc n + m
+  ∎
+
+-- rewriting --
