@@ -39,6 +39,7 @@ library
 
       GHCs.DeriveVia
       GHCs.Rules
+      GHCs.InlineAndSpecialization
 
       Monads.AlternativeandMonadPlus
       Monads.Monads
