@@ -205,4 +205,33 @@ even-comm'' : ∀ (m n : ℕ)
   → even (n + m)
 even-comm'' m n = subst even (+-comm m n)
 
+-- we were using martin lof's form of equality, but there is a eailer, more naive
+-- notino of equality
+
+-- leibniz equality --
+--  def: two objects are equal iff they satisfy the same properties
+--    relevent: spock's law "a difference that make no difference is no difference"
+
+-- Two terms satisfy leibniz equality iff they satisfy martin lof equalify.
+
+-- define leibniz equlity x ≐ y if exists property P that P x and P y
+-- P: predicates that takes A and return a Set
+-- so the result of x ≐ y is actually a lambda that takes a P : A → Set,
+-- a P x, and gives you a P y.
+_≐_ : ∀ {A : Set} (x y : A) → Set₁  -- using levels
+_≐_ {A} x y = ∀ (P : A → Set) → P x → P y
+
+-- Levels like Set₁ forms a hierachy oftypes.
+-- This way we don't need to assign Set to Set itself.
+-- To avoid Russell's paradox and girard's paradox.
+
+refl-≐ : ∀ {A : Set} {x : A} → x ≐ x
+refl-≐ P Px = Px
+
+trans-≐ : ∀ {A : Set} {x y z : A}
+  → x ≐ y
+  → y ≐ z
+  → x ≐ z
+trans-≐ x≐y y≐z P Px = y≐z P (x≐y P Px)
+
 

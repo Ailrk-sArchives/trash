@@ -36,4 +36,3 @@ if __name__ == "__main__":
     t1.join()
     t2.join()
     print('should be 3, actually ', count)
-

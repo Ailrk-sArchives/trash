@@ -18,5 +18,3 @@ data Tree23
   = Two Int Int Tree23 Tree23
   | Tree Int Int Int Tree23 Tree23 Tree23
   deriving (Show, Eq)
-
-
