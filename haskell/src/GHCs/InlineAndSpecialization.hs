@@ -1,5 +1,9 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE StandaloneDeriving #-}
 
+
+-- paper on haskell inliner 20 years ago..
+-- https://www.microsoft.com/en-us/research/wp-content/uploads/2002/07/inline.pdf
 module GHCs.InlineAndSpecialization where
 
 -- INLINEABLE pragma:
@@ -96,6 +100,25 @@ foo a xs = show a ++ xs
 -- When does specialization occurs?
 --    1. INLINABLE or INLINE
 --    2. -fspecialise-aggressively.
+--    Bascially for most of the time it doesn't occur.
+--    But if you use inline all the time it occurs everywhere.
+--    There is a trade off you need to balance.
 
 -- for foo, if we can specialize type a to be Foo at compile time, the further optimization
 -- can directly insert the body of Show' Foo into foo at compile time.
+
+-- SPECIALIZE works like template full specialization. You replace the polymorphic parameter
+--            with a concrete type, and let the further optimization pass to handle it.
+
+deriving instance Show Foo
+
+foo''' :: Show a => a -> String -> String
+foo''' a xs = show a ++ xs
+{-# SPECIALIZE foo''' :: Foo -> String -> String #-} -- here foo''' get specialized.
+
+-- think about code transformation.
+
+-- inlining can cause code bloat?
+--   1. same function body every where, of couse code bloat.
+--   2. but inlining can reduce code size if it trigger some optization.
+
