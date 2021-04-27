@@ -1,14 +1,14 @@
-{-# LANGUAGE DerivingStrategies         #-}
+{-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE LambdaCase                 #-}
+{-# LANGUAGE LambdaCase #-}
+
 module Monads.MTLPractise where
 
-import           Control.Monad.Reader
-import           Control.Monad.State
-import           Control.Monad.Writer
-import           Data.Bits
-import           Data.Int
-
+import Control.Monad.Reader
+import Control.Monad.State
+import Control.Monad.Writer
+import Data.Bits
+import Data.Int
 
 -- THis nice example combined read, write, and state monads all
 -- together.
@@ -28,38 +28,38 @@ import           Data.Int
 -- where you can read from, where you can write to, and what
 -- kind of stuffs can be changed.
 
-
 -- This is a simple virtual machine.
 -- Read from Program, Act on the Stack, and output to Output.
 data Instr = Push Int | Pop | Puts | Add | Sub | Mul | Div | ShiftL | ShiftR
 
 type Stack = [Int]
+
 type Output = [Int]
+
 type Program = [Instr]
 
 -- First let's build our burrito.
 --
 type VM a = ReaderT Program (WriterT Output (State Stack)) a
 
-newtype Comp a  = Comp { unComp :: VM a}
+newtype Comp a = Comp {unComp :: VM a}
   deriving newtype (Functor, Applicative, Monad, MonadState Stack, MonadReader Program, MonadWriter Output)
-
 
 evalInstr :: Instr -> Comp ()
 evalInstr = \case
-              Pop -> modify tail
-              Push n -> modify (n:)
-              Puts -> do
-                tos' <- get
-                case tos' of
-                  [] -> tell [-1]
-                  _  -> tell [head tos']
-              Add -> binary (+)
-              Sub -> binary (-)
-              Mul -> binary (*)
-              Div -> binary div
-              ShiftR -> binary shiftR
-              ShiftL -> binary shiftL
+  Pop -> modify tail
+  Push n -> modify (n :)
+  Puts -> do
+    tos' <- get
+    case tos' of
+      [] -> tell [-1]
+      _ -> tell [head tos']
+  Add -> binary (+)
+  Sub -> binary (-)
+  Mul -> binary (*)
+  Div -> binary div
+  ShiftR -> binary shiftR
+  ShiftL -> binary shiftL
   where
     binary apply = do
       a1 <- gets head
@@ -72,8 +72,8 @@ eval :: Comp ()
 eval = do
   instr <- ask
   case instr of
-    []     -> return ()
-    (i:is) -> do
+    [] -> return ()
+    (i : is) -> do
       evalInstr i
       local (const is) eval
 
@@ -97,16 +97,16 @@ execVM :: Program -> Output
 execVM = flip evalState [] . execWriterT . runReaderT (unComp eval)
 
 program :: Program
-program = [ Push 47
-          , Push 27
-          , Add
-          , Puts
-          , Push 2
-          , Push 3
-          , ShiftL
-          , Puts
-          ]
-
+program =
+  [ Push 47,
+    Push 27,
+    Add,
+    Puts,
+    Push 2,
+    Push 3,
+    ShiftL,
+    Puts
+  ]
 
 run :: IO ()
 run = mapM_ print $ execVM program

@@ -46,6 +46,7 @@ library
       Monads.MonadTransformerList
       Monads.ErrorHandling
       Monads.MTLPractise
+      Monads.MTLPractise1
       Monads.MyMTL
       Monads.ReadP
       Monads.Arrows
