@@ -92,6 +92,8 @@ library
       Other.FFI
       Other.ProbabilityMonad
       Other.FixPoint
+      Other.ContAndMonad
+      Other.ListCompQuirks
 
       Notes.All.Dice
       Notes.All.Files

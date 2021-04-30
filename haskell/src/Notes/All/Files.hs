@@ -33,4 +33,3 @@ doWrite filename = do
   putStrLn "Enter text to go into the file: "
   contents <- getLine
   writeFile filename (contents ++ "\n")
-
