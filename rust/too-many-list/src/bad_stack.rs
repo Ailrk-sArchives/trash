@@ -1,25 +1,34 @@
 use std::mem;
 
-pub struct List {
-    head: Link,
+// handle of the heap space.
+#[derive(Debug)]
+pub struct List<T> {
+    head: Link<T>,
 }
 
-pub enum Link {
+// This layout avoids non uniform allocation (first element in stack
+// but others in the heap).
+// Also the layout allows null pointer optimization. No space for tag is
+// needed for Empty, since the alternative is always non zero, we can just
+// treat Empty as 0.
+#[derive(Debug)]
+pub enum Link<T> {
     Empty,
-    More(Box<Node>),
+    More(Box<Node<T>>),
 }
 
-pub struct Node {
-    elem: i32,
-    next: Link,
+#[derive(Debug)]
+pub struct Node<T> {
+    elem: T,
+    next: Link<T>,
 }
 
-impl List {
+impl<T> List<T> {
     pub fn new() -> Self {
         List { head: Link::Empty }
     }
 
-    pub fn push(&mut self, elem: i32) {
+    pub fn push(&mut self, elem: T) {
         let new_node = Box::new(Node {
             elem,
             next: mem::replace(&mut self.head, Link::Empty),
@@ -27,7 +36,7 @@ impl List {
         self.head = Link::More(new_node);
     }
 
-    pub fn pop(&mut self) -> Option<i32> {
+    pub fn pop(&mut self) -> Option<T> {
         match mem::replace(&mut self.head, Link::Empty) {
             Link::Empty => None,
             Link::More(node) => {
@@ -38,7 +47,7 @@ impl List {
     }
 }
 
-impl Drop for List {
+impl<T> Drop for List<T> {
     fn drop(&mut self) {
         let mut cur_link = mem::replace(&mut self.head, Link::Empty);
 
@@ -69,5 +78,4 @@ mod test {
         assert_eq!(list.pop(), None);
         assert_eq!(list.pop(), None);
     }
-
 }
