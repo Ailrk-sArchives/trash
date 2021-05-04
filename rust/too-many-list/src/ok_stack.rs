@@ -1,5 +1,3 @@
-use std::mem;
-
 // several improvements:
 // Use Option instead of our own ADT for link, so we can use
 // all functions provided by Option.
@@ -45,6 +43,60 @@ impl<T> List<T> {
     pub fn peek_mut(&mut self) -> Option<&mut T> {
         self.head.as_mut().map(|node| &mut node.elem)
     }
+
+    pub fn into_iter(self) -> IntoIter<T> {
+        IntoIter(self)
+    }
+
+    pub fn iter(&self) -> Iter<'_, T> {
+        Iter {
+            next: self.head.as_deref(),
+        }
+    }
+
+    pub fn iter_mut(&mut self) -> IterMut<'_, T> {
+        IterMut {
+            next: self.head.as_deref_mut(),
+        }
+    }
+}
+
+// tuple struct for newtypes.
+pub struct IntoIter<T>(List<T>);
+
+impl<T> Iterator for IntoIter<T> {
+    type Item = T;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.pop()
+    }
+}
+
+pub struct Iter<'a, T> {
+    next: Option<&'a Node<T>>,
+}
+
+impl<'a, T> Iterator for Iter<'a, T> {
+    type Item = &'a T;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.next.map(|node| {
+            self.next = node.next.as_deref();
+            &node.elem
+        })
+    }
+}
+
+pub struct IterMut<'a, T> {
+    next: Option<&'a mut Node<T>>,
+}
+
+impl<'a, T> Iterator for IterMut<'a, T> {
+    type Item = &'a mut T;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.next.take().map(|node| {
+            self.next = node.next.as_deref_mut();
+            &mut node.elem
+        })
+    }
 }
 
 impl<T> Drop for List<T> {
@@ -77,5 +129,12 @@ mod test {
         assert_eq!(list.pop(), Some(1));
         assert_eq!(list.pop(), None);
         assert_eq!(list.pop(), None);
+
+        list.push(1);
+        assert_eq!(list.peek(), Some(&1));
+        list.peek_mut().map(|node| {
+            *node = 99;
+        });
+        assert_eq!(list.peek(), Some(&99));
     }
 }
