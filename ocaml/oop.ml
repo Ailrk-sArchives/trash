@@ -81,10 +81,47 @@ class button ?callback name =
   end;;
 
 (* create a new object *)
-let b = new button ~callback:(fun () -> print_endline "Ouch!!") "button";;
-b#repaint;;
-b#press;;
-b#repaint;;
+class label name text =
+  object (self)
+    inherit widget name
+    method repaint =
+      print_endline ("Label " ^ text ^ " from " ^ name)
+  end;;
+
+
+let main1 () =
+  Printf.printf "main1 :: \n";
+  let b = new button ~callback:(fun () -> print_endline "Ouch!!") "button" in
+  let l1 = new label "Label left" "Press me!" in
+  let l2 = new label "Label right" "Press me!" in
+  b#repaint;
+  b#press;
+  b#repaint;
+  b#add l1;
+  b#add l2;
+  b#repaint;
+  Printf.printf "<<<\n"
+  ;;
+
+main1 ();;
+
+(* coerce subcalss explicitly in ocaml *)
+let coercison () =
+  Printf.printf "coercison :: \n";
+  let b = new button ~callback:(fun () -> print_endline "Ouch!!") "button" in
+  let l1 = new label "Label left" "Press me!" in
+  let l2 = new label "Label right" "Press me!" in
+  let wl = [] in
+  let wl = (b :> widget) :: wl in
+  let wl = (l1 :> widget) :: wl in
+  let wl = (l2 :> widget) :: wl in
+  b#add l1;
+  b#add l2;
+  List.iter (fun x -> x#repaint) wl;
+  Printf.printf "<<<\n"
+  ;;
+
+coercison () ;;
 
 (* objects without class (structual subtyping) *)
 let o =
@@ -107,3 +144,11 @@ let r =
   { get = (fun () -> !n);
     incr = (fun () -> incr n);
   }
+
+
+(* structural subtyping *)
+
+type ab = [`A | `B]
+type abc = [`A | `B | `C]
+let x : ab = `A
+let y : abc = (x :> abc)

@@ -24,3 +24,7 @@ Executable "gdemo"
 Executable "oop"
   Path: .
   MainIs: oop.ml
+
+Executable "rowpoly"
+  Path: .
+  MainIs: rowpoly.ml
