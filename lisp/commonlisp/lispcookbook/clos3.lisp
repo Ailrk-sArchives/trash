@@ -67,3 +67,24 @@
 (defmethod feed ((obj child) (meal-type (eql :soup)))
   (declare (ignorable meal-type))
   (format t "yammy Mom I like soup"))
+
+
+;; try some mutiple dispatch mechanisms
+
+(defclass asteroid () ())
+(defclass spaceship () ())
+
+(defgeneric collide-with (x y)
+  (:documentation "collides behavior"))
+
+(defmethod collide-with ((x asteroid) (y asteroid))
+  (format t "asteroid x asteroid"))
+
+(defmethod collide-with ((x asteroid) (y spaceship))
+  (format t "asteroid x spaceship"))
+
+(defmethod collide-with ((x spaceship) (y asteroid))
+  (format t "spaceship x asteroid"))
+
+(defmethod collide-with ((x spaceship) (y spaceship))
+  (format t "spaceship x spaceship"))
