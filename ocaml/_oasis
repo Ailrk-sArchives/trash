@@ -20,3 +20,7 @@ Executable "gdemo"
   MainIs: gdemo.ml
   BuildDepends:
     graphics
+
+Executable "oop"
+  Path: .
+  MainIs: oop.ml

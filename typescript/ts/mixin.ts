@@ -17,6 +17,7 @@ class Activatable {
     this.isActivate = false;
   }
 }
+
 const applyMixins = (derived: any, bases: Array<any>) => {
   bases.forEach(base => {
     Object.getOwnPropertyNames(base.prototype).forEach(name => {
