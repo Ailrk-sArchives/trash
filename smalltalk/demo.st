@@ -41,6 +41,3 @@ x := 1.2 integerPart.
 x := [ y := 1. z := 2. ]. x value.
 x := [ :argOne :argTwo | argOne, ' and ' , argTwo.].
 
-
-
-

@@ -42,7 +42,7 @@ anylist = [All 1, All "asd", All heterList]
 -- but This is different:
 data T = forall a. MkT a
 -- type of MkT :: forall a. a -> T
--- a list allows any types, but we can't do anythingto it because types
+-- a list allows any types, but we can't do anything to it because types
 -- are forall a. a
 tlist = [MkT (), MkT "asd", MkT 12]
 
@@ -51,39 +51,6 @@ data G = forall a. (Num a, Show a) => MkG a
 -- Now we can do something based on the type constraint.
 glist = [MkG 1, MkG 1.2]
 
-
--- Type class provides you the ability to have sub class,
--- but sub class are relationships between the type of types,
--- instead of individual type.
--- How do you inherit from a particular implementation though?
-class (Show a) => Base a where
-  base :: a -> String
-  base a = "Base " ++ show a
-
-class Base a => Derived a where
-  derived :: a -> String
-
-data B = forall a. Base a => B a
-data D = forall a. Derived a => D a
-
-data B1 = B1 deriving Show
-
-newtype B1' = B1' B1
-
-
-instance Base B1 where
-  base B1 = "Base " ++ show B1
-
-data D1 = D1 deriving (Show, Base)
-
-
-
--- -- can't inherit directly
--- instance Base D1 where
---   base D1 =  "Base " ++ show D1
-
--- instance Derived D1 where
---   derived D1 = "Derived " ++ show D1
 
 {-@ The biggest application: RankNType with runST @-}
 
@@ -101,3 +68,118 @@ newtype Pair a b = Pair (forall c. (a -> b -> c) -> c)
 
 makePair :: a -> b -> Pair a b
 makePair a b = Pair $ \f -> f a b
+
+
+-- some other examples --
+class Buffer a where
+  flush :: a -> a
+  read :: Int -> a
+  write :: Int -> a
+
+data Object = forall a. Object a
+data Ordered = forall a. Ord a => Ordered a
+
+-- note 1. no way to have specific b for Worker
+-- note 2. no need to worry about monomorphization restriction.
+-- note 3. you can only work with buffer interface, you can't use
+--         specific type anymore.
+data Worker x y = forall a. Buffer a => Worker { buffer :: a
+                                               , input  :: x
+                                               , output :: y
+                                               }
+workerFoo :: Buffer b => b -> Worker Int Int
+workerFoo b = Worker b 10 10
+
+
+-- dynamic dispatching --
+
+class Shape_ a where
+  perimeter :: a -> Double
+  area :: a -> Double
+
+data Shape = forall a. Shape_ a => Shape a
+
+type Radius = Double
+type Side = Double
+
+data Circle = Circle Radius
+data Rectangle = Rectangle Side Side
+data Square = Square Side
+
+instance Shape_ Circle where
+  perimeter (Circle r) = 2 * pi * r
+  area (Circle r) = pi * r * r
+
+instance Shape_ Rectangle where
+  perimeter (Rectangle x y) = 2 * (x + y)
+  area (Rectangle x y) = x * y
+
+instance Shape_ Square where
+  perimeter (Square s) = 4 * s
+  area (Square s) = s * s
+
+instance Shape_ Shape where
+  perimeter (Shape shape) = perimeter shape
+  area (Shape shape) = area shape
+
+c1 = Circle 10.1
+r1 = Rectangle 10.1 10.1
+s1 = Square 12
+
+shapes :: [Shape]
+shapes = [Shape c1, Shape r1, Shape s1]
+
+perimeters = perimeter <$> shapes
+areas = area <$> shapes
+
+
+-- exmaple use case in raytracer--
+class BoundingShape_ a where
+  volume :: a -> Double
+
+data BoundingShape = forall a. BoundingShape_ a => BoundingShape a
+
+data BoundingBox = BoundingBox Double Double Double deriving Show
+data BoundingSphere = BoundingSphere Double deriving Show
+
+instance BoundingShape_ BoundingBox where
+  volume (BoundingBox x y z) = x * y * z
+
+instance BoundingShape_ BoundingSphere where
+  volume (BoundingSphere r) = (4 * pi * r^3) / fromIntegral 3
+
+type Fragment = Double
+
+-- use bounding sphere
+class Renderable a where
+  boundingSphere :: a -> BoundingSphere
+  hit :: a -> [Fragment]
+
+-- hide all renderable behind AnyRenderable. Now we can but all renderable into one
+-- container and render all of them together.
+data AnyRenderable = forall a. Renderable a => AnyRenderable a
+
+instance Renderable AnyRenderable where
+  boundingSphere (AnyRenderable a) = boundingSphere a
+  hit (AnyRenderable a) = hit a
+
+data Cube3D = Cube3D Double Double Double
+data Ball3D = Ball3D Double
+
+-- implementation doesn't really matter here.
+instance Renderable Cube3D where
+  boundingSphere (Cube3D x y z) = BoundingSphere (maximum [x, y, z])
+  hit (Cube3D x y z) = [x, y, z]
+
+instance Renderable Ball3D where
+  boundingSphere (Ball3D r) = BoundingSphere r
+  hit (Ball3D r) = [r, 1, 2, 3]
+
+objsToRender = [ AnyRenderable (Cube3D 1 2 3)
+               , AnyRenderable (Cube3D 2 3 4)
+               , AnyRenderable (Ball3D 39)
+               , AnyRenderable (Ball3D 23)
+               ]
+
+render1 = boundingSphere <$> objsToRender
+render2 = hit <$> objsToRender
