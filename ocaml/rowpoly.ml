@@ -17,12 +17,3 @@ let kakyoin = {
   name = "Kakyoin";
   mobile = "114514"
 }
-
-let print_name r = print_endline ("Name: " ^ r.name )
-
-let main1 () =
-  print_name jotaro;
-  print_name kakyoin
-  ;;
-
-main1 () ;;

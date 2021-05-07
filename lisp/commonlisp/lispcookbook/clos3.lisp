@@ -10,7 +10,6 @@
      :accessor monkey
      :initform nil)))
 
-
 (defclass person ()
   ((name
      :initarg :name

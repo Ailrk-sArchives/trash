@@ -145,7 +145,6 @@ let r =
     incr = (fun () -> incr n);
   }
 
-
 (* structural subtyping *)
 
 type ab = [`A | `B]

@@ -5,6 +5,7 @@
 module Types.Ex where
 
 import           Control.Monad.ST
+import           Data.IORef
 import           Data.STRef
 import           GHC.Generics
 
@@ -51,7 +52,6 @@ data G = forall a. (Num a, Show a) => MkG a
 -- Now we can do something based on the type constraint.
 glist = [MkG 1, MkG 1.2]
 
-
 {-@ The biggest application: RankNType with runST @-}
 
 -- runST :: (forall s. ST s a) -> a
@@ -68,7 +68,6 @@ newtype Pair a b = Pair (forall c. (a -> b -> c) -> c)
 
 makePair :: a -> b -> Pair a b
 makePair a b = Pair $ \f -> f a b
-
 
 -- some other examples --
 class Buffer a where
@@ -90,6 +89,11 @@ data Worker x y = forall a. Buffer a => Worker { buffer :: a
 workerFoo :: Buffer b => b -> Worker Int Int
 workerFoo b = Worker b 10 10
 
+-- need existential type because b doesn't presnt on Val branch.
+data Expr a = Val a | forall b. Apply (Expr (b -> a)) (Expr b)
+
+-- need exitential type to make sure the io ref is the one used in the closure.
+data Action = forall b. Act (IORef b) (b -> IO ())
 
 -- dynamic dispatching --
 
@@ -131,6 +135,9 @@ shapes = [Shape c1, Shape r1, Shape s1]
 
 perimeters = perimeter <$> shapes
 areas = area <$> shapes
+
+-- alternative method --
+type Point = (Float, Float)
 
 
 -- exmaple use case in raytracer--
@@ -183,3 +190,49 @@ objsToRender = [ AnyRenderable (Cube3D 1 2 3)
 
 render1 = boundingSphere <$> objsToRender
 render2 = hit <$> objsToRender
+
+
+-- Another exercise --
+class Animal_ a where
+  move :: a -> IO ()
+
+data Animal = forall a. Animal_ a => Animal a
+instance Animal_ Animal where
+  move (Animal a) = move a
+
+class Animal_ a => Cat_ a where
+  meow :: a -> IO ()
+
+data Cat = forall a. Cat_ a => Cat a
+instance Animal_ Cat where
+  move (Cat a) = move a
+instance Cat_ Cat where
+  meow (Cat a) = meow a
+
+class Animal_ a => Dog_ a where
+  bark :: a -> IO ()
+data Dog = forall a. Dog_ a => Dog a
+
+instance Animal_ Dog where
+  move (Dog a) = move a
+instance Dog_ Dog where
+  bark (Dog a) = bark a
+
+data Persian = Persian
+instance Animal_ Persian where
+  move _ = putStrLn "Persian the cat: Moving"
+instance Cat_ Persian where
+  meow _ = putStrLn "Persian the cat: Meow"
+
+data Corgi = Corgi
+instance Animal_ Corgi where
+  move _ = putStrLn "Corgi the dog: Moving"
+instance Dog_ Corgi where
+  bark _ = putStrLn "Corgi the dog: woof woof"
+
+persian = Persian
+corgi1 = Corgi
+corgi2 = Corgi
+
+moveAnimals = sequence_ $ move <$>  [Animal persian, Animal corgi1, Animal corgi2]
+moveDogs = sequence_ $ bark <$> [Dog corgi1, Dog corgi2]

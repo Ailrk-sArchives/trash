@@ -7,3 +7,8 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+bytes = "1"
+hyper = { version = "0.14", features = ["full"] }
+tokio = { version = "1.5.0", features = ["full"]}
+regex = "1"
+error-chain = "0.12"

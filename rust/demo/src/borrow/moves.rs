@@ -52,6 +52,5 @@ mod test {
         foo_borrow(&a);
         foo_borrow(&a);
         foo_borrow(&a);
-
     }
 }

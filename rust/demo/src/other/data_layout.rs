@@ -127,7 +127,9 @@ mod test_void {
     fn test_void() {
         // saying error is impossible for this type.
         let res: Result<u32, Void> = Ok(0);
-        let Ok(num) = res;
+        if let Ok(num) = res {
+            println!("{:?}", num);
+        }
     }
 }
 
