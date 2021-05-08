@@ -196,4 +196,4 @@ pyth3 = do
   [1..] >>= \z ->
     [1..z] >>= \x ->
       [x..z] >>= \y ->
-        my_guard(x^2 + y^2 == z^2) >> return (x, y, z)
+        my_guard (x^2 + y^2 == z^2) >> return (x, y, z)

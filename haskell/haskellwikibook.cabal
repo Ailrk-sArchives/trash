@@ -65,7 +65,6 @@ library
       Types.DataKinds
 
       PL.Lam
-      PL.Combinators
       PL.ScottEncoding
       PL.HOAS
       PL.Continuation
