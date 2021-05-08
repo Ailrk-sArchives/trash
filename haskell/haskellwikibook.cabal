@@ -86,6 +86,7 @@ library
       MiniProject.EchoServer
       MiniProject.Lens2048
       MiniProject.TicTacToe
+      MiniProject.PythagoreanNTuple
 
       Other.Defunctionalization
       Other.AbstractAlgebra
@@ -95,6 +96,7 @@ library
       Other.FixPoint
       Other.ContAndMonad
       Other.ListCompQuirks
+      Other.ParserCombinator
 
       Notes.All.Dice
       Notes.All.Files

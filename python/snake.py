@@ -1,3 +1,8 @@
+"""
+keyboard need permission.
+works better under tmux.
+"""
+
 from typing import List
 import os
 import time
@@ -13,29 +18,35 @@ class Game:
     map_style = '.'
 
     def __init__(self):
+        self.pause = False
         self.map = [self.map_style * self.width for _ in range(self.height)]
         self.obj_list: List[Obj] = []
         self.snake = Snake(self.width, self.height)
-        self.snake1 = Snake(self.width, self.height)
 
         self.food = Food(self.width, self.height)
 
     def _form_obj_list(self):
         self.obj_list = []
         for body in self.snake.body_list:
-            body.style = "0"
-        for body in self.snake1.body_list:
             body.style = "#"
 
-        self.snake.body_list[-1].style = "C"
-        self.snake1.body_list[-1].style = "A"
+        self.snake.body_list[-1].style = "A"
 
         self.obj_list.extend(self.snake.body_list)
-        self.obj_list.extend(self.snake1.body_list)
         self.obj_list.append(self.food)
 
     def start(self):
         while self.run:
+            if keyboard.is_pressed('p'):
+                self.pause = True
+                while self.pause:
+                    time.sleep(0.02)
+                    if (keyboard.is_pressed('w')
+                            or keyboard.is_pressed('s')
+                            or keyboard.is_pressed('a')
+                            or keyboard.is_pressed('d')):
+                        self.pause = False
+
             self._form_obj_list()
             self.update()
             self.snake.move()
@@ -44,41 +55,33 @@ class Game:
                 self.food = Food(self.width, self.height)
                 self.snake.eat()
 
-            if keyboard.is_pressed('up'):
+            if keyboard.is_pressed('up') or keyboard.is_pressed('w'):
                 self.snake.move(0)
                 continue
-            if keyboard.is_pressed('down'):
+            if keyboard.is_pressed('down') or keyboard.is_pressed('s'):
                 self.snake.move(1)
                 continue
-            if keyboard.is_pressed('left'):
+            if keyboard.is_pressed('left') or keyboard.is_pressed('a'):
                 self.snake.move(2)
                 continue
-            if keyboard.is_pressed('right'):
+            if keyboard.is_pressed('right') or keyboard.is_pressed('d'):
                 self.snake.move(3)
                 continue
 
-            if keyboard.is_pressed('w'):
-                self.snake1.move(0)
-                continue
-            if keyboard.is_pressed('s'):
-                self.snake1.move(1)
-                continue
-            if keyboard.is_pressed('a'):
-                self.snake1.move(2)
-                continue
-            if keyboard.is_pressed('d'):
-                self.snake1.move(3)
-                continue
-
     def update(self):
-        os.system('clear')
         # update map by object state.
+
+        os.system('clear')
+        # the view map is a deep copy of map, discarded in each update.
         view_map = copy.deepcopy(self.map)
         print('snake head: ',
-              self.snake.body_list[-1].pos, 'length: ', len(self.snake.body_list))
+              self.snake.body_list[-1].pos,
+              'length: ', len(self.snake.body_list))
+
         for o in self.obj_list:
             x, y = o.pos
-            if x < self.height and y < self.width:  # if x, y are outside of the map
+            # if x, y are outside of the map
+            if x < self.height and y < self.width:
                 map_row = view_map[x]
                 map_dots = [map_row[i] for i in range(len(map_row))]
                 map_dots[y] = o.style
