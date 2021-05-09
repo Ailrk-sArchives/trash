@@ -3,37 +3,106 @@ use crossbeam::channel::bounded;
 use rand::Rng;
 use std::io::Read;
 use std::sync::mpsc::channel;
+use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 
-fn thread_with_channel() {
-    // multiproducer single consumer communication primitive.
-    let (tx, rx) = channel();
-    // sender can be cloned, but only one reciver is allowed.
-    let tx1 = tx.clone();
-
-    let sender1 = thread::spawn(move || {
-        tx.send("Hello thread".to_owned())
-            .expect("Unabel to send on channel");
+fn why_need_move_in_spane() {
+    let v = vec![1, 2, 3];
+    let handle = thread::spawn(move || {
+        println!("The vector: {:?}", v);
     });
 
-    let sender2 = thread::spawn(move || {
-        tx1.send("Hello thread".to_owned())
-            .expect("Unabel to send on channel");
-    });
+    // if we don't move, the closure holds a referencee to v, and
+    // what if this happen?
+    // drop(v);
 
-    let receiver = thread::spawn(move || {
-        let value = rx.recv().expect("Unable to receive from channel");
-        print!("{}", value);
-    });
-
-    sender1.join().expect("Sender1 has painicked");
-    sender2.join().expect("Sender2 has painicked");
-    receiver.join().expect("The receivere thread has painicked");
+    handle.join().unwrap();
 }
 
-// find max in two theads
+fn thread_with_channel() {
+    let (tx, rx) = channel();
 
+    let tx1 = tx.clone();
+
+    thread::spawn(move || {
+        let vals = vec![
+            String::from("hi"),
+            String::from("from"),
+            String::from("the"),
+            String::from("thread"),
+        ];
+
+        for val in vals {
+            tx1.send(val).unwrap();
+            thread::sleep(Duration::from_secs(1));
+        }
+    });
+
+    thread::spawn(move || {
+        let vals = vec![
+            String::from("more"),
+            String::from("messages"),
+            String::from("for"),
+            String::from("you"),
+        ];
+
+        for val in vals {
+            tx.send(val).unwrap();
+            thread::sleep(Duration::from_secs(1));
+        }
+    });
+
+    for received in rx {
+        println!("Got: {}", received);
+    }
+}
+
+fn using_mutex() {
+    let m = Mutex::new(5);
+
+    // the MutexGuard num will be droped at the end of the scope.
+    // it's the same concetp as scope_lock or lock_guard in c++.
+    {
+        let mut num = m.lock().unwrap();
+        *num = 6;
+    }
+    println!("m = {:?}", m);
+}
+
+// note counter is immutable, but we can mutate the integer in
+// Mutex.
+// Mutex gives us interior mutability.
+// Cell/RefCell are other examples that has interior mutability.
+
+fn sharing_mutex() {
+    let counter = Arc::new(Mutex::new(0));
+    let mut handles = vec![];
+
+    for _ in 0..10 {
+        let counter = Arc::clone(&counter);
+        let handle = thread::spawn(move || {
+            let mut num = counter.lock().unwrap();
+            *num += 1;
+        });
+        handles.push(handle);
+    }
+
+    for handle in handles {
+        handle.join().unwrap();
+    }
+}
+
+// note for marker:
+// Send means you can transfer the ownership between threads.
+// e.g Rc<T> if you clone an Rc<T> and send it over to another thread,
+// both threads might modify the counter at the same time, hence race condition.
+//
+// Sync means for a type T, &T is Send. It's safe to have a value be referenced by
+// another thread.
+// Types with interior mutablity cannot be sync:w
+
+// find max in two theads
 fn find_max(arr: &[i32], thread_num: usize) -> Option<i32> {
     let chunk_size = (arr.len() as f64 / thread_num as f64).round() as usize;
 
@@ -58,7 +127,6 @@ fn find_max(arr: &[i32], thread_num: usize) -> Option<i32> {
             for (begin, end) in bounds {
                 let t = s.spawn(move |_| find_max_(&arr[begin..end], thread_num, threadshold));
                 threads.push(t);
-                println!("thread!!");
             }
 
             for t in threads {
@@ -69,7 +137,7 @@ fn find_max(arr: &[i32], thread_num: usize) -> Option<i32> {
             results.into_iter().flatten().max()
         })
         .ok()
-        .and_then(|e| e)
+        .flatten()
     }
 
     find_max_(arr, thread_num, chunk_size)
@@ -87,7 +155,7 @@ mod test {
     #[test]
     fn test1() {
         let mut rng = rand::thread_rng();
-        let vecs = (0..99999999)
+        let vecs = (0..999999999)
             .into_iter()
             .map(|_| rng.gen::<i32>())
             .collect::<Vec<i32>>();

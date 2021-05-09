@@ -2,6 +2,9 @@
 #include <iostream>
 #include <string>
 
+// This dogmatic example is really bullshit. It doesn't show what
+// problem visitor tries to solve at all.
+
 class ConcreteComponentA;
 class ConcreteComponentB;
 

@@ -6,3 +6,5 @@ pub mod threads;
 pub mod server1;
 pub mod os1;
 pub mod filesys;
+pub mod oop;
+pub mod atomic;

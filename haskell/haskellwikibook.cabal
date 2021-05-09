@@ -96,6 +96,7 @@ library
       Other.ContAndMonad
       Other.ListCompQuirks
       Other.ParserCombinator
+      Other.Reflections
 
       Notes.All.Dice
       Notes.All.Files
@@ -154,6 +155,8 @@ library
     , array
     , template-haskell
     , parsec
+
+    , reflection
 
   if impl(ghc >= 9.0.1)
       build-depends:
