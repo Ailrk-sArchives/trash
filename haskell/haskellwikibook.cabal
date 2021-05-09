@@ -97,6 +97,8 @@ library
       Other.ListCompQuirks
       Other.ParserCombinator
       Other.Reflections
+      Other.FinalTagless
+      Other.FinalTagless1
 
       Notes.All.Dice
       Notes.All.Files
