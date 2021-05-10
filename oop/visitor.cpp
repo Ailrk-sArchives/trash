@@ -2,9 +2,6 @@
 #include <iostream>
 #include <string>
 
-// This dogmatic example is really bullshit. It doesn't show what
-// problem visitor tries to solve at all.
-
 class ConcreteComponentA;
 class ConcreteComponentB;
 
@@ -18,7 +15,7 @@ public:
   virtual void visit_concreteB(const ConcreteComponentB *element) const = 0;
 };
 
-// this is the element you traverse  through.
+// this is the element you traverse through.
 class Component {
 public:
   virtual ~Component() {}

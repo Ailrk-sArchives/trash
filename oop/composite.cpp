@@ -34,7 +34,7 @@ public:
   std::string operation() const override { return "leaf"; }
 };
 
-// Composite class represent the complext components.
+// Composite class represent the complex components.
 // Usually composite class delegate acutal work to their child.
 class Composite : public Component {
 protected:
@@ -96,9 +96,9 @@ int main(void) {
   Component *leaf1 = new Leaf();
   Component *leaf2 = new Leaf();
   Component *leaf3 = new Leaf();
+
   branch1->add(leaf1);
   branch1->add(leaf2);
-
   branch2->add(leaf3);
 
   tree->add(branch1);

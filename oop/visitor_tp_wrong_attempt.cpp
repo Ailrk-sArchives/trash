@@ -17,19 +17,12 @@
 //    and still invoke the right method.
 // 3. visitor contains heterougenous functions. (not everything visit)
 
-template class Visitor;
+template <typename T> class VisitorBase;
 
-class Expr {
-
-  virtual void accept_(visitor_t &visitor) = 0;
-
+template <typename T> class Expr {
 public:
-  template <typename T>
-  T accept(Visitor &visitor) {
-    accept_(visitor);
-    T result = visitor.result();
-    return result;
-  }
+  using visitor_t = VisitorBase<T>;
+  virtual T accept(visitor_t &visitor) = 0;
 };
 
 template <typename T> class Lit : public Expr<T> {
@@ -62,17 +55,13 @@ public:
   virtual T accept(visitor_t &v) override;
 };
 
-template <typename T> class Visitor {
-protected:
-  T result_;
-
+template <typename T> class VisitorBase {
 public:
   using type = T;
-  virtual void visit(Lit<T> &a) = 0;
-  virtual void visit(Add<T> &a) = 0;
-  virtual void visit(Sign<T> &a) = 0;
-  inline virtual type result() { return result_; }
-  virtual ~Visitor() {}
+  virtual type visit(Lit<T> &a) = 0;
+  virtual type visit(Add<T> &a) = 0;
+  virtual type visit(Sign<T> &a) = 0;
+  virtual ~VisitorBase() {}
 };
 
 template <typename T> T Lit<T>::accept(visitor_t &v) { return v.visit(*this); }
@@ -80,25 +69,23 @@ template <typename T> T Add<T>::accept(visitor_t &v) { return v.visit(*this); }
 template <typename T> T Sign<T>::accept(visitor_t &v) { return v.visit(*this); }
 
 // eval method on all nodes.
-class Eval : public Visitor<int> {
+class Eval : public VisitorBase<int> {
 public:
-  virtual void visit(Lit<int> &a) override { result_ = a.value; }
+  virtual type visit(Lit<int> &a) override { return a.value; }
 
-  virtual void visit(Add<int> &a) override {
-    result_ = a.left->accept(*this) + a.right->accept(*this);
+  virtual type visit(Add<int> &a) override {
+    return a.left->accept(*this) + a.right->accept(*this);
   }
 
-  virtual void visit(Sign<int> &a) override {
+  virtual type visit(Sign<int> &a) override {
     auto value = a.expr->accept(*this);
-    int res;
     if (value > 0) {
-      res = 1;
+      return 1;
     } else if (value == 0) {
-      res = 0;
+      return 0;
     } else {
-      res = -1;
+      return -1;
     }
-    result_ = res;
   }
 };
 
@@ -106,26 +93,23 @@ public:
 // this is problematic. Expr<T> used for show is different from that used
 // for Eval!.
 // We need some other implementation.
-class Show : public Visitor<std::string> {
+class Show : public VisitorBase<std::string> {
 public:
-  virtual void visit(Lit<std::string> &a) override {
-    result_ = std::to_string(a.value);
+  virtual type visit(Lit<std::string> &a) override {
+    return std::to_string(a.value);
   }
 
-  virtual void visit(Add<std::string> &a) override {
-    result_ = a.left->accept(*this) + " + " + a.right->accept(*this);
+  virtual type visit(Add<std::string> &a) override {
+    return a.left->accept(*this) + " + " + a.right->accept(*this);
   }
 
-  virtual void visit(Sign<std::string> &a) override {
+  virtual type visit(Sign<std::string> &a) override {
     std::string value = a.expr->accept(*this);
     auto x = value[0];
-    std::string res;
     if (value[0] == '-') {
-      res = "-";
-    } else {
-      res = "+";
+      return "-";
     }
-    result_ = res;
+    return "+";
   }
 };
 
@@ -140,6 +124,7 @@ int main(void) {
 
   int evaled = expr->accept(evaluator);
   std::cout << "evaluation result:" << evaled << std::endl;
+
 
   return 0;
 }
