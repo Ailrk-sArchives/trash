@@ -403,5 +403,8 @@ a.out
 .du
 .ud
 
+
+perf.data*
+
 myocamlbuild.ml
 setup.ml

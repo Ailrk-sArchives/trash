@@ -1,9 +1,9 @@
 #include <atomic>
+#include <benchmark/benchmark.h>
 #include <chrono>
 #include <iostream>
 #include <thread>
 #include <vector>
-#include <benchmark/benchmark.h>
 
 // what do system people do.?
 
@@ -25,6 +25,14 @@ void single_thread() {
   }
 }
 
+static void SINGLE_THREADED(benchmark::State &s) {
+  while (s.KeepRunning()) {
+    single_thread();
+  }
+}
+
+BENCHMARK(SINGLE_THREADED)->UseRealTime()->Unit(benchmark::kMillisecond);
+
 // direct sharing.
 //  a will bounce around in four different cachelines.
 void direct_sharing() {
@@ -41,6 +49,14 @@ void direct_sharing() {
     t.join();
   }
 }
+
+static void DIRECTED_SHARING(benchmark::State &s) {
+  while (s.KeepRunning()) {
+    direct_sharing();
+  }
+}
+
+BENCHMARK(DIRECTED_SHARING)->UseRealTime()->Unit(benchmark::kMillisecond);
 
 // false sharing.
 // although different threads are using different atomic values,
@@ -63,6 +79,14 @@ void false_sharing() {
   t3.join();
   t4.join();
 }
+
+static void FALSE_SHARING(benchmark::State &s) {
+  while (s.KeepRunning()) {
+    false_sharing();
+  }
+}
+
+BENCHMARK(FALSE_SHARING)->UseRealTime()->Unit(benchmark::kMillisecond);
 
 // No sharing at all among 4 threads.
 // cacheline has maximum size 64 bytes. if we align the struct
@@ -89,27 +113,12 @@ void no_sharing() {
   t4.join();
 }
 
-#define BENCHMARK(fn)                                                          \
-  {                                                                            \
-    auto start = std::chrono::high_resolution_clock::now();                    \
-    fn();                                                                      \
-    auto end = std::chrono::high_resolution_clock::now();                      \
-    std::chrono::duration<double, std::milli> elapsed = end - start;           \
-    std::cout << #fn ": " << elapsed.count() << "ms" << std::endl;             \
+static void NO_SHARING(benchmark::State &s) {
+  while (s.KeepRunning()) {
+    no_sharing();
   }
-
-// % g++ false_sharing.cc -std=gnu++2a -lpthread && ./a.out
-// single_thread: 3.42128ms
-// direct_sharing: 8.17625ms
-// false_sharing: 8.4682ms
-// no_sharing: 1.01538ms
-
-int main(void) {
-
-  BENCHMARK(single_thread);
-  BENCHMARK(direct_sharing);
-  BENCHMARK(false_sharing);
-  BENCHMARK(no_sharing);
-
-  return 0;
 }
+
+BENCHMARK(NO_SHARING)->UseRealTime()->Unit(benchmark::kMillisecond);
+
+BENCHMARK_MAIN();
