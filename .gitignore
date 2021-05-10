@@ -403,6 +403,7 @@ a.out
 .du
 .ud
 
+out*.asm
 
 perf.data*
 
