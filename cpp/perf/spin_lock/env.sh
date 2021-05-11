@@ -1,7 +1,5 @@
 bench_ () {
-  g++ ./spin_lock"$1".cc -I. -lpthread -lbenchmark -O1
-
-  # -march=native -mtune=native -flto -fuse-linker-plugin
+  g++ ./spin_lock"$1".cc -I. -lpthread -lbenchmark -O3 -march=native -mtune=native -flto -fuse-linker-plugin
 
   if [[ $# -eq 1 ]]; then
     ./a.out

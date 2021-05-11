@@ -8,14 +8,16 @@
 #include <thread>
 #include <vector>
 
+#define ITERATION 100000
+
 class spin_lock {
 protected:
   std::atomic<bool> locked{false};
 
 public:
-  void lock();
+  virtual void lock();
 
-  void unlock() { locked.store(false); } // @write
+  virtual void unlock() { locked.store(false); } // @write
 };
 
 class scoped_spin_lock {
@@ -27,12 +29,14 @@ public:
   ~scoped_spin_lock() { lk.unlock(); }
 };
 
-inline void inc(spin_lock &s, std::int64_t value) {
+inline std::int64_t inc(spin_lock &s, std::int64_t value) {
 
-  for (int i = 0; i < 100000; ++i) {
+  for (int i = 0; i < ITERATION; ++i) {
     scoped_spin_lock lk{s};
     value++; // @write
   }
+
+  return value;
 }
 
 template <typename Lock> inline void spin_lock_bench(benchmark::State &s) {
@@ -47,7 +51,10 @@ template <typename Lock> inline void spin_lock_bench(benchmark::State &s) {
 
   for (auto _ : s) {
     for (auto i = 0u; i < num_threads; ++i) {
-      threads.emplace_back([&] { inc(slk, value); });
+      threads.emplace_back([&] {
+          int v = inc(slk, value);
+          assert(v == ITERATION);
+          });
     }
 
     for (auto &t : threads) {

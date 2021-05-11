@@ -20,9 +20,7 @@ void spin_lock::lock() {
     ;
 }
 
-static void naive(benchmark::State &s) {
-  spin_lock_bench<spin_lock>(s);
-}
+static void naive(benchmark::State &s) { spin_lock_bench<spin_lock>(s); }
 
 BENCHMARK(naive)
     ->RangeMultiplier(2)
