@@ -21,6 +21,7 @@ import           Data.Array (Array, bounds, listArray, (!))
   Jump table of s ::= {x | x is proper prefix of s &&
                            x is proper suffix of s   }
 @-}
+
 -- e.g
 -- Jump table of string pat = "abxab":
 --  a  b  x  a  b

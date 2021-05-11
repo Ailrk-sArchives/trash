@@ -17,13 +17,15 @@ void spin_lock::lock() {
       return;
 
     while (locked.load()) // @read
+                          // dummy for loop wasting energy.
       for (volatile int i = 0; i < 100; i += 1)
-        // dummy for loop wasting energy.
         ;
   }
 }
 
-static void active_backoff(benchmark::State &s) { spin_lock_bench<spin_lock>(s); }
+static void active_backoff(benchmark::State &s) {
+  spin_lock_bench<spin_lock>(s);
+}
 
 BENCHMARK(active_backoff)
     ->RangeMultiplier(2)

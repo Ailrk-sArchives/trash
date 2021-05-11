@@ -1,5 +1,8 @@
 pub mod macros1;
 pub mod macros2;
+pub mod macros3;
+
+#![feature(trace_macros)]
 
 // rust macro expand after all code transformed into  AST.
 // so any macro written must be valid rust syntax in the first place.

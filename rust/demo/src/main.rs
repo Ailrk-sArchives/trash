@@ -3,6 +3,8 @@ pub mod macros;
 pub mod other;
 pub mod stdlib;
 
+#![feature(trace_macros)]
+
 #[macro_use]
 extern crate lazy_static;
 
