@@ -9,7 +9,25 @@ import           Data.IORef
 import           Data.STRef
 import           GHC.Generics
 
--- extential types --
+{-@ extential types
+    first of all we have universal type ∀.
+    ∀x.t means for all type x we have t. Here we don't have any assumption
+    of x, so this type should work for every x.
+
+    existential type is the opposite of universal type. We say
+    ∃x.t, meaning exists a type x such that y.
+
+    existential quantifier type can be encoded with universal quantifier:
+    ∃x.t ≡ ∀y.(∀x.t → y) → y
+
+@-}
+
+-- We say there exists a value E such that E -> E.
+data E = forall a. E a
+ide :: E -> E
+ide x = x
+
+
 -- for all types s that's in Show, there exists SB s.t SB s :: *
 data ShowBox = forall s. Show s => SB s
 
