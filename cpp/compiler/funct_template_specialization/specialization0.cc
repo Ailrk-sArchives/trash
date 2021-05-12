@@ -1,9 +1,6 @@
 #include <cassert>
 #include <iostream>
 
-// we write a generic function to
-// swap two bytes.
-
 template <typename T> T byte_swap(T value) {
   unsigned char *bytes = reinterpret_cast<unsigned char *>(&value);
   for (size_t i = 0; i < sizeof(T); i += 2) {
@@ -23,3 +20,5 @@ template <> char byte_swap(char value) {
   std::cout << "good" << std::endl;
   return value;
 }
+
+int main(void) { return 0; }

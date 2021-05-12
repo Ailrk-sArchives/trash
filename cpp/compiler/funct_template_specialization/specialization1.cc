@@ -1,8 +1,6 @@
+#include <atomic>
 #include <cassert>
 #include <iostream>
-
-// we write a generic function to
-// swap two bytes.
 
 template <typename T> T byte_swap(T value) {
   unsigned char *bytes = reinterpret_cast<unsigned char *>(&value);
@@ -13,13 +11,29 @@ template <typename T> T byte_swap(T value) {
   }
 }
 
-template <> double byte_swap(double value) {
+double byte_swap(double value) {
   assert(false && "Illegal to swap double");
   return value;
 }
 
-template <> char byte_swap(char value) {
+char byte_swap(char value) {
   assert(false && "Illegal to swap char");
   std::cout << "good" << std::endl;
   return value;
+}
+
+template <> char byte_swap(char value) {
+  std::atomic<int> counter;
+  assert(false && "Illegal to swap char");
+  for (int i = 0; i < 10; ++i) {
+    counter++;
+  }
+  return value + counter;
+}
+
+int main(void) {
+  char c = 'a';
+  char c1 = byte_swap(c);
+  char c2 = byte_swap<>(c);
+  return 0;
 }

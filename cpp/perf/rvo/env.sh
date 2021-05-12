@@ -8,5 +8,5 @@ bench_ () {
 
 perf_stat_ () {
   CASE="${1}" && echo $CASE
-  bench_ 1 && perf stat -d -d -d ./a.out --benchmark_filter="$CASE"
+  bench_ 1 && perf stat -d -d -d ./a.out --benchmark_filter="$CASE" --benchmark_min_time=3
 }
