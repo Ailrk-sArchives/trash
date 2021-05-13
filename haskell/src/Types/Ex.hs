@@ -1,15 +1,22 @@
 {-# LANGUAGE DeriveAnyClass            #-}
 {-# LANGUAGE DeriveGeneric             #-}
 {-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE GADTs                     #-}
+{-# LANGUAGE LambdaCase                #-}
 {-# LANGUAGE RankNTypes                #-}
 module Types.Ex where
 
+import           Control.Monad
 import           Control.Monad.ST
+import           Data.Foldable
 import           Data.IORef
 import           Data.STRef
 import           GHC.Generics
 
 {-@ extential types
+    some level of type erasure.
+    You know there is a type, but you don't know what it eactly is.
+
     first of all we have universal type ∀.
     ∀x.t means for all type x we have t. Here we don't have any assumption
     of x, so this type should work for every x.
@@ -113,7 +120,7 @@ data Expr a = Val a | forall b. Apply (Expr (b -> a)) (Expr b)
 -- need exitential type to make sure the io ref is the one used in the closure.
 data Action = forall b. Act (IORef b) (b -> IO ())
 
--- dynamic dispatching --
+{-@ miminic dynamic dispatching @-}
 
 class Shape_ a where
   perimeter :: a -> Double
@@ -156,7 +163,6 @@ areas = area <$> shapes
 
 -- alternative method --
 type Point = (Float, Float)
-
 
 -- exmaple use case in raytracer--
 class BoundingShape_ a where
@@ -210,7 +216,7 @@ render1 = boundingSphere <$> objsToRender
 render2 = hit <$> objsToRender
 
 
--- Another exercise --
+{-@ Another exercise @-}
 class Animal_ a where
   move :: a -> IO ()
 
@@ -254,3 +260,44 @@ corgi2 = Corgi
 
 moveAnimals = sequence_ $ move <$>  [Animal persian, Animal corgi1, Animal corgi2]
 moveDogs = sequence_ $ bark <$> [Dog corgi1, Dog corgi2]
+
+{-@ One can use GADT for existential type @-}
+
+-- exists a
+data U where
+  U :: a -> (a -> String) -> U
+foou :: U -> String
+foou (U x f) = f x
+
+-- is the sam as
+data V = forall a. V a (a -> String)
+foov :: V -> String
+foov (V x f) = f x
+
+
+-- another example
+data ExType
+  = forall a. Animal_ a => One a
+  | forall a. Animal_ a => Two a
+  | forall a. Animal_ a => Three a
+
+data ExType' where
+  One' :: forall a. Animal_ a => a -> ExType'
+  Two' :: forall a. Animal_ a => a -> ExType'
+  Three' :: forall a. Animal_ a => a -> ExType'
+
+-- we hide different Animal_ a behind ExType', and put them in to one
+-- bucket, perform operation based on the type bound.
+-- We don't know what type we are acting one for the entire process.
+-- We only know there exists such type, and it's an Animal_ that we can
+-- let it move.
+--
+-- Note this version is expressed in GADT. GADT is generally better syntax.
+-- Then existential quantifier.
+ex1 :: [ExType'] -> IO ()
+ex1 = traverse_ match
+  where
+    match = \case
+      One' x   -> move x
+      Two' x   -> move x
+      Three' x -> move x
