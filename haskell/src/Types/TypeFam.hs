@@ -1,14 +1,14 @@
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE GADTs             #-}
+{-# LANGUAGE TypeApplications  #-}
+{-# LANGUAGE TypeFamilies      #-}
 
 module Types.TypeFam where
 
-import Control.Exception
-import Control.Monad.Except
-import Data.Char (ord)
-import qualified Data.IntMap as M
+import           Control.Exception
+import           Control.Monad.Except
+import           Data.Char            (ord)
+import qualified Data.IntMap          as M
 
 -- how you normall define a list with gadt??
 data GList a where
@@ -42,18 +42,16 @@ data TermGADT a where
 infixl 6 :@
 
 evalgadt :: TermGADT a -> TermGADT a
-evalgadt (K' :@ x :@ _) = x
+evalgadt (K' :@ x :@ _)      = x
 evalgadt (S' :@ x :@ y :@ z) = x :@ z :@ (y :@ z)
-evalgadt x = x
+evalgadt x                   = x
 
 -- you can't realy simulate this gadt though, because data family implies
 -- that data instances has the same arity.
 data family Fam a :: *
 
 data instance Fam () = FamA Int Int
-
 data instance Fam Int = FamB Char
-
 data instance Fam (a -> b) = FamC (a -> b)
 
 -----------------------------------------------------------------------
@@ -151,13 +149,9 @@ instance Container [a] where
     It's here again, but let's do some peano number
  @-}
 data Zero
-
 data Succ n
-
 type family Pred' n
-
 type instance Pred' (Succ n) = n
-
 type instance Pred' Zero = Zero
 
 -- you can write type family in one place.
@@ -194,7 +188,6 @@ type family FTypeApp a
 
 -- only have two overloads here.
 type instance FTypeApp Char = Bool
-
 type instance FTypeApp Bool = Bool
 
 functionApp = l $ ord h

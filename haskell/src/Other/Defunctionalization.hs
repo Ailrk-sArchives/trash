@@ -115,6 +115,4 @@ walkDef (Leaf x)     = consDef x
 walkDef (Node t1 t2) = oDef (walkDef t1) (walkDef t2)
 
 -- 3. defunctionaliza the continuation
-
-
 -- related topic: Closure conversion

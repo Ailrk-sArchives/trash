@@ -126,7 +126,6 @@ instance Group Z3 where
 
 class (Group a) => AbelianGroup a where
 
-
 -- TODO
 -- further more, this is a cyclic group
 

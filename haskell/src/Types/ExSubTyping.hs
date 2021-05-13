@@ -59,5 +59,3 @@ b = getSize (W $ LabelWidget 10 30 "label_1")
 
 
 -- dynamic dispatch  --
-
-

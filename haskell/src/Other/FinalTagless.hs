@@ -17,6 +17,8 @@ data Expr' a where
   Add :: Expr' Int -> Expr' Int -> Expr' Int
 
 -- this is the final tagless version.
+{-@ final tagless use function ass data constructor
+@-}
 
 -- basic
 class Expr a where

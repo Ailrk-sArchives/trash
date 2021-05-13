@@ -1,17 +1,17 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE PolyKinds #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE GADTs                 #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE PolyKinds             #-}
+{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE TypeOperators         #-}
 module Types.DataKinds where
 
 import           Data.Proxy
 
 data TypeList l where
-  Nil ::TypeList '[]
-  (:::) ::a -> TypeList l -> TypeList (a ': l)
+  Nil :: TypeList '[]
+  (:::) :: a -> TypeList l -> TypeList (a ': l)
 
 infixr :::
 

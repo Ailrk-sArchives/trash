@@ -82,7 +82,9 @@ let offset_of_records () =
   let v: CPS.var = un in let w: CPS.var = un in let e: CPS.cexp = un in
   CPS.Offset (1, CPS.Var v, w, e)
 
-(* mutually recursive functions are defined with fix point *)
+(* mutually recursive functions are defined with fix point
+ * It's how you define new binding of a function.
+ * *)
 let mutually_recursive () =
   let f1: CPS.var = un in let v11: CPS.var = un in let v12: CPS.var = un in let b1: CPS.cexp = un in
   let f2: CPS.var = un in let v21: CPS.var = un in let v22: CPS.var = un in let b2: CPS.cexp = un in
