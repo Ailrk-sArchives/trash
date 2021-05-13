@@ -40,6 +40,7 @@ library
       GHCs.DeriveVia
       GHCs.Rules
       GHCs.InlineAndSpecialization
+      GHCs.Laziness
 
       Monads.AlternativeandMonadPlus
       Monads.Monads
@@ -70,6 +71,7 @@ library
       PL.HOAS
       PL.Continuation
       PL.CoroutinesWithContinuation
+      PL.DenotationalSem
 
       Libs.ReadFile
       Libs.Ptrs
@@ -78,6 +80,7 @@ library
       Libs.Refs
       Libs.MyArray
       Libs.Seq
+      Libs.Bench
 
       Libs.TH.TemplateH
       Libs.TH.QQHtml
@@ -161,6 +164,8 @@ library
     , parsec
 
     , reflection
+
+    , criterion
 
   if impl(ghc >= 9.0.1)
       build-depends:

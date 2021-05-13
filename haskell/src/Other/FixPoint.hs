@@ -28,3 +28,4 @@ v1 = fact 5
 -- As fix (\x:T. x) as type T, but it denotationally has type bottom.
 -- so once we have fix, we can no longer guarantee that every well typed term
 -- reduce to a value.
+
