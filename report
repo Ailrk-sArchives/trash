@@ -1,55 +1,59 @@
-     100 files     200 files     300 files     400 files     500 files     600 files    1956 text files.
-classified 1956 filesDuplicate file check 1956 files (1260 known unique)Unique:      100 files                                          Unique:      200 files                                          Unique:      300 files                                          Unique:      400 files                                          Unique:      500 files                                          Unique:      600 files                                          Unique:      700 files                                          Unique:      800 files                                          Unique:      900 files                                          Unique:     1000 files                                          Unique:     1100 files                                          Unique:     1200 files                                              1665 unique files.                              
-Counting:  100Counting:  200Counting:  300Counting:  400Counting:  500Counting:  600Counting:  700Counting:  800Counting:  900Counting:  1000Counting:  1100Counting:  1200Counting:  1300Counting:  1400Counting:  1500Counting:  1600     531 files ignored.
-
-github.com/AlDanial/cloc v 1.90  T=10.68 s (139.6 files/s, 18554.5 lines/s)
---------------------------------------------------------------------------------
-Language                      files          blank        comment           code
---------------------------------------------------------------------------------
-C/C++ Header                    286          15153          33227          66649
-C++                             253           4329           5674          23346
-Haskell                         340           3750           3721           9919
-Python                          118           1594           1043           4053
-Lisp                             67            943           1250           3066
-Rust                             55            427            335           2181
-Racket                            8            427            566           1923
-C                                36            278            208           1179
-TypeScript                       44            367            187           1139
-Lua                               7            123             11            794
-Markdown                         63            289              0            713
-Agda                              8            203            278            669
-OCaml                            15            158            187            572
-CSV                               1              0              0            570
-PureScript                       12            162            122            568
-JavaScript                       10             84             19            538
-Assembly                         12             60            106            447
-Standard ML                      12            111             94            430
-HTML                              9             27              0            309
-Go                                2             83             35            279
-Pascal                            4             64             47            279
-Bourne Shell                     26             73             31            274
-YAML                             12             65            378            217
-JSON                             17              1              0            202
-Nix                              14             18             77            171
-Erlang                            9             49             35            161
-PHP                               2             26              2             78
-R                                 1             37             21             69
-C#                                1             16              8             67
-CMake                            18             21              0             58
-Scheme                            1              9             40             47
-D                                 7             12              0             43
-TOML                              5             10              5             42
-CSS                               2              5              2             38
-LLVM IR                           2             16             25             33
-make                              2             16              3             31
-vim script                        1             10              8             27
-Coq                               1             19             15             26
-Smalltalk                         1             10              8             25
-dhall                             2             19            108             22
-XML                               1              1              0             17
-Bourne Again Shell                2              3              0             12
-APL                               1              0              0             11
-reStructuredText                  1              2              0              0
---------------------------------------------------------------------------------
-SUM:                           1491          29070          47876         121294
---------------------------------------------------------------------------------
+===============================================================================
+ Language            Files        Lines         Code     Comments       Blanks
+===============================================================================
+ C++                   249        14674         9318         2629         2727
+ Haskell               362        17102         9283         4233         3586
+ Python                123         6690         4780          363         1547
+ Lisp                   37         3408         2066          729          613
+ Racket                  8         2916         1853          636          427
+ C                      37         1681         1191          208          282
+ TypeScript             44         1693         1139          187          367
+ Lua                     8          930          794           11          125
+ C Header               21         1205          787          203          215
+ GNU Style Assembly     13          739          679            0           60
+ Agda                    9         1150          667          280          203
+ Cabal                  19          824          572          171           81
+ OCaml                  17          918          572          187          159
+ PureScript             12          852          568          122          162
+ JavaScript             10          641          538           19           84
+ Standard ML (SML)      12          635          430           94          111
+ Go                      2          397          279           35           83
+ Pascal                  4          390          279           47           64
+ C++ Header              2          409          264           77           68
+ Shell                  26          378          261           44           73
+ YAML                   13          726          220          436           70
+ Nix                    14          266          171           77           18
+ JSON                    7          156          155            0            1
+ Erlang                  8          230          147           35           48
+ PHP                     2          106           78            2           26
+ R                       2          127           69           21           37
+ C#                      1           91           67            8           16
+ CMake                  18           79           58            0           21
+ TOML                    6           66           48            6           12
+ Scheme                  1           96           47           40            9
+ CSS                     2           45           38            2            5
+ Vim script              1           45           37            4            4
+ LLVM                    2           74           33           25           16
+ Makefile                3           50           31            3           16
+ Coq                     1           60           26           15           19
+ Dhall                   2          149           22          122            5
+ XML                     1           18           17            0            1
+ ReStructuredText        1            2            0            0            2
+ Plain Text             16        56227            0        56187           40
+-------------------------------------------------------------------------------
+ Rust                   62         2930         2181          322          427
+ |- Markdown             2           13            0           13            0
+ (Total)                           2943         2181          335          427
+-------------------------------------------------------------------------------
+ HTML                    9          193          186            0            7
+ |- CSS                  1           73           56            6           11
+ |- JavaScript           1           70           49           12            9
+ (Total)                            336          291           18           27
+-------------------------------------------------------------------------------
+ Markdown               63          968            0          687          281
+ |- C++                  1            8            6            1            1
+ |- Python               1           25           15            4            6
+ (Total)                           1001           21          692          288
+===============================================================================
+ Total                1251       120336        39951        68267        12118
+===============================================================================
