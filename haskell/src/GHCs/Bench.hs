@@ -58,3 +58,4 @@ main2 = defaultMain [ -- 12.63ns all it evals to is _:_
                     , bench "map to list nf" $ nf (map (+1)) xs]      -- 1.133 ms
 
 
+

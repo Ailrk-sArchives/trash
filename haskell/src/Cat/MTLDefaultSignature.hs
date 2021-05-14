@@ -1,4 +1,4 @@
-module Monads.MTLDefaultSignature where
+module Cat.MTLDefaultSignature where
 
 -- one can use default signature to reduce the amount of
 -- boilerplates when adding a new mtl style typeclass.

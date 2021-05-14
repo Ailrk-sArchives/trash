@@ -76,5 +76,3 @@ constFalse = const False
 
 -- |Either Bool (Bool, Maybe Bool) -> Bool|
 -- =  2 + (2*2 + 1)^2 = 27
-
-

@@ -3,7 +3,7 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE RankNTypes        #-}
 
-module Monads.ReadP where
+module Cat.ReadP where
 
 -- a little parser combinator in prelude.
 

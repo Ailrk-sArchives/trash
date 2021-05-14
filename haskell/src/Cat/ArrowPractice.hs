@@ -1,6 +1,6 @@
 {-# LANGUAGE Arrows #-}
 
-module Monads.ArrowPractice where
+module Cat.ArrowPractice where
 
 import           Control.Arrow
 -- a b c : some computation with input b and c

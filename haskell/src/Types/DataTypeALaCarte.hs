@@ -50,5 +50,3 @@ instance (Functor f, Functor g) => Functor (f :+: g) where
 -- because they are all functors, we can fold an Expr as follow:
 foldExpr :: Functor f => (f a -> a) -> Expr f -> a
 foldExpr f (In t) = f (fmap (foldExpr f) t)
-
-

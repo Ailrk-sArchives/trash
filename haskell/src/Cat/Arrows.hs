@@ -5,7 +5,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -fenable-rewrite-rules #-}
 {-# OPTIONS_GHC -Wno-inline-rule-shadowing #-}
-module Monads.Arrows where
+module Cat.Arrows where
 
 {-@ Arrow, new abstracation!
     Arrow represents compositin and data flow.

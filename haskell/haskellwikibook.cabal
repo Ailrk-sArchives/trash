@@ -44,17 +44,18 @@ library
       GHCs.Bench
       GHCs.Profiling
 
-      Monads.AlternativeandMonadPlus
-      Monads.Monads
-      Monads.MonadTransformerList
-      Monads.ErrorHandling
-      Monads.MTLPractise
-      Monads.MTLPractise1
-      Monads.MyMTL
-      Monads.ReadP
-      Monads.Arrows
-      Monads.ArrowPractice
-      Monads.FreeMonad
+      Cat.AlternativeandMonadPlus
+      Cat.Monads
+      Cat.CoMonads
+      Cat.MonadTransformerList
+      Cat.ErrorHandling
+      Cat.MTLPractise
+      Cat.MTLPractise1
+      Cat.MyMTL
+      Cat.ReadP
+      Cat.Arrows
+      Cat.ArrowPractice
+      Cat.FreeMonad
 
       Types.DependentType
       Types.DependentTypeSing
@@ -71,6 +72,7 @@ library
       Types.Ex
       Types.DataKinds
       Types.DataTypeALaCarte
+      Types.DataTypeGenericProgramming
 
       PL.Lam
       PL.ScottEncoding
@@ -103,6 +105,7 @@ library
       Other.FFI
       Other.ProbabilityMonad
       Other.FixPoint
+      Other.FixPointOfFunctor
       Other.ContAndMonad
       Other.ListCompQuirks
       Other.ParserCombinator
@@ -110,6 +113,7 @@ library
       Other.FinalTagless
       Other.FinalTagless1
       Other.RecursionScheme1
+      Other.Lens1
 
       Notes.All.Dice
       Notes.All.Files

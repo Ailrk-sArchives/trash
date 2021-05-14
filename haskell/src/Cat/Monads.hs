@@ -4,7 +4,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE KindSignatures             #-}
 {-# LANGUAGE RankNTypes                 #-}
-module Monads.Monads where
+module Cat.Monads where
 
 {-@ Functor: morphism between categories
     Endofunctor: A functor from a category to itself.

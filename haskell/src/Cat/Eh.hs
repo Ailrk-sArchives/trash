@@ -6,7 +6,7 @@
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE ScopedTypeVariables        #-}
 {-# LANGUAGE TypeApplications           #-}
-module Monads.ErrorHandling where
+module Cat.ErrorHandling where
 
 {-@ The initial purpose of this practice is just
     to learn some error handling in haskell, but it

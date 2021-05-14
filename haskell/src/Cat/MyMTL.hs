@@ -14,7 +14,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE StandaloneDeriving         #-}
 
-module Monads.MyMTL where
+module Cat.MyMTL where
 import           Control.Monad.IO.Class     (MonadIO (liftIO))
 import           Control.Monad.Trans.Class  (MonadTrans (lift))
 import           Data.Functor.Classes       (Eq1 (..), Ord1 (..), Read1 (..),

@@ -1,11 +1,11 @@
+{-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE ExplicitForAll    #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs             #-}
 {-# LANGUAGE KindSignatures    #-}
+{-# LANGUAGE PolyKinds         #-}
 {-# LANGUAGE TypeApplications  #-}
 {-# LANGUAGE TypeFamilies      #-}
-
-{-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE TypeOperators     #-}
 module Types.Inferences where
 
@@ -81,4 +81,15 @@ infixr :>
 jotaro :: HList User
 jotaro = UUID :> Username :> Password :> Nil
 
+-- track matchability in kind
+-- Maybe :: * -> *  "matchable"
+-- DBType :: * ~> *  "unmatchable"
+--
+-- We can't use DBType for Map because it's saturated.
 
+type family Map (f :: a -> b) (xs :: [a]) :: [b] where
+  Map _ '[] = '[]
+  Map f (x ': xs) = f x ': Map f xs
+
+dbUser :: HList User -> HList (Map Maybe User)
+dbUser = undefined

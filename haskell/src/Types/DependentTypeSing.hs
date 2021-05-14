@@ -1,2 +1,1 @@
 module Types.DependentTypeSing where
-

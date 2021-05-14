@@ -8,7 +8,7 @@
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE UndecidableInstances   #-}
 
-module Monads.MonadTransformerList where
+module Cat.MonadTransformerList where
 
 import           Control.Applicative
 import           Control.Exception   (IOException (..), catch, ioError)

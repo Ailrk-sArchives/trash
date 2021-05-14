@@ -6,4 +6,3 @@ module Other.FinalTagless1 where
 
 
 -- use final tagless as GADT.
-

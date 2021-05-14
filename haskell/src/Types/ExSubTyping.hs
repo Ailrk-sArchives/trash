@@ -57,5 +57,4 @@ a = getSize (W $ Widget 10 10)
 b = getSize (W $ LabelWidget 10 30 "label_1")
 -- a (10.0, 10.0), b (10.0, 30.0)
 
-
 -- dynamic dispatch  --
