@@ -1,10 +1,14 @@
-github.com/AlDanial/cloc v 1.90  T=10.92 s (136.1 files/s, 18108.6 lines/s)
+     100 files     200 files     300 files     400 files     500 files     600 files    1956 text files.
+classified 1956 filesDuplicate file check 1956 files (1260 known unique)Unique:      100 files                                          Unique:      200 files                                          Unique:      300 files                                          Unique:      400 files                                          Unique:      500 files                                          Unique:      600 files                                          Unique:      700 files                                          Unique:      800 files                                          Unique:      900 files                                          Unique:     1000 files                                          Unique:     1100 files                                          Unique:     1200 files                                              1665 unique files.                              
+Counting:  100Counting:  200Counting:  300Counting:  400Counting:  500Counting:  600Counting:  700Counting:  800Counting:  900Counting:  1000Counting:  1100Counting:  1200Counting:  1300Counting:  1400Counting:  1500Counting:  1600     531 files ignored.
+
+github.com/AlDanial/cloc v 1.90  T=10.68 s (139.6 files/s, 18554.5 lines/s)
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
 C/C++ Header                    286          15153          33227          66649
 C++                             253           4329           5674          23346
-Haskell                         336           3643           3606           9718
+Haskell                         340           3750           3721           9919
 Python                          118           1594           1043           4053
 Lisp                             67            943           1250           3066
 Rust                             55            427            335           2181
@@ -47,5 +51,5 @@ Bourne Again Shell                2              3              0             12
 APL                               1              0              0             11
 reStructuredText                  1              2              0              0
 --------------------------------------------------------------------------------
-SUM:                           1487          28963          47761         121093
+SUM:                           1491          29070          47876         121294
 --------------------------------------------------------------------------------
