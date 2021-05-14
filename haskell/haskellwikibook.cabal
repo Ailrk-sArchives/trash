@@ -41,6 +41,8 @@ library
       GHCs.Rules
       GHCs.InlineAndSpecialization
       GHCs.Laziness
+      GHCs.Bench
+      GHCs.Profiling
 
       Monads.AlternativeandMonadPlus
       Monads.Monads
@@ -58,7 +60,9 @@ library
       Types.DependentTypeSing
       Types.LiquidHs
       Types.Gadts
+      Types.TypeableAndDatKinds
       Types.TypeFam
+      Types.TypeFamVector
       Types.Kindness
       Types.ThinkingWithTypes
       Types.ExSubTyping
@@ -80,7 +84,7 @@ library
       Libs.Refs
       Libs.MyArray
       Libs.Seq
-      Libs.Bench
+      Libs.Misc
 
       Libs.TH.TemplateH
       Libs.TH.QQHtml
@@ -135,10 +139,12 @@ library
     , mmap
 
     , containers
+    , unordered-containers
     , singletons
 
     -- lens
     , lens
+    , vector
 
     , linear
 

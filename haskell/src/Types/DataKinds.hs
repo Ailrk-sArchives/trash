@@ -7,6 +7,8 @@
 {-# LANGUAGE TypeOperators         #-}
 module Types.DataKinds where
 
+-- promote data to type.
+
 import           Data.Proxy
 
 data TypeList l where
