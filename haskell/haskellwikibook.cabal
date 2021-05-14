@@ -60,9 +60,11 @@ library
       Types.DependentTypeSing
       Types.LiquidHs
       Types.Gadts
+      Types.Inferences
       Types.TypeableAndDatKinds
       Types.TypeFam
       Types.TypeFamVector
+      Types.TypeFamZipper
       Types.Kindness
       Types.ThinkingWithTypes
       Types.ExSubTyping

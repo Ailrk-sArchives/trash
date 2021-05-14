@@ -1,5 +1,7 @@
+{-# LANGUAGE ExplicitForAll    #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs             #-}
+{-# LANGUAGE KindSignatures    #-}
 {-# LANGUAGE TypeApplications  #-}
 {-# LANGUAGE TypeFamilies      #-}
 
@@ -9,6 +11,7 @@ import           Control.Exception
 import           Control.Monad.Except
 import           Data.Char            (ord)
 import qualified Data.IntMap          as M
+import           Data.Maybe
 
 -- how you normall define a list with gadt??
 data GList a where
@@ -78,39 +81,6 @@ instance GMapKey Char where
   empty = GMapChar M.empty
   lookup k (GMapChar m) = M.lookup (ord k) m
   insert k v (GMapChar m) = GMapChar $ M.insert (ord k) v m
-
-class Zippers c where
-  type Focus c :: *
-  type Context c :: *
-  moveLeft :: c -> c
-  moveRight :: c -> c
-  modify :: (Focus c -> Focus c) -> c -> c
-
-data ListZipper a = ListZipper [a] a [a]
-
-data Tree a = Branch a (Tree a) (Tree a) | Leaf
-
-data TreeDir a
-  = TreeLeft a (Tree a)
-  | TreeRight a (Tree a)
-
-type TreeDirs a = [TreeDir a]
-
-data TreeZipper a = TreeZipper (Tree a) (TreeDirs a)
-
-instance Zippers (ListZipper a) where
-  type Focus (ListZipper a) = a
-  type Context (ListZipper a) = ([a], [a])
-  moveLeft (ListZipper (l : ls) x rs) = ListZipper ls l (x : rs)
-  moveRight (ListZipper ls x (r : rs)) = ListZipper (x : ls) r rs
-  modify f (ListZipper ls x rs) = ListZipper ls (f x) rs
-
-instance Zippers (TreeZipper a) where
-  type Focus (TreeZipper a) = a
-  type Context (TreeZipper a) = TreeDirs a
-  moveLeft (TreeZipper (Branch a lt rt) bs) = TreeZipper lt (TreeLeft a rt : bs)
-  moveRight (TreeZipper (Branch a lt rt) bs) = TreeZipper rt (TreeRight a lt : bs)
-  modify f (TreeZipper (Branch a lt rt) bs) = TreeZipper (Branch (f a) lt rt) bs
 
 m :: GMap Char Int
 m = insert 'a' 10 empty

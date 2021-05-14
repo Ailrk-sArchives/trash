@@ -7,7 +7,9 @@
 {-# LANGUAGE StandaloneDeriving        #-}
 {-# LANGUAGE TypeFamilies              #-}
 {-# LANGUAGE TypeOperators             #-}
+{-# LANGUAGE PolyKinds                 #-}
 
+{-# OPTIONS_GHC -Wno-missing-signatures #-}
 module Types.TypeableAndDatKinds where
 
 
@@ -49,38 +51,38 @@ data Money :: Currency -> * where
 
 deriving instance Show (Money c)
 
-usdMoney n = Money n :: Money USD
-yenMoney n = Money n :: Money YEN
-audMoney n = Money n :: Money AUD
-inrMoney n = Money n :: Money INR
+usdMoney n = Money n :: Money 'USD
+yenMoney n = Money n :: Money 'YEN
+audMoney n = Money n :: Money 'AUD
+inrMoney n = Money n :: Money 'INR
 
 -- just make a baby step each time.
 fromUSD :: forall (a :: Currency). Typeable a => Money a -> Maybe Int
 fromUSD m = do
-  Money n <- cast m :: Maybe (Money USD)
+  Money n <- cast m :: Maybe (Money 'USD)
   return n
 
 fromYEN :: forall (a :: Currency). Typeable a => Money a -> Maybe Int
 fromYEN m = do
-  Money n <- cast m :: Maybe (Money YEN)
+  Money n <- cast m :: Maybe (Money 'YEN)
   return n
 
 fromAUD :: forall (a :: Currency). Typeable a => Money a -> Maybe Int
 fromAUD m = do
-  Money n <- cast m :: Maybe (Money AUD)
+  Money n <- cast m :: Maybe (Money 'AUD)
   return n
 
 fromINR :: forall (a :: Currency). Typeable a => Money a -> Maybe Int
 fromINR m = do
-  Money n <- cast m :: Maybe (Money INR)
+  Money n <- cast m :: Maybe (Money 'INR)
   return n
 
 -- hide different money behind exitential type and pick the right type with typeable.
 data M = forall (a :: Currency). Typeable a => M (Money a)
 
-pickYen :: [M] -> [Money YEN]
+pickYen :: [M] -> [Money 'YEN]
 pickYen [] = []
-pickYen ((M x):xs) = maybe (pickYen xs) (\n -> n:pickYen xs) (cast x :: Maybe (Money YEN))
+pickYen ((M x):xs) = maybe (pickYen xs) (\n -> n:pickYen xs) (cast x :: Maybe (Money 'YEN))
 
 moneys = [ M $usdMoney 12
          , M $ yenMoney 39
@@ -91,12 +93,11 @@ moneys = [ M $usdMoney 12
          ]
 
 -- Type operators.
-type family CurrencyOf a  where
+type family CurrencyOf a :: Currency where
   CurrencyOf (Money 'USD) = 'USD
   CurrencyOf (Money 'YEN) = 'YEN
   CurrencyOf (Money 'INR) = 'INR
   CurrencyOf (Money 'AUD) = 'AUD
-
 
 -- instance Show (Money currency) where
 --   show (Money a) = (show a) ++ (show $ typeOf (Proxy :: Proxy currency))

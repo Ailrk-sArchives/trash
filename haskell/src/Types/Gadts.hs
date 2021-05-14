@@ -11,14 +11,16 @@ import           GHC.TypeLits
 {-@ Frist, what's the motivation?
  @-}
 -- This is just a type alias, and it's also a type function.
--- X can only be used at  the type level, which takes
+-- X can only be used at the type level, which takes
 -- a type parameter a and give us back a concrete type.
+
 -- in c++ it might look like this:
 -- template<tyename T> using X = Either<T, T>;
 type X a = Either a a
 
 {-@ Now we want the type function to be more powerful
     We want it to actually act like a function.
+
     like this:
         type T [a] = Set a
     Or this:
@@ -32,7 +34,7 @@ type X a = Either a a
         type F (Map a b) = F b
         type F a | IsSimple a = a
 
-        -- if a type is deinfed then it's true ...
+        -- if a type is defined then it's true ...
         -- (figuratively)
         type IsSimple Bool
              IsSimple Int
@@ -56,6 +58,7 @@ instance Collection a [a]
 -- it has Int somewhere.
 class HasInt a
 instance HasInt Int
+
 -- think it as: HasInt [a] = HasInt a
 instance (HasInt a) => HasInt [a]
 instance (HasInt a) => HasInt (Maybe a)

@@ -11,7 +11,6 @@ type family Add (a :: Nat) (b :: Nat) :: Nat
 type instance Add Z b = b
 type instance Add (S a) b = S (Add a b)
 
-
 type family Fibonacci (n :: Nat) :: Nat
 type instance Fibonacci Z = Z
 type instance Fibonacci (S Z) = (S Z)
