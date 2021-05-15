@@ -1,4 +1,5 @@
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Libs.Misc where
 
 -- data structures from the container.
@@ -28,8 +29,12 @@ import qualified Data.Text.Lazy.IO           as TLIO
 import qualified System.IO                   as SIO
 
 import qualified Data.Text.Encoding          as TE
-import qualified Data.ByteString.Lazy as BL
 
+import qualified Codec.Compression.GZip      as GZip
+import qualified Data.ByteString.Lazy        as BL
+
+import qualified Data.ByteString.Char8       as B8
+import qualified Data.ByteString.UTF8        as UTF8
 
 import           Criterion.Main
 
@@ -316,3 +321,51 @@ readFileAndPrint = do
   replicateM_  10 (dwords >>= print)
   replicateM_  10 (dwordsT >>= TIO.putStrLn)
   replicateM_  10 (dwordsTL >>= TLIO.putStrLn)
+
+-- bytestring
+
+input :: BL.ByteString  -- lazy bytestring
+input = "123123123"
+
+compressed :: BL.ByteString   -- also lazy
+compressed = GZip.compress input
+
+compressInput :: IO ()
+compressInput = do
+  TIO.putStrLn $ TE.decodeUtf8 (BL.toStrict input)
+  TIO.putStrLn $ TE.decodeUtf8 (BL.toStrict (GZip.decompress compressed))
+  TIO.putStrLn $ TE.decodeUtf8 (BL.toStrict compressed) -- will faile
+
+
+-- bytestring Char8 is not UTF8 encoded, they are really just C char type.
+
+utf8s :: String
+utf8s = "\12371\12435\12395\12385\12399\12289\20803\27671\12391\12377\12363\65311"
+
+utf8ThenPrint :: BS.ByteString -> IO ()
+utf8ThenPrint =
+  putStrLn . T.unpack . TE.decodeUtf8
+
+-- you can't pack string to bytestring like this.
+-- bytestring: char[], contains ByteString.Char8
+--  Char8 is not made for Unicode, don't bother to use it with
+--  things other than ascii.
+-- text: contains Char which is for each utf8 codepoint.
+throwsException :: IO ()
+throwsException = utf8ThenPrint (B8.pack utf8s)   -- pack is only for ascii data.
+
+-- this works only because we are using ascii.
+worksButWrongWithB8 :: IO ()
+worksButWrongWithB8 = utf8ThenPrint (B8.pack "blah")
+
+bytesByWayoFText :: BS.ByteString
+bytesByWayoFText = TE.encodeUtf8 (T.pack utf8s)
+
+libDoesTheWork :: BS.ByteString
+libDoesTheWork = UTF8.fromString utf8s
+
+thisWorks :: IO ()
+thisWorks = utf8ThenPrint bytesByWayoFText
+
+alsoWorks :: IO ()
+alsoWorks = utf8ThenPrint libDoesTheWork

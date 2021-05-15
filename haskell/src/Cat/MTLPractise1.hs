@@ -47,5 +47,3 @@ trywoo = runWriterT (runReaderT (unWoo woo) "read")
 
 newtype Woo' a = Woo' {unWoo' :: ExceptT String (ReaderT String IO) a}
   deriving (Functor, Applicative, Monad, MonadError String, MonadReader String)
-
-

@@ -116,5 +116,7 @@ let _f_cps r =
   (* k1 is also defined by us *)
 
 (*
- * compile to CPS datatype
+ * functions that escapes.
  * *)
+
+

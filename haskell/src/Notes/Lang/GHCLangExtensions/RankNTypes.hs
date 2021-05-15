@@ -14,4 +14,3 @@ snd' (a, b) = b
 map' :: forall a b. (a -> b) -> [a] -> [b]
 map' _ [] = []
 map' f (x:xs) = (f x) : map' f xs
-

@@ -103,5 +103,3 @@ instance MonadError IOException IO where
     list. If that's the case, it should be able to be
     expressed as type level list.
 @-}
-
-
