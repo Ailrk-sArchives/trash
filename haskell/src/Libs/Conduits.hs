@@ -1,11 +1,35 @@
 {-# LANGUAGE MultiWayIf #-}
+{-# LANGUAGE RankNTypes #-}
 module Libs.Conduits where
 
+import           Control.Lens
+import           System.Process
 
-
+import           Conduit
+import qualified Control.Concurrent       as CC
+import qualified Control.Concurrent.Async as Async
+import           Control.Monad
 import           Control.Monad.Trans
+import           Data.Char
 import           Data.Conduit
-import qualified Data.Conduit.List   as CL
+import qualified Data.Conduit.Binary      as CB
+import qualified Data.Conduit.List        as CL
+import qualified Data.Conduit.Process     as CP
+import           Data.Functor.Identity
+
+import qualified Data.ByteString          as B
+
+{-@ Why using conduit if we already have lazyness?
+
+    - Laziness doesn't allow you to perform IO inbetween each chunks.
+    - Lazy IO is problematic.
+      - Side effect in the middle of the pure code. (possibility of Exception in IO)
+      - Nondeterministic resource handling
+
+    Essentially laziness is not a feature that works well with side effect.
+    But in some senarios that we need stream data, perform IO between chunks
+    is very important. Conduit makes the work a bit easier.
+@-}
 
 {-@ Conduit
     Conduit provides stream like mechanism, so you can load infinite
@@ -20,10 +44,13 @@ import qualified Data.Conduit.List   as CL
     Conduit solve both problems above.
 
     ConduitT i o m r
-      where  r is the result.
+      where
+        r is the result.
         i, o represent two end of the conduit
         m is for monad transformer.
 @-}
+
+{-@ simple example: @-}
 
 -- Explain:
 -- A conduit with no input data type. This implies it's the source of
@@ -34,13 +61,12 @@ import qualified Data.Conduit.List   as CL
 source :: ConduitT () Int IO ()
 source = CL.sourceList [1..100]
 
-
 -- Notice it's a recursive function and doesn't halt.
 -- However the entire conduit still halt eventually.
 -- Because when does the conduit halt only depends on the source.
 -- This conduit is merely a component perform some logic.
-conduit :: ConduitT Int String IO ()
-conduit = do
+conduitFizzBuzz :: ConduitT Int String IO ()
+conduitFizzBuzz = do
   val <- await
   case val of
     Nothing -> return ()
@@ -49,8 +75,35 @@ conduit = do
          | n `mod` 5 == 0  -> yield "Fizz"
          | n `mod` 3 == 0  -> yield "Buzz"
          | otherwise       -> return ()
-      conduit
+      conduitFizzBuzz
 
+conduitAlertIfBuzz :: ConduitT String String IO ()
+conduitAlertIfBuzz = do
+  val <- await
+  case val of
+    Nothing -> return ()
+    Just n -> do
+      when (n == "Buzz") $ liftIO (putStrLn "== I found Buzz!! ==")  -- lift effect in the middle)
+      yield n
+      conduitAlertIfBuzz
+
+conduitToUpper :: ConduitT String String IO () -- add a ne conduit
+conduitToUpper = do
+  val <- await
+  case val of
+    Nothing -> return ()
+    Just n -> do
+      yield $ toUpper <$> n
+      conduitToUpper
+
+conduitQuoteInTag :: ConduitT String String IO ()
+conduitQuoteInTag = do
+  val <- await
+  case val of
+    Nothing -> return ()
+    Just n -> do
+       yield $ "<" ++ n ++ ">"
+       conduitQuoteInTag
 
 sink :: ConduitT String o IO ()
 sink = CL.mapM_ putStrLn
@@ -59,4 +112,56 @@ sink = CL.mapM_ putStrLn
 -- the previous conduit is called upstream, next conduit is called
 -- downstream.
 run :: IO ()
-run = runConduit $ source .| conduit .| sink
+run = runConduit $ source
+    .| conduitFizzBuzz
+    .| conduitAlertIfBuzz
+    .| conduitToUpper
+    .| conduitQuoteInTag
+    .| sink
+
+
+{-@ Conduit 2 @-}
+
+source1 :: ConduitT () Int IO ()
+source1 = CL.sourceList [1..100]
+
+conduit1 :: ConduitT Int String IO ()
+conduit1 = do
+  val <- await
+  case val of
+    Nothing -> return ()
+    Just n -> do
+      liftIO (putStrLn (show n))
+      yield (show n)
+      conduit1
+
+sink1 :: ConduitT String o IO ()
+sink1 = CL.mapM_ putStrLn
+
+run1 :: IO ()
+run1 = runConduit $ source1 .| conduit1 .| sink1
+
+
+{-@ Conduit @-}
+run2 = yieldMany [1..10] .| sumC
+     & runConduitPure
+     & print
+
+
+{-@ Conduit with processes @-}
+runProcesses :: IO ()
+runProcesses = do  undefined
+
+
+{-@ play with files@-}
+
+fileSource :: (MonadResource m) => ConduitT () B.ByteString m ()
+fileSource = CB.sourceFile "input.txt"
+
+fileSink :: (MonadResource m) => ConduitT B.ByteString () m ()
+fileSink = CB.sinkFile "output.txt"
+
+run3 = do
+  runCommand "ls"
+  writeFile "input.txt" "some text"
+  runConduitRes $ CB.sourceFile "input.txt" .| CB.sinkFile "output.txt"

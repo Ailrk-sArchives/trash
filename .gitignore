@@ -405,6 +405,12 @@ a.out
 
 out*.asm
 
+bob.txt
+alice.txt
+cici.txt
+input.txt
+output.txt
+
 perf.data*
 
 myocamlbuild.ml

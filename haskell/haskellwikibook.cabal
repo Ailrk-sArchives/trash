@@ -84,6 +84,7 @@ library
       PL.DenotationalSem
 
       Libs.ReadFile
+      Libs.Asyncs
       Libs.Ptrs
       Libs.Conduits
       Libs.StgDumpExperiment
@@ -162,6 +163,11 @@ library
     , zlib
     , vector
 
+    , process
+
+    -- async built on top of Control.Concurrent.forkIO
+    , async
+
     , linear
 
     -- 2d pretty printing lib
@@ -179,6 +185,7 @@ library
 
     -- deterministic resource handling data stream.-- deterministic resource handling data stream.
     , conduit
+    , conduit-extra
     , pretty
     , QuickCheck
     , transformers
