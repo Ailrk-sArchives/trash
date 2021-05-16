@@ -1,13 +1,44 @@
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE RankNTypes       #-}
 module Libs.Asyncs where
 
-import qualified Conduit                  as C
+import qualified Conduit                     as C
 import           Control.Applicative
-import qualified Control.Concurrent       as CC
-import qualified Control.Concurrent.Async as Async
+import qualified Control.Concurrent          as CC
+import qualified Control.Concurrent.Async    as Async
 import           Control.Exception
+import           Control.Monad.Reader
+import           Control.Monad.Trans.Control
 import           Data.Foldable
+import           Data.Void
 
+
+import qualified Data.Text                   as T
+import qualified Data.Text.IO                as T
+import           System.IO
+
+{-@ simple @-}
+
+lazyStringIsNotThreadSafe = Async.mapConcurrently_  worker [1..10]
+  where
+    worker n = replicateM_ 5 $ putStrLn $ "Hi I'm worker " ++ show n
+
+textByDefaultAlsoNotThreadSafe = Async.mapConcurrently_ worker [1..10]
+  where
+    worker n = replicateM_ 5
+             $ T.putStrLn
+             $ T.pack
+             $ "Hi I'm worker " ++ show n
+
+setBufferingSolvesIt = do
+  hSetBuffering stdout LineBuffering
+  Async.mapConcurrently_ worker [1..10]
+  hSetBuffering stdout NoBuffering
+  where
+    worker n = replicateM_ 5
+             $ T.putStr
+             $ T.pack
+             $ "Hi I'm worker " ++ show n ++ "\n"
 
 {-@ Async prelimiary @-}
 
@@ -127,9 +158,7 @@ counter =
 withCounter :: IO a -> IO a
 withCounter inner = do
   res <- Async.race counter inner
-  case res of
-    Left x  -> assert False x
-    Right x -> return x
+  return $ either (const $ absurd (error "never happen")) id res
 
 runCompanion :: IO ()
 runCompanion = do
@@ -143,7 +172,45 @@ runCompanion = do
     withDelay :: Int -> IO () -> IO ()
     withDelay t a = CC.threadDelay t >> a >> CC.threadDelay t
 
-{-@
+{-@ Use monad control to run companion thread with another read that's
+    on some monad transformer stack.
 @-}
 
--- TODO
+withCounter' :: MonadBaseControl IO m => m a -> m a
+withCounter' inner = control $ \runInIO -> do   -- cps based
+  res <- Async.race counter (runInIO inner)
+  return $ either (const (absurd (error "never happen"))) id res
+
+runCompanionAnotherThreadNotInIO :: IO ()
+runCompanionAnotherThreadNotInIO = do
+  putStrLn "Before withCounter'"
+  CC.threadDelay 2000000
+  flip runReaderT "some string" $ withCounter' $ do
+    liftIO $ CC.threadDelay 2000000
+    str <- ask
+    liftIO $ putStrLn $ "Inside with string: " ++ str
+    liftIO $ CC.threadDelay 2000000
+  CC.threadDelay 2000000
+  putStrLn "After withCounter'"
+  CC.threadDelay 2000000
+  putStrLn "Exit"
+
+runCompanionNoCounter :: IO ()
+runCompanionNoCounter = do
+  putStrLn "Before withCounter'"
+  CC.threadDelay 2000000
+  flip runReaderT "some string" $ do
+    liftIO $ CC.threadDelay 2000000
+    str <- ask
+    liftIO $ putStrLn $ "Inside with string: " ++ str
+    liftIO $ CC.threadDelay 2000000
+  CC.threadDelay 2000000
+  putStrLn "After withCounter'"
+  CC.threadDelay 2000000
+  putStrLn "Exit"
+
+
+{-@ Async represents an action running in a different thread which if success will
+    give an result of type a.
+@-}
+
