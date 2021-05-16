@@ -17,6 +17,15 @@ import qualified Data.Text                   as T
 import qualified Data.Text.IO                as T
 import           System.IO
 
+import qualified Data.ByteString.Char8       as S8
+import           Data.Text                   (Text, pack)
+import           Data.Text.Encoding          (encodeUtf8)
+
+
+say :: Text -> IO ()
+say = S8.putStrLn . encodeUtf8
+
+
 {-@ simple @-}
 
 lazyStringIsNotThreadSafe = Async.mapConcurrently_  worker [1..10]
@@ -103,17 +112,12 @@ type Score = Int
 data Person = P FilePath Score
 
 ppls :: [Person]
-ppls = [ P "alice.txt" 10
-       , P "bob.txt" 20
-       , P "cici" 30
-       ]
+ppls = [ P "alice.txt" 10 , P "bob.txt" 20 , P "cici.txt" 30 ]
 
 writePerson :: Person -> IO ()
 writePerson (P fp score) = writeFile fp (show score)
 
 -- note we need to wrap IO () in Concurrently newtype to work on a collection.
--- concurrently function is just a binary operation.
--- To work on multiple values we need an applicative
 writePeople :: [Person] -> IO ()
 writePeople = Async.runConcurrently . traverse_ (Async.Concurrently . writePerson)
 
@@ -214,3 +218,47 @@ runCompanionNoCounter = do
     give an result of type a.
 @-}
 
+talker :: String -> IO ()
+talker str = forever $ do
+  say . pack $ str
+  CC.threadDelay 500000
+
+getResult :: IO Int
+getResult = do
+  say . pack $ "Doing some big computation..."
+  CC.threadDelay 200000
+  say .pack $ "Done!"
+  return 42
+
+asyncRun :: IO ()
+asyncRun = do
+  async1 <- Async.async $ talker "async"    -- method 1, you need to kill the thread with cancel
+
+  -- always try withAsync. it's also exception safe
+  Async.withAsync (talker "withAsync") $ \async2 -> do -- method 2
+    async3 <- Async.async getResult
+    res <- Async.poll async3
+    case res of
+      Nothing        -> say . pack $ "getResult still running"
+      Just (Left e)  -> say . pack $ "getResult failed: " ++ show e
+      Just (Right x) -> say . pack $ "getResult finished: " ++ show x
+
+    res <- Async.waitCatch async3
+    case res of
+      Left e  -> say . pack $ "getResult failed: " ++ show e
+      Right x -> say . pack $ "getResult finished: " ++ show x
+    res <- Async.wait async3
+    say . pack $ "getResult finished: " ++ show res
+
+  say . pack $ "With async should be dead"
+  CC.threadDelay 200000
+
+  say . pack $ "Now killing async talker"
+  Async.cancel async1
+
+  CC.threadDelay 200000
+  say . pack $ "good byte"
+
+
+withAsync' :: IO a -> (Async.Async a -> IO b) -> IO b
+withAsync' = undefined

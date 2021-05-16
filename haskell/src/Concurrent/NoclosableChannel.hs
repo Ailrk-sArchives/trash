@@ -38,5 +38,4 @@ runNaive = do
   return ()
 
 
-
-
+{-@ use stm to singal the producer to finish @-}

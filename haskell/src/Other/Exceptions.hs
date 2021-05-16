@@ -86,6 +86,4 @@ multiError n =
     1 -> Left (MyException StackOverflow)   -- types
     _ -> Right n
 
-
-
 -- TODO

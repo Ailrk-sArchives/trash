@@ -6,10 +6,53 @@ import           Control.Concurrent.Chan
 import           Control.Concurrent.MVar
 import           Control.Concurrent.STM
 import           Control.Monad
+import           Control.Monad.Trans.Class
+import           Control.Monad.Trans.Except
 import           Data.IORef
 import           System.IO
+import           Text.Printf
 
-{-@ MVar t
+{-@ Preliminaries
+@-}
+
+-- The rts run threads for a "time slice" and then switch to the next one.
+p1 = do
+   hSetBuffering stdout NoBuffering
+   forkIO (replicateM_ 10000 $ putChar '-')
+   replicateM_ 10000 $ putChar 'B'
+
+
+p2 = do
+   hSetBuffering stdout LineBuffering
+   forkIO (replicateM_ 10000 $ putChar '-')
+   replicateM_ 10000 $ putChar 'B'
+
+{-@ set remainder
+@-}
+
+
+loop :: Monad m => ExceptT e m a -> m e
+loop = liftM (either id id) . runExceptT . forever
+
+quit :: Monad m => e -> ExceptT e m a
+quit = throwE
+
+reminder :: IO ()
+reminder = loop $ do
+  s <- lift getLine
+  when (s == "q") $ quit ()
+  lift . forkIO $ setReminder s
+
+setReminder :: String -> IO ()
+setReminder s = do
+  let t = read s :: Int
+  printf "Ok, I'll remind you in %d seconds\n" t
+  threadDelay (10^6 * t)
+  printf "%d seconds elasped\BEL\n" t
+
+
+
+{- MVar t
     A mutable that is either empty or contains a value of t. MVar is the
     most primitive notion in haskell concurrency model.
 
@@ -24,7 +67,7 @@ import           System.IO
     Note:
       Value in MVar is lazy, but there is also strict MVar.
       You can rely on the lexical order of MVar.
-@-}
+-}
 
 -- use MVar as mutex
 mutex = newEmptyMVar :: IO (MVar ())

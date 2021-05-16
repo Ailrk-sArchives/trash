@@ -132,4 +132,3 @@ n6 = let term = In (Paren (In (Binary (In (Paren (In (Literal (IntLit 3)))))
 
 topDown :: Functor a => (Term a -> Term a) -> Term a -> Term a
 topDown f = In <<< fmap (topDown f) <<< out <<< f
-
