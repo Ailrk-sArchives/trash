@@ -36,6 +36,7 @@ library
       Algorithms.Other
 
       Concurrent.Concurrent
+      Concurrent.Par1
 
       GHCs.DeriveVia
       GHCs.Rules
@@ -151,6 +152,9 @@ library
     -- mmap wrapper
     , mmap
     , void
+
+    , repa
+    , accelerate
 
     , containers
     , unordered-containers

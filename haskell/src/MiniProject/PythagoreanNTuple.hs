@@ -29,7 +29,6 @@ type P = Integer
 type S = Integer
 type K = Integer
 
--- TODO: K might be redundant.
 data Case = A M
           | B P S K  -- T depend on cases.
           | C M P S K

@@ -6,7 +6,7 @@
 
 module MiniProject.Lens2048 where
 
--- TODO this is incomplete, still need to add logic to add cubes
+-- this is incomplete, still need to add logic to add cubes
 
 -- dependencies:
 --  1. linear, a library for doing linear algebra.
@@ -92,6 +92,10 @@ merge (x:x':xs) | x == x' = (x <> x') : merge xs
 merge (x:xs) = x : merge xs
 merge [] = []
 
+-- imagine a 4x4 board, we want to access rows cols, reveresed rows, reversed
+-- columns from these board.
+-- It's a single source multiple foci situation. Traversal comes in handy
+-- four traversales
 rows, wors, cols, locs :: Traversal' (M44 (Maybe a)) [a]
 rows = traverse . list
 wors = traverse . reversed . list

@@ -28,7 +28,7 @@ import           System.IO
 
 -- use MVar as mutex
 mutex = newEmptyMVar :: IO (MVar ())
-acquire m = putMVar m ()
+acquire m = putMVar m
 release m = takeMVar m
 
 -- Skip channel

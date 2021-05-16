@@ -60,4 +60,12 @@ t19 = foo1 ^. bar.foo.to sum
 t20 = foo1 ^. bar.foo.to(length . map (+1))
 
 t21 = foo1 & baz .~ 20
-t22 = foo1 & bar.foo.traversed.index 2 .~ 2
+
+-- complex modification get composed.
+t22 = foo1
+    & bar.foo.traversed.index 2 .~ 2
+    & bar.foo.traversed.index 1 .~ 10
+    & quux .~ 8
+    & baz .~ 99
+    & (^. (bar.foo))
+    & traversed.index 1 .~ 88

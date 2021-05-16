@@ -7,6 +7,7 @@ import           Data.Functor.Const
 import           Data.Functor.Identity
 
 import           Control.Applicative
+import           Data.Function ((&))
 
 
 {-@ Lens provides access into the middle of a data structure.
@@ -95,6 +96,11 @@ postcode f (A r c p) = fmap (\p' -> A r c p') (f p)
 view_fred_name = view (addr . road) fred
 set_fred_name = set (addr . road) "dan" fred
 modify_fred_name = over (addr . road) ("not_really_" ++) fred
+
+fred_name' = fred
+           & over (addr . road) ("not_reallyy_" ++)
+           & view (addr . road)
+
 
 -- lens is already modifyIO, we can just give it a type here.
 modifyIO :: Lens' s a -> (a -> IO a) -> s -> IO s
