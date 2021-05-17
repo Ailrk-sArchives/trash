@@ -8,6 +8,8 @@ import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Except
 import           Control.Monad.Trans.State
 
+import           Data.Functor.Identity
+
 import qualified Data.ByteString.Char8      as S8
 import           Data.Text                  (Text, pack)
 import           Data.Text.Encoding         (encodeUtf8)
@@ -56,7 +58,17 @@ run1 = do
 -- understand the logic behind wrap and unwrap. It's quit linear so not
 -- to hard.
 
-fibdp :: IO ()
-fibdp = flip evalStateT [0, 1] . loop $ do
-  lift . lift $ putStrLn "asd"
-  return ()
+fibdp :: Int -> [Integer]
+fibdp n = runIdentity $ go [0, 1] [] n
+  where
+    go :: [Integer] -> [Integer] -> Int -> Identity [Integer]
+    go s m i = flip evalStateT (s, m, i) . loop $ do
+      state <- lift get
+      case state of
+        ([a, b], res, i) -> do
+          let c = a + b
+          if i == 0
+             then quit res
+             else do
+               lift $ put ([b, c], a:res, i - 1)
+        _ -> quit []

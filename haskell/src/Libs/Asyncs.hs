@@ -12,6 +12,7 @@ import           Control.Monad.Trans.Control
 import           Data.Foldable
 import           Data.Void
 
+import           Control.Concurrent.STM
 
 import qualified Data.Text                   as T
 import qualified Data.Text.IO                as T
@@ -180,6 +181,7 @@ runCompanion = do
     on some monad transformer stack.
 @-}
 
+-- embed a transformer into a monad.
 withCounter' :: MonadBaseControl IO m => m a -> m a
 withCounter' inner = control $ \runInIO -> do   -- cps based
   res <- Async.race counter (runInIO inner)
@@ -227,8 +229,15 @@ getResult :: IO Int
 getResult = do
   say . pack $ "Doing some big computation..."
   CC.threadDelay 200000
-  say .pack $ "Done!"
+  say . pack $ "Done!"
   return 42
+
+getResult1 :: IO Int
+getResult1 = do
+  say . pack $ "Doing some big computation..."
+  CC.threadDelay 200000
+  say .pack $ "Done!"
+  return 41
 
 asyncRun :: IO ()
 asyncRun = do
@@ -260,5 +269,68 @@ asyncRun = do
   say . pack $ "good byte"
 
 
-withAsync' :: IO a -> (Async.Async a -> IO b) -> IO b
-withAsync' = undefined
+{-@ Composing with STM
+    use STM instead of IO.
+@-}
+
+stmRun :: IO ()
+stmRun = Async.withAsync getResult $ \a -> do
+  res <- atomically $ Async.pollSTM a
+  case res of
+    Nothing        -> say . pack $ "getResult still running"
+    Just (Left e)  -> say . pack $ "getResult failed: " ++ show e
+    Just (Right x) -> say . pack $ "getResult fnished: " ++ show x
+
+  res <- atomically $ Async.waitCatchSTM a
+  case res of
+    Left e  -> say . pack $ "getResult failed: " ++ show e
+    Right x -> say . pack $ "getResult finished: " ++ show x
+
+  res <- atomically $ Async.waitSTM a
+  say . pack $ "getResult finished: " ++ show res
+
+stmRunCompose :: IO ()
+stmRunCompose = do
+  res <- Async.withAsync getResult $ \a1 ->
+         Async.withAsync getResult1 $ \a2 ->
+         Async.withAsync getResult $ \a3 ->
+         Async.withAsync getResult1 $ \a4 ->
+         atomically $ Async.waitSTM a1
+                  <|> Async.waitSTM a2
+                  <|> Async.waitSTM a3
+                  <|> Async.waitSTM a4
+
+  say . pack $ "getResult finished: " ++ show res
+
+{-@ breaking async exceptions @-}
+evil :: IO ()
+evil = forever $ do
+  eres <- try $ CC.threadDelay 100000
+  say . pack $ show (eres :: Either SomeException ())
+
+evilRun :: IO ()
+evilRun = Async.withAsync evil $ const $ return ()
+
+
+{-@ linking
+@-}
+
+data Work = Work T.Text
+
+-- keep reading from the chan.
+jobQueue :: TChan Work -> IO a
+jobQueue chan = forever $ do
+  Work t <- atomically $ readTChan chan
+  say t
+
+runQueue :: IO ()
+runQueue = do
+  chan <- newTChanIO
+  a <- Async.async $ jobQueue chan
+  Async.link a  -- link the async task to the currenn thread.
+  forever $ do
+    atomically $ do
+      writeTChan chan . Work . pack $ "Hello"
+      writeTChan chan . Work . pack $ undefined
+      writeTChan chan . Work . pack $ "World"
+    CC.threadDelay 100000

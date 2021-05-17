@@ -146,22 +146,3 @@ run1 = runConduit $ source1 .| conduit1 .| sink1
 run2 = yieldMany [1..10] .| sumC
      & runConduitPure
      & print
-
-
-{-@ Conduit with processes @-}
-runProcesses :: IO ()
-runProcesses = do  undefined
-
-
-{-@ play with files@-}
-
-fileSource :: (MonadResource m) => ConduitT () B.ByteString m ()
-fileSource = CB.sourceFile "input.txt"
-
-fileSink :: (MonadResource m) => ConduitT B.ByteString () m ()
-fileSink = CB.sinkFile "output.txt"
-
-run3 = do
-  runCommand "ls"
-  writeFile "input.txt" "some text"
-  runConduitRes $ CB.sourceFile "input.txt" .| CB.sinkFile "output.txt"

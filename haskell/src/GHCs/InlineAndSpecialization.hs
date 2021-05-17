@@ -121,4 +121,3 @@ foo''' a xs = show a ++ xs
 -- inlining can cause code bloat?
 --   1. same function body every where, of couse code bloat.
 --   2. but inlining can reduce code size if it trigger some optization.
-

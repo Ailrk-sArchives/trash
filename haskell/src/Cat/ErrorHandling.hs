@@ -1,25 +1,25 @@
-{-# LANGUAGE DefaultSignatures #-}
-{-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE DefaultSignatures          #-}
+{-# LANGUAGE DerivingStrategies         #-}
+{-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE FlexibleInstances          #-}
+{-# LANGUAGE FunctionalDependencies     #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE KindSignatures #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE KindSignatures             #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE StandaloneDeriving         #-}
+{-# LANGUAGE UndecidableInstances       #-}
 
 module Cat.ErrorHandling where
 
-import Control.Exception
-import Control.Monad
-import Control.Monad.Identity
-import Control.Monad.Reader
-import Control.Monad.Trans
-import Control.Monad.Trans.State.Lazy
-import Control.Monad.Writer
-import Data.Char as Char
-import Data.List
+import           Control.Exception
+import           Control.Monad
+import           Control.Monad.Identity
+import           Control.Monad.Reader
+import           Control.Monad.Trans
+import           Control.Monad.Trans.State.Lazy
+import           Control.Monad.Writer
+import           Data.Char                      as Char
+import           Data.List
 
 -- helper name
 type Catch e m a = m a -> (e -> m a) -> m a
@@ -38,7 +38,7 @@ instance Monad m => Monad (ExceptT e m) where
   m >>= k = ExceptT $ do
     a <- runExceptT m
     case a of
-      Left e -> (return . Left) e
+      Left e  -> (return . Left) e
       Right a -> runExceptT (k a)
 
 -- lift a monad by one layer into ExceptT
@@ -59,7 +59,7 @@ catchE :: Monad m => ExceptT e m a -> (e -> ExceptT e' m a) -> ExceptT e' m a
 m `catchE` h = ExceptT $ do
   a <- runExceptT m
   case a of
-    Left e -> runExceptT (h e)
+    Left e  -> runExceptT (h e)
     Right r -> return (Right r)
 
 -- generalize the idea of throwing and catching exceptions.
@@ -77,7 +77,7 @@ instance MonadError IOException IO where
 
 instance MonadError e (Either e) where
   throwError = Left
-  Left e `catchError` h = h e
+  Left e `catchError` h  = h e
   Right r `catchError` _ = Right r
 
 instance Monad m => MonadError e (ExceptT e m) where
@@ -119,9 +119,7 @@ catchMe1 n f = catchError (f n) (\_ -> return (-1))
 
 -- testing Eitehr
 try1 = catchMe1 10 throwMe1
-
 try2 = catchMe1 (-1) throwMe1
-
 try3 = catchMe1 (999) throwMe1
 
 -- test 2 --

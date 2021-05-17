@@ -72,4 +72,3 @@ run123 = CM.defaultMain [ C.bench "rpar: " $ C.nf  run1 ()
                         , C.bench "rseq: " $ C.nf run2 ()
                         , C.bench "rseqall: " $  C.nf run3 ()
                         ]
-

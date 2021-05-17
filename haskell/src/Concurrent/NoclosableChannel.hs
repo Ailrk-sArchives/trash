@@ -37,5 +37,4 @@ runNaive = do
   mapConcurrently (workerNaive chan) [1..5] `concurrently` mapM_ (writeChan chan) [1..10]
   return ()
 
-
 {-@ use stm to singal the producer to finish @-}
