@@ -333,4 +333,4 @@ runQueue = do
       writeTChan chan . Work . pack $ "Hello"
       writeTChan chan . Work . pack $ undefined
       writeTChan chan . Work . pack $ "World"
-    CC.threadDelay 100000
+    CC.threadDelay 100001

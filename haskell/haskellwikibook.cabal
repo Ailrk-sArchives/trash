@@ -201,6 +201,7 @@ library
     -- deterministic resource handling data stream.-- deterministic resource handling data stream.
     , conduit
     , conduit-extra
+    , http-conduit
     , pretty
     , QuickCheck
     , transformers

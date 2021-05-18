@@ -16,8 +16,10 @@ import qualified Data.Text.IO             as T
 
 import           System.IO.Unsafe         (unsafePerformIO)
 
-
 import           Control.Monad
+import           Network.HTTP.Simple
+
+import           Data.Foldable            (for_)
 
 -- actions need to be performed atomically are group together.
 -- each write to a varaible is tracked. After the block is done, the runtime will check if
@@ -117,5 +119,3 @@ runSomeFuncton :: IO ()
 runSomeFuncton = do
   replicateM_ 10 $ someFunction callCount'  -- this works
   replicateM_ 10 $ someFunction callCount   -- this doesn't
-
-
