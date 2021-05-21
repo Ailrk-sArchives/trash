@@ -5,6 +5,7 @@ type
   Book = record
     title: string;
     author: string;
+
     reference: array[0 .. 1] of ^Book;  // have 2 references
   end;
 
