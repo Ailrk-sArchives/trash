@@ -313,6 +313,7 @@ evilRun = Async.withAsync evil $ const $ return ()
 
 
 {-@ linking
+    Deamon thread that if goes down, also bring down the main thread.
 @-}
 
 data Work = Work T.Text
@@ -327,7 +328,7 @@ runQueue :: IO ()
 runQueue = do
   chan <- newTChanIO
   a <- Async.async $ jobQueue chan
-  Async.link a  -- link the async task to the currenn thread.
+  Async.link a  -- link the async task to the current thread.
   forever $ do
     atomically $ do
       writeTChan chan . Work . pack $ "Hello"

@@ -109,6 +109,7 @@ library
       MiniProject.PythagoreanNTuple
 
       Other.Defunctionalization
+      Other.EDSL
       Other.AbstractAlgebra
       Other.Testing
       Other.FFI

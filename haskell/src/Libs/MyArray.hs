@@ -24,4 +24,3 @@ import           GHC.ST                (ST (..), runST)
 
 
 data MyArray i e = MyArray !i !i {-# UNPACK #-} !Int (Array# e)
-
