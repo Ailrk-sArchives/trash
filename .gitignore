@@ -415,3 +415,5 @@ perf.data*
 
 myocamlbuild.ml
 setup.ml
+
+*.dump-simpl
