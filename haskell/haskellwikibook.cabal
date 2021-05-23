@@ -78,6 +78,8 @@ library
       Types.DataKinds
       Types.DataTypeALaCarte
       Types.DataTypeGenericProgramming
+      Types.Kinds
+      Types.FD
 
       PL.Lam
       PL.ScottEncoding

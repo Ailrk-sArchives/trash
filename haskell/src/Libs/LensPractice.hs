@@ -2,6 +2,7 @@
 module Libs.LensPractice where
 
 import           Control.Lens
+import           Data.Char
 import qualified Data.Map     as Map
 
 t1 = ("hello", "world") ^. _2
@@ -69,3 +70,19 @@ t22 = foo1
     & baz .~ 99
     & (^. (bar.foo))
     & traversed.index 1 .~ 88
+
+
+t23 = [1, 2, 3] & mapped %~ succ
+
+t24 = ["abc", "def", "ghi"] & ix 1 . ix 2 %~ toUpper
+
+t25 = "abc" & mapped .~ 'x'
+
+t26 = Map.empty & at 3 ?~ (Just 10)
+
+t27 = Map.empty ^? at 3
+
+t28 = (('a', 'b', "asd"), "xyz") ^. _1 . _3
+
+t29 = ('a', 'b') ^. _1 . (to (:"c"))
+
