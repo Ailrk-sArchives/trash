@@ -138,12 +138,22 @@ addusd1 = moneyAddEx (MoneyEx (Money 12 :: Money 'USD)) (MoneyEx (Money 10 :: Mo
 addusd2 = moneyAddEx (MoneyEx (Money 12 :: Money 'USD)) (MoneyEx (Money 10 :: Money 'AUD))
 
 
-{-@ Use dynamics to replce exitential types @-}
+{-@ Use dynamics to replce exitential types
+    Dynamic types provide operations to convert dynamic values to a monomorphic type.
+    Still use Typeable under the hood.
+@-}
 -- using exitential type means we have to erase the type info, and later if we want to restore
 -- them we somehow need to test the type at runtime. (Typeable.)
 -- Another approach is to use Data.Dynamic
 
+data IntWrapper = IntWrapper Int deriving (Typeable)
 
+-- wrap into dynamic varaible
+d0 = toDyn (IntWrapper 1)
+d1 = toDyn (MoneyEx (Money 12 :: Money 'USD))
+
+d2 = fromDyn d1 (Money 0 :: Money 'USD)
+d3 = fromDyn d0 (Money 0 :: Money 'USD)
 
 
 {-@ Conclusion
