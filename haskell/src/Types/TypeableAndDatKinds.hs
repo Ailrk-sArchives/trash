@@ -9,7 +9,6 @@
 {-# LANGUAGE TypeFamilies              #-}
 {-# LANGUAGE TypeOperators             #-}
 
-{-# OPTIONS_GHC -Wno-missing-signatures #-}
 module Types.TypeableAndDatKinds where
 
 
@@ -121,7 +120,7 @@ moneyAdd (Money a) (Money b) = (Money (a + b))
 
 -- we can solve this with typeable.
 
-data MoneyEx = forall x. (Typeable x) => MoneyEx (Money x)
+data MoneyEx = forall x. (Typeable x) => MoneyEx (Money x) deriving Typeable
 
 deriving instance Show MoneyEx
 
@@ -152,9 +151,11 @@ data IntWrapper = IntWrapper Int deriving (Typeable)
 d0 = toDyn (IntWrapper 1)
 d1 = toDyn (MoneyEx (Money 12 :: Money 'USD))
 
-d2 = fromDyn d1 (Money 0 :: Money 'USD)
-d3 = fromDyn d0 (Money 0 :: Money 'USD)
+d0' = fromDyn d0 (MoneyEx (Money 0 :: Money 'USD))
+d1' = fromDyn d1 (MoneyEx (Money 0 :: Money 'USD))
 
+d0'' :: Maybe MoneyEx
+d0'' = fromDynamic d0
 
 {-@ Conclusion
     1. Typeable is what gives you runtime type information check.
@@ -178,6 +179,11 @@ d3 = fromDyn d0 (Money 0 :: Money 'USD)
 
     9. Typeable can be used to restore types hiden behind exitential type constructors.
 
-
     10. Or better, we can use Data.Dynamic to smuggle some types without GHC notices.
+
+    11. Data.Dynamic provides full type erase + rtti. It gets much more freedom, thus much less
+        typesafty.
+
+        However in a lot of cases it's the best choice. Especially when you need to work on a list
+        of existential types and do something base on their specific types.
 @-}
