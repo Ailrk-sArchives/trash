@@ -145,7 +145,9 @@ addusd2 = moneyAddEx (MoneyEx (Money 12 :: Money 'USD)) (MoneyEx (Money 10 :: Mo
 -- them we somehow need to test the type at runtime. (Typeable.)
 -- Another approach is to use Data.Dynamic
 
-data IntWrapper = IntWrapper Int deriving (Typeable)
+data IntWrapper = IntWrapper Int deriving (Typeable, Show, Eq)
+
+addIntWrappter (IntWrapper a) (IntWrapper b) = IntWrapper $ a + b
 
 -- wrap into dynamic varaible
 d0 = toDyn (IntWrapper 1)
@@ -156,6 +158,14 @@ d1' = fromDyn d1 (MoneyEx (Money 0 :: Money 'USD))
 
 d0'' :: Maybe MoneyEx
 d0'' = fromDynamic d0
+
+-- apply dynamic function to dynamic values.
+dapplied :: Maybe IntWrapper
+dapplied = do
+  f1 <- dynApply (toDyn addIntWrappter) (toDyn (IntWrapper 1))
+  r <- dynApply f1 (toDyn (IntWrapper 2))
+  fromDynamic r
+
 
 {-@ Conclusion
     1. Typeable is what gives you runtime type information check.
