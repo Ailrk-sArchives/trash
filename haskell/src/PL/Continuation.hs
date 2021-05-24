@@ -170,7 +170,6 @@ fun n = (`runCont` id) $ do
     return $ "(ns = " ++ show ns ++ ")" ++ show n'
   return $ "Answer: " ++ str
 
-
 {-@ continuation monad and callCC @-}
 
 -- use callCC allows you to decide when use k

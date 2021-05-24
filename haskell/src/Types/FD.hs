@@ -2,13 +2,14 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE RankNTypes                 #-}
+{-# LANGUAGE TypeFamilies               #-}
 {-# LANGUAGE TypeSynonymInstances       #-}
 
 {-# LANGUAGE AllowAmbiguousTypes        #-}
 {-# LANGUAGE FlexibleInstances          #-}
 
 {-# LANGUAGE KindSignatures             #-}
-{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE UndecidableInstances       #-}
 module Types.FD where
 
 import           Control.Monad.Reader
@@ -139,12 +140,62 @@ class Monad m => MonadState' s m | m -> s where
 --
 -- So in these case it's ok to use undecidable instances.
 instance MonadState' s m => MonadState' s (ReaderT e m)
+-- this instance uses default implementation:
 
 
+{-@ UndecidableInstance is also ok when you're using typeclass as alias of several
+    Smaller constraints.
+@-}
 
+class Foo a
+class Bar a
+class (Foo a, Bar a) => FooBar a
 
 
 {-@ We can replace FD with type family. This way we don't need to show the
     function dependency in the instance context, thus no undecidable instances is
     needed.
+@-}
+
+class Monad m => MonadState'' m where
+  type MState m :: *
+  get'' :: m (MState m)
+  get'' = state'' (\s -> (s, s))
+
+  put'' :: (MState m) -> m ()
+  put'' s = state'' (\_ -> ((), s))
+
+  state'' :: (MState m -> (a, MState m)) -> m a
+  state'' f = do
+    s <- get''
+    let (a, s') = f s
+    put'' s'
+    return a
+
+-- don't need functional dependency any more, and s is not in context, so no undecidable
+-- instances.
+instance MonadState'' m => MonadState'' (ReaderT e m) where
+  type MState (ReaderT e m) = e
+
+{-@ Conclusion:
+    - You still don't want undecided instances.
+    - Cases that undecided instances are ok is because they are inheriently decidable.
+      For instance MPTC with functional dependencies is really decidable if you only recurse
+      on the non depended parameter.
+    - You may say the need of undecided instances for MPTC and FD is a design flaw.
+
+    - side1: When writing generic instance you should be extra careful not to make it to generic
+             and pollute other potential instances.
+
+    - side2: Transformer with mtl doesn't make the stack itself transformer, you still need to
+             implement the transformer instance. Specifically, how many levels you need to tell
+             the instance lift the bottom monad up to perform it's effects.
+
+    - side3: Monad transformer really just implement an interface on top of the stacked newtype,
+             the reason we can avoid lift is because all actions are lifted into the same level
+             already.
+
+    - side4: For state monad the state function is really the core. All state transformation is just
+             take the old state and return new state and retur value.
+             The concept is not only for state monad, but anything need functional update.
 @-}

@@ -3,11 +3,11 @@
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE GADTs                     #-}
 {-# LANGUAGE KindSignatures            #-}
+{-# LANGUAGE PolyKinds                 #-}
 {-# LANGUAGE RankNTypes                #-}
 {-# LANGUAGE StandaloneDeriving        #-}
 {-# LANGUAGE TypeFamilies              #-}
 {-# LANGUAGE TypeOperators             #-}
-{-# LANGUAGE PolyKinds                 #-}
 
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
 module Types.TypeableAndDatKinds where
@@ -17,6 +17,7 @@ module Types.TypeableAndDatKinds where
 -- encode type information that can be quried at runtime.
 
 import           Data.Data
+import           Data.Dynamic
 import           Data.Maybe
 import           Data.Proxy
 import           Data.Typeable (Typeable, cast, typeOf)
@@ -103,4 +104,70 @@ type family CurrencyOf a :: Currency where
 --   show (Money a) = (show a) ++ (show $ typeOf (Proxy :: Proxy currency))
 
 {-@ bring back types hidden behind exitential types.
+@-}
+
+data MoneyEx' = forall x. MoneyEx' (Money x)
+
+
+-- when adding two moneys, we want them to be of the same currency, thus c to be the same
+-- type.
+moneyAdd :: Money c -> Money c -> Money c
+moneyAdd (Money a) (Money b) = (Money (a + b))
+
+-- this doesn't work because we erased the type. After we bring the value back all we know
+-- about the type is it's money. We don't know, for example, whether two types are the same.
+-- moneyAddEx' :: MoneyEx' -> MoneyEx' -> MoneyEx'
+-- moneyAddEx' (MoneyEx' a) (MoneyEx' b) = MoneyEx' $ moneyAdd a b
+
+-- we can solve this with typeable.
+
+data MoneyEx = forall x. (Typeable x) => MoneyEx (Money x)
+
+deriving instance Show MoneyEx
+
+-- this will throw an error when a and b are not of the same type.
+moneyAddEx :: MoneyEx -> MoneyEx -> MoneyEx
+moneyAddEx (MoneyEx a) (MoneyEx b) = case cast a of
+                                       Just a1 -> MoneyEx $ moneyAdd a1 b
+                                       Nothing -> error "not the same type"
+
+-- this works.
+addusd1 = moneyAddEx (MoneyEx (Money 12 :: Money 'USD)) (MoneyEx (Money 10 :: Money 'USD))
+
+-- this throws a runtime error.
+addusd2 = moneyAddEx (MoneyEx (Money 12 :: Money 'USD)) (MoneyEx (Money 10 :: Money 'AUD))
+
+
+{-@ Use dynamics to replce exitential types @-}
+-- using exitential type means we have to erase the type info, and later if we want to restore
+-- them we somehow need to test the type at runtime. (Typeable.)
+-- Another approach is to use Data.Dynamic
+
+
+
+
+{-@ Conclusion
+    1. Typeable is what gives you runtime type information check.
+
+    2. Using the function cast, you can check whether a type is the one you want.
+
+    3. case on type is doing pattern matching on type varaible, this violate parametricity.
+
+    4. Having different behaviors based on different type based on the result of cast is really
+       another type of adhoc polymorphism.
+
+    5. Datakinds promotes types and values to kinds and types.
+
+    6. At type level kinds indicates a set of types that's acceptable.
+
+    7. Type family is the bread and butter of the type level computation. It's the function at
+       type level.
+
+    8. Type family also pattern matches on type variable. As typeable, it also break the
+       parametricity
+
+    9. Typeable can be used to restore types hiden behind exitential type constructors.
+
+
+    10. Or better, we can use Data.Dynamic to smuggle some types without GHC notices.
 @-}

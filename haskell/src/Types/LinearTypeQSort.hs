@@ -42,3 +42,8 @@ swap arr i j = Array.read arr i &
     \(Ur jval, arr2) -> (Array.set i jval . Array.set j ival) arr2
 
 -- test
+
+{-@ Conclusion
+    1. Linear types allows it's paramter only be used once. It makes it possible to control
+       resources concisely.
+@-}

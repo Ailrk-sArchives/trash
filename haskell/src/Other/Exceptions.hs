@@ -21,8 +21,8 @@ module Other.Exceptions where
 
 -- Exceptions naturally form a heirachy, thus subtyping. How do we express that in haskell?
 -- We use eistential quantification.
+import           Control.Exception (ArithException (..), AsyncException (..))
 import           Data.Typeable
-import           Control.Exception (ArithException (..), AsyncException (..)
 
 -- how are exceptions structured?
 

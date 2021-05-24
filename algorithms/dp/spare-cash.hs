@@ -13,7 +13,7 @@ module SpareCash where
 
 spareCash :: Integer -> Integer
 spareCash 0 = 0
-spareCash = minimum (case [ spareCash (n - i) | i <- filter (n>=) [1, 5, 11]] of
+spareCash n = minimum (case [ spareCash (n - i) | i <- filter (n>=) [1, 5, 11]] of
                        [] -> pure 0
                        xs -> xs) + 1
 
