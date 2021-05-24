@@ -60,7 +60,7 @@
 --     With this extension you can mention concrete type in the instance head.
 {-# LANGUAGE FlexibleInstances        #-}
 
-{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE TypeSynonymInstances     #-}
 
 {-# LANGUAGE AllowAmbiguousTypes      #-}
 
@@ -68,12 +68,15 @@
 -- it's an example of multi dispatch in haskell.
 {-# LANGUAGE MultiParamTypeClasses    #-}
 
+{-# LANGUAGE InstanceSigs #-}
 module Types.Kinds where
 
 import           Data.Kind
 import           Data.Proxy
 import           GHC.Generics
 import           GHC.TypeLits
+
+import           Control.Monad.Trans
 
 -- allowed by FlexibleContexts
 class A cls c
