@@ -1,6 +1,6 @@
 ## Linux system programming
 
-Most parts of linux programming are around how to utilize system calls provided by the linux kernal. It's like the unix provides all the IO facilities, and C is just another layer built on top of kernal for easy access.
+Most parts of linux programming are around how to utilize system calls provided by the linux kernel. It's like the unix provides all the IO facilities, and C is just another layer built on top of kernel for easy access.
 
 C stand library is small with a purpose. The standard doesn't say anything about thread, read file and write file, etc. All we have with pure C is some facilities in stdio.h. We have `stdin`, `stdout`, `stderr`, and a File type `FILE`.
 
