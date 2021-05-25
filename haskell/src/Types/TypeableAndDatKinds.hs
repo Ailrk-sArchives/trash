@@ -84,7 +84,7 @@ pickYen :: [M] -> [Money 'YEN]
 pickYen [] = []
 pickYen ((M x):xs) = maybe (pickYen xs) (\n -> n:pickYen xs) (cast x :: Maybe (Money 'YEN))
 
-moneys = [ M $usdMoney 12
+moneys = [ M $ usdMoney 12
          , M $ yenMoney 39
          , M $ audMoney 23
          , M $ yenMoney 102
