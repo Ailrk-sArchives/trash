@@ -43,19 +43,20 @@
 //     /  \     / \
 //   0-1   2-2 3-3 4-4
 //   /  \   |   |   |
-// 0-0  1-1 12 12   13
+// 0-0  1-1 12 13   14
 //  |    |
 //  10  11
 
 template <typename C, typename Operator> class SegTree {
 private:
-  std::unique_ptr<std::vector<typename C::value_type>> tree_;
-  std::unique_ptr<C> data_;
+  std::vector<typename C::value_type> tree_;
+  std::vector<bool> lazy_;
+  C data_;
   Operator op;
 
   void build(typename C::iterator s, typename C::iterator t, size_t p) {
     if (s == t) {
-      tree_->at(p) = *s;
+      tree_[p] = *s;
       return;
     }
 
@@ -63,42 +64,35 @@ private:
     build(s, m, p * 2 + 1);
     build(m + 1, t, p * 2 + 2);
 
-    tree_->at(p) = op(tree_->at(p * 2 + 1), tree_->at(p * 2 + 2));
+    tree_[p] = op(tree_[p * 2 + 1], tree_[p * 2 + 2]);
   }
 
 public:
-  const C &data() { return *data_; }
+  const C &data() { return data_; }
 
   SegTree(const C &data, Operator op)
-      : op(op),
-
-        data_(std::make_unique<C>(data)),
-        tree_(std::make_unique<std::vector<typename C::value_type>>(
-            4 * data.size())) {
+      : op(op), data_(data), tree_(4 * data.size()), lazy_(data.size()) {
     // note this is a quirk when using iterator as pointer. end is 1 over the
     // last element.
-    build(data_->begin(), data_->end() - 1, 0);
+    build(data_.begin(), data_.end() - 1, 0);
   }
 
   SegTree(C &&data, Operator op)
-      : op(op),
-
-        data_(std::make_unique<C>(std::move(data))),
-        tree_(std::make_unique<std::vector<typename C::value_type>>(
-            4 * data.size())) {
+      : op(op), data_(std::move(data)), tree_(4 * data.size()),
+        lazy_(data.size()) {
     build(data_->begin(), data_->end() - 1, 0);
   }
 
   SegTree(SegTree &&seg) {
-    data_ = seg.data;
-    tree_ = seg.tree;
-    seg.data = nullptr;
-    seg.tree = nullptr;
+    data_ = std::move(seg.data);
+    tree_ = std::move(seg.tree);
+    lazy_ = std::move(seg.lazy_);
   }
 
   SegTree(const SegTree &seg) {
-    tree_ = std::make_unique<std::vector<typename C::value_type>>(*seg.tree_);
-    data_ = std::make_unique<C>(*seg.data_);
+    tree_ = seg.tree_;
+    data_ = seg.data_;
+    lazy_ = seg.lazy_;
   }
 
   SegTree &operator=(const SegTree &seg) {
@@ -118,10 +112,9 @@ public:
 
   void swap(SegTree &seg) { std::swap(*this, seg); }
 
+  // range query.
   std::optional<typename C::value_type>
   get_interval_in(auto left, auto right, auto s, auto t, size_t p) {
-    // [left, right] is the search range.
-    // [s, t] is the current range.
 
     static auto update_sum = [this](auto &v, auto &sum) {
       if (v.has_value() && sum.has_value()) {
@@ -131,19 +124,20 @@ public:
       }
     };
 
+    // [left, right] is the search range.
+    // [s, t] is the current range.
+
     if (left <= s && t <= right) {
-      return {tree_->at(p)};
+      return {tree_[p]};
     }
 
     std::optional<typename C::value_type> sum, v1, v2;
-
     auto m = s + ((t - s) >> 1);
 
     if (left <= m) {
       v1 = get_interval_in(left, right, s, m, p * 2 + 1);
       update_sum(v1, sum);
     }
-
     if (right > m) {
       v2 = get_interval_in(left, right, m + 1, t, p * 2 + 2);
       update_sum(v2, sum);
@@ -154,26 +148,29 @@ public:
 
   typename C::value_type get_interval(typename C::const_iterator left,
                                       typename C::const_iterator right) {
-    return get_interval_in(left, right, data().cbegin(), data().cend(), 0)
+    return get_interval_in(left, right, data().cbegin(),
+                           std::prev(data().cend()), 0)
         .value();
   }
 
   typename C::value_type get_interval(size_t left, size_t right) {
     return get_interval_in(data().cbegin() + left, data().cbegin() + right,
-                           data().cbegin(), data().cend(), 0)
+                           data().cbegin(), std::prev(data().cend()), 0)
         .value();
   }
+
+  // range update.
 
 #ifdef TEST
   void dump() {
     std::cout << "Dumping..." << std::endl;
     std::cout << "data: " << std::endl;
-    for (auto &v : *data_) {
+    for (auto &v : data_) {
       std::cout << v << " ";
     }
     std::cout << "\n";
     std::cout << "tree: " << std::endl;
-    for (auto &v : *tree_) {
+    for (auto &v : tree_) {
       std::cout << v << " ";
     }
     std::cout << "\n";
