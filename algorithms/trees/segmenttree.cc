@@ -2,6 +2,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <random>
 #include <vector>
 
@@ -48,51 +49,56 @@
 
 template <typename C, typename Operator> class SegTree {
 private:
-  std::unique_ptr<std::vector<typename C::value_type>> tree;
-  std::unique_ptr<C> data;
+  std::unique_ptr<std::vector<typename C::value_type>> tree_;
+  std::unique_ptr<C> data_;
   Operator op;
 
   void build(typename C::iterator s, typename C::iterator t, size_t p) {
     if (s == t) {
-      tree->at(p) = *s;
+      tree_->at(p) = *s;
       return;
     }
 
-    auto m = s + (static_cast<int>(t - s) >> 1);
+    auto m = s + ((t - s) >> 1);
     build(s, m, p * 2 + 1);
     build(m + 1, t, p * 2 + 2);
 
-    tree->at(p) = op(tree->at(p * 2 + 1), tree->at(p * 2 + 2));
+    tree_->at(p) = op(tree_->at(p * 2 + 1), tree_->at(p * 2 + 2));
   }
 
 public:
+  const C &data() { return *data_; }
+
   SegTree(const C &data, Operator op)
-      : op(op), data(std::make_unique<C>(data)),
-        tree(std::make_unique<std::vector<typename C::value_type>>(
+      : op(op),
+
+        data_(std::make_unique<C>(data)),
+        tree_(std::make_unique<std::vector<typename C::value_type>>(
             4 * data.size())) {
     // note this is a quirk when using iterator as pointer. end is 1 over the
     // last element.
-    build(this->data->begin(), this->data->end() - 1, 0);
+    build(data_->begin(), data_->end() - 1, 0);
   }
 
   SegTree(C &&data, Operator op)
-      : op(op), data(std::make_unique<C>(std::move(data))),
-        tree(std::make_unique<std::vector<typename C::value_type>>(
+      : op(op),
+
+        data_(std::make_unique<C>(std::move(data))),
+        tree_(std::make_unique<std::vector<typename C::value_type>>(
             4 * data.size())) {
-    build(this->data->begin(), this->data->end() - 1, 0);
+    build(data_->begin(), data_->end() - 1, 0);
   }
 
   SegTree(SegTree &&seg) {
-    data = seg.data;
-    tree = seg.tree;
+    data_ = seg.data;
+    tree_ = seg.tree;
     seg.data = nullptr;
     seg.tree = nullptr;
   }
 
   SegTree(const SegTree &seg) {
-    this->tree =
-        std::make_unique<std::vector<typename C::value_type>>(*seg.tree);
-    this->data = std::make_unique<C>(*seg.data);
+    tree_ = std::make_unique<std::vector<typename C::value_type>>(*seg.tree_);
+    data_ = std::make_unique<C>(*seg.data_);
   }
 
   SegTree &operator=(const SegTree &seg) {
@@ -112,20 +118,62 @@ public:
 
   void swap(SegTree &seg) { std::swap(*this, seg); }
 
-  typename C::value_type get_interval(typename C::iterator first, typename C::iterator last) {
+  std::optional<typename C::value_type>
+  get_interval_in(auto left, auto right, auto s, auto t, size_t p) {
+    // [left, right] is the search range.
+    // [s, t] is the current range.
 
+    static auto update_sum = [this](auto &v, auto &sum) {
+      if (v.has_value() && sum.has_value()) {
+        sum.emplace(op(v.value(), sum.value()));
+      } else if (v.has_value()) {
+        sum.emplace(v.value());
+      }
+    };
+
+    if (left <= s && t <= right) {
+      return {tree_->at(p)};
+    }
+
+    std::optional<typename C::value_type> sum, v1, v2;
+
+    auto m = s + ((t - s) >> 1);
+
+    if (left <= m) {
+      v1 = get_interval_in(left, right, s, m, p * 2 + 1);
+      update_sum(v1, sum);
+    }
+
+    if (right > m) {
+      v2 = get_interval_in(left, right, m + 1, t, p * 2 + 2);
+      update_sum(v2, sum);
+    }
+
+    return sum;
+  }
+
+  typename C::value_type get_interval(typename C::const_iterator left,
+                                      typename C::const_iterator right) {
+    return get_interval_in(left, right, data().cbegin(), data().cend(), 0)
+        .value();
+  }
+
+  typename C::value_type get_interval(size_t left, size_t right) {
+    return get_interval_in(data().cbegin() + left, data().cbegin() + right,
+                           data().cbegin(), data().cend(), 0)
+        .value();
   }
 
 #ifdef TEST
   void dump() {
     std::cout << "Dumping..." << std::endl;
     std::cout << "data: " << std::endl;
-    for (auto &v : *data) {
+    for (auto &v : *data_) {
       std::cout << v << " ";
     }
     std::cout << "\n";
     std::cout << "tree: " << std::endl;
-    for (auto &v : *tree) {
+    for (auto &v : *tree_) {
       std::cout << v << " ";
     }
     std::cout << "\n";
@@ -147,6 +195,7 @@ int main(void) {
     SegTree seg3{data1, [](auto a, auto b) { return a * b; }};
     seg3.dump();
   }
+
   {
     std::vector<int> data;
 
@@ -161,6 +210,21 @@ int main(void) {
 
     SegTree seg{data, [](auto a, auto b) { return a + b; }};
     seg.dump();
+  }
+
+  {
+    std::cout << "== interval test ==" << std::endl;
+    std::vector<int> data1{10, 11, 12, 13, 14};
+    SegTree seg1{data1, [](auto a, auto b) { return a + b; }};
+    seg1.dump();
+
+    // check all ranges.
+    for (int i = 0; i < data1.size(); ++i) {
+      for (int j = i; j < data1.size(); ++j) {
+        auto v = seg1.get_interval(i, j);
+        std::cout << "(" << i << ", " << j << "): " << v << " " << std::endl;
+      }
+    }
   }
 
   return 0;
