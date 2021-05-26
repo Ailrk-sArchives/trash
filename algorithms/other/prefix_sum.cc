@@ -31,7 +31,7 @@ template <typename InIter, typename OutIter>
 OutIter prefix_sum(InIter first, InIter last, OutIter out) {
   if (first == last) return out;
 
-  typename std::iterator_traits<InIter>::value_type sum = *first;
+  auto sum = *first;
   *out = sum;
 
   while (++first != last) {
@@ -42,8 +42,9 @@ OutIter prefix_sum(InIter first, InIter last, OutIter out) {
   return ++out;
 }
 
-
-
+// principle of inclusion/exclusion.
+// bascially:
+// |A υ B υ C| = |A| + |B| + |C| - |A ∩ B| - |B ∩ C| - |C ∩ A| + |A ∩ B ∩ C|
 
 int main(void)
 {
