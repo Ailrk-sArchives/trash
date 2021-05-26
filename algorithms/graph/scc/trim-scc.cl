@@ -13,5 +13,3 @@
 ;; that connects to other scc.
 ;; remove edges that are not following the order.
 
-
-

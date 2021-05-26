@@ -71,7 +71,7 @@ public:
   const C &data() { return data_; }
 
   SegTree(const C &data, Operator op)
-      : op(op), data_(data), tree_(4 * data.size()), lazy_(data.size()) {
+      : op(op), data_(data), tree_(4 * data.size()), lazy_(false, data.size()) {
     // note this is a quirk when using iterator as pointer. end is 1 over the
     // last element.
     build(data_.begin(), data_.end() - 1, 0);
@@ -79,7 +79,7 @@ public:
 
   SegTree(C &&data, Operator op)
       : op(op), data_(std::move(data)), tree_(4 * data.size()),
-        lazy_(data.size()) {
+        lazy_(false, data.size()) {
     build(data_->begin(), data_->end() - 1, 0);
   }
 
@@ -142,24 +142,35 @@ public:
       v2 = get_interval_in(left, right, m + 1, t, p * 2 + 2);
       update_sum(v2, sum);
     }
-
     return sum;
   }
 
-  typename C::value_type get_interval(typename C::const_iterator left,
-                                      typename C::const_iterator right) {
-    return get_interval_in(left, right, data().cbegin(),
-                           std::prev(data().cend()), 0)
+  typename C::value_type get_interval(typename C::iterator left,
+                                      typename C::iterator right) {
+    return get_interval_in(left, right, data_.begin(), std::prev(data_.end()),
+                           0)
         .value();
   }
 
   typename C::value_type get_interval(size_t left, size_t right) {
-    return get_interval_in(data().cbegin() + left, data().cbegin() + right,
-                           data().cbegin(), std::prev(data().cend()), 0)
+    return get_interval_in(data_.begin() + left, data_.begin() + right,
+                           data_.begin(), std::prev(data_.end()), 0)
         .value();
   }
 
-  // range update.
+  // range update with lazy propagation.
+  void update_in(auto left, auto right, auto f, auto s, auto t) {
+    // TODO
+  }
+
+  void update(typename C::iterator left, typename C::iterator right, auto f) {
+    return update_in(left, right, f, data_.begin(), std::prev(data_.end()));
+  }
+
+  void update(size_t left, size_t right, auto f) {
+    return update_in(data_.begin() + left, data_.begin() + right, f,
+                     data_.begin(), std::prev(data_.end()));
+  }
 
 #ifdef TEST
   void dump() {
