@@ -83,17 +83,8 @@ public:
     build(data_->begin(), data_->end() - 1, 0);
   }
 
-  SegTree(SegTree &&seg) {
-    data_ = std::move(seg.data);
-    tree_ = std::move(seg.tree);
-    lazy_ = std::move(seg.lazy_);
-  }
-
-  SegTree(const SegTree &seg) {
-    tree_ = seg.tree_;
-    data_ = seg.data_;
-    lazy_ = seg.lazy_;
-  }
+  SegTree(SegTree &&seg) = default;
+  SegTree(const SegTree &seg) = default;
 
   SegTree &operator=(const SegTree &seg) {
     SegTree tmp{seg};
