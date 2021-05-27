@@ -72,6 +72,7 @@ public:
 
   SegTree(const C &data, Operator op)
       : op(op), data_(data), tree_(4 * data.size()), lazy_(false, data.size()) {
+
     // note this is a quirk when using iterator as pointer. end is 1 over the
     // last element.
     build(data_.begin(), data_.end() - 1, 0);
