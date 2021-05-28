@@ -125,6 +125,7 @@ library
       Other.Reflections
       Other.FinalTagless
       Other.FinalTagless1
+      Other.FinalTagless2
       Other.RecursionScheme1
       Other.Lens1
 
@@ -162,6 +163,7 @@ library
     , void
 
     , monad-control
+    , comonad
 
     , repa
     , accelerate

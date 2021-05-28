@@ -9,6 +9,7 @@ module Types.DataTypeALaCarte where
 
 -- adt has the opposite problem of subtyping --
 data Expr' = Val' Int | Add' Expr' Expr'
+-- to add a type constructor we need to add a corresponding case for every functions.
 
 eval :: Expr' -> Int
 eval (Val' x)   = x
