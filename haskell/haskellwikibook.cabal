@@ -128,6 +128,7 @@ library
       Other.FinalTagless2
       Other.RecursionScheme1
       Other.Lens1
+      Other.FAlgebra
 
       Notes.All.Dice
       Notes.All.Files

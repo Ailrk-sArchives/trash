@@ -3,6 +3,16 @@ module Other.FixPoint where
 
 -- y combinator.
 
+{-@ Note how this definition looks different from ordinary Y combiantor
+    which is \f -> (\x -> f $ x x) (\x -> f $ x x)
+
+    It's done with lazy eval.
+    x is bind to the result of (f x), which then get evaluate
+    so let x = f x
+        in f (f x)  -- (f x) is x, the x in (f x) is (f x), oh yeah
+        in f (f (f x))
+        ...
+@-}
 -- fix f = f (f (f ...))
 fix f =
   let x = f x
@@ -11,21 +21,21 @@ fix f =
 fact = fix f
   where f rec n | n == 0 = 1 | otherwise = n * rec (n -1)
 
+sinFix = fix (\f x -> if x == sin x then x else f (sin x))
+
 many_ones = fix (1:)
 onst_still_const = fix (const "hello")
 
 v1 = fact 5
 
--- it's not only useful for expressing arbitrary recursion in lambda calculus.
--- the usefulness extend to the type system, since now you can create a type
--- that encompass arbitrarily nested types.
+{-@  Curry's pardox: untyped lambda calclus is unsound as a deductive system, as
+     the existence of Y combinator (fixed point combinator) makes it possible to
+     have undecidable function.
 
--- this is just Y combinator, and in lambda calculus without let binding you do
--- recursion with it.
+     In a simply type lambda calculus, the existence of Y combinator force all types
+     to be lifted. You need to have a bottom value beacuse you can't guarantee function
+     terminates.
+@-}
 
--- For typed lambda calculus, as long as fix is introduced, every type becomes
--- inhabited.
--- As fix (\x:T. x) as type T, but it denotationally has type bottom.
--- so once we have fix, we can no longer guarantee that every well typed term
--- reduce to a value.
+
 

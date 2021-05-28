@@ -8,8 +8,9 @@ module Other.FinalTagless where
 import           Data.Text.Lazy.Builder (Builder)
 
 
-{-@ Tagless initial and tagless final.
+-- https://legacy.cs.indiana.edu/ftp/techreports/TR65.pdf
 
+{-@ Tagless initial and tagless final.
 
 @-}
 
@@ -18,6 +19,9 @@ import           Data.Text.Lazy.Builder (Builder)
 -- normally you will think of using GADT.
 --
 -- We can also hide the type info behind a common result type.
+
+-- Problem: Data Type saves too much information, thus works on datatype
+--          force us to handle each cases.
 data Expr' a
   = I Int
   | B Bool
@@ -71,6 +75,7 @@ eval_ (Or_ (B_ b1) (B_ b2))  = B_ (b1 || b2)
 -- Both examples above uses initial encoding.
 -- we also have final encoding, where doesn't uses constructors.
 
+-- data type becomes just `Expr a`
 newtype Expr a = Expr { unExpr :: a }
 
 bool :: Bool -> Expr Bool
@@ -146,11 +151,25 @@ expr1AsString :: String
 expr1AsString = expr1
 
 {-@ quick recap:
-    tagles initial (GADT) allows data constructor to carry the type information,
+    - tagles initial (GADT) allows data constructor to carry the type information,
 
-    tagless final data constructor to carry the type information, and it makes types extensible.
-      -
+    - tagless final data constructor to carry the type information, and it makes types extensible.
+      - extensible as you can simply add a new function that return the result type.
       - constructors can carry info becasue it's essentially a function, which has a return type
         you can specify.
 
+    - Tagged initial encoding requires you to use a universal result type to return different
+      return type.
+
+    - If the data type doesn't need to be change, tagless initial can be more convinent as you can
+      pattern match on constructors.
+
+    - If the data type needs to be extensible and there is only one operation act on it, tagless
+      final is probably the simplest way.
+
+    - If the data type needs to be extensible and you have different version of funcions, abstract
+      constructors with typeclass, and make instances for different result types.
+
+      The idea is similar to wrap in newtype to work with different monoids.
+      Or you can make an instances for a completely different type, the usage is quit flexible.
 @-}

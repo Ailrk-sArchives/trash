@@ -96,6 +96,4 @@ eval' (Or e1 e2) =
     3. The problem with initial encoding is they are not extensible. You can't simply add a
        data constructor without modifying all functions.
 
-
-
   @-}

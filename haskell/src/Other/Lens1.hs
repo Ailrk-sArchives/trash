@@ -24,6 +24,9 @@ import           Data.Function ((&))
     Lens' s1 s2 -> Lens' s2 s3 -> Lens' s1 s3
 
     typeclass + higher kindness + polymorphic functions
+
+    There are many variation from the basic lens. e.g Traversal for multiple foci,
+    Iso for building isomprphism between two data types etc.
 @-}
 
 -- solve nested record.
@@ -157,3 +160,8 @@ type Traversal' s a = forall f. Applicative f => (a -> f a) -> s -> f s
 
 addr_strs :: Traversal' Address String
 addr_strs fn (A r c p) = (\r' c' -> A r' c' p) <$> (fn r) <*> (fn c)
+
+
+-- TODO
+{-@ Conclusion
+@-}
