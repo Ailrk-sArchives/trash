@@ -7,6 +7,12 @@
 module Other.FinalTagless where
 import           Data.Text.Lazy.Builder (Builder)
 
+
+{-@ Tagless initial and tagless final.
+
+
+@-}
+
 -- model language with algebraic data type is called initial encoding.
 -- given the ast below, how do we infer return type from constructor?
 -- normally you will think of using GADT.
@@ -138,3 +144,13 @@ expr1AsInt = expr1 + 12
 
 expr1AsString :: String
 expr1AsString = expr1
+
+{-@ quick recap:
+    tagles initial (GADT) allows data constructor to carry the type information,
+
+    tagless final data constructor to carry the type information, and it makes types extensible.
+      -
+      - constructors can carry info becasue it's essentially a function, which has a return type
+        you can specify.
+
+@-}
