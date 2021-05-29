@@ -21,6 +21,7 @@ Several models.
   - straight forward control
   - it's a higher level abstraction, which itself can have overhead (I mean coroutine needs to be implemented somehwere as it doesn't come for free).
   - green threads are essentially coroutine.
+  - the model is really similar to csp tbh.
 
 - actor models
   - mail box model (actor1 -> [maxibox] -> actor 2)
@@ -28,7 +29,7 @@ Several models.
   - separate computations into actors, communicate three message passing.
   - retry when error happens.
   - fire and forget
-  - what you see in erlang's model (erlang is true oop!)
+  - what you see in erlang's model (true oop!)
 
 - communicating sequential processes.
   - actually very similar with actor model.
@@ -45,3 +46,4 @@ Think about what's necessary to implement green thread:
 2. manage a thread pools, which is the container of green threads
 3. convert functions into coroutines by inserting yield points
 4. bound coroutines to system threads
+5. embed an even loop into the runtime system to schedule.

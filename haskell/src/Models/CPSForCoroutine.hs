@@ -1,4 +1,4 @@
-module Concurrent.CPSforCoroutine where
+module Models.CPSForCoroutine where
 
 {-@ Use continuation to implement coroutine.
 @-}

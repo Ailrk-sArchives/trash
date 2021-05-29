@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Concurrent.NoclosableChannel where
+module Models.NoclosableChannel where
 
 -- the default putStrLn for string works on lazy list and print char by cahr,
 -- Text.putStrLn by default uses nobuffering.

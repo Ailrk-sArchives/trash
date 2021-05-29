@@ -1,5 +1,5 @@
 {-# LANGUAGE BangPatterns #-}
-module Concurrent.Par1 where
+module Models.Par1 where
 
 import           Control.DeepSeq
 import           Control.Parallel

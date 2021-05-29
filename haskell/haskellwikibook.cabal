@@ -36,9 +36,12 @@ library
       Algorithms.MergeSort
       Algorithms.Other
 
-      Concurrent.Concurrent
-      Concurrent.Par1
-      Concurrent.NoclosableChannel
+      Models.Par1
+      Models.NoclosableChannel
+      Models.CoroutineForEventDriven
+      Models.CPSForCoroutine
+      Models.CPSForEventDriven
+      Models.Coroutines
 
       GHCs.DeriveVia
       GHCs.Rules
@@ -99,6 +102,7 @@ library
       Libs.Seq
       Libs.Misc
       Libs.LensPractice
+      Libs.Concurrent
 
       Libs.TH.TemplateH
       Libs.TH.QQHtml
