@@ -19,7 +19,7 @@ data Expr' a where
   Add :: Expr' Int -> Expr' Int -> Expr' Int
 
 -- this is the final tagless version.
-{-@ final tagless use function ass data constructor
+{-@ final tagless use function as data constructor
 @-}
 
 -- basic

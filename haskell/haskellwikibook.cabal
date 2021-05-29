@@ -118,7 +118,7 @@ library
       Other.IOs
       Other.ProbabilityMonad
       Other.FixPoint
-      Other.FixPointOfFunctor
+      Other.FixPoint1
       Other.ContAndMonad
       Other.ListCompQuirks
       Other.ParserCombinator

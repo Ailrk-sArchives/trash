@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveFunctor #-}
 
-module Other.FixPointOfFunctor where
+module Other.FixPoint1 where
 
 import           Control.Arrow
 

@@ -15,5 +15,3 @@ module Other.FAlgebra where
 type Algebra f a = f a -> a
 
 
-
-

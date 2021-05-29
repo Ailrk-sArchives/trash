@@ -17,8 +17,15 @@ bar =
     add x 4 $ \y ->
       y
 
--- these two are not really the same... like at all.
--- what's similar is the structure. You can pass the value
--- to let the next function to handle.
--- or the continuation can only be called after the value / monad
--- is computed, thus sequenctial operation.
+-- meaningless comparision...
+
+-- why continuation and monad are similar?
+--
+--   why monad and cps both keep sequetential order?
+--   it's not because you can do it step by step, it's
+--   simply because there they both have nested structures.
+--
+--   How do you keep evaluation in order in LC?
+--   there is nothing you can do to directly express it, but what
+--   you can do is nest on function in another.
+--

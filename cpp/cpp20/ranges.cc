@@ -6,7 +6,7 @@ void vec_range_test() {
   std::vector<int> numbers{1, 2, 3, 4};
   auto results = numbers
 
-                 | std::views::filter([](int n) { return n % 2 == 0; })
+                 | std::views::filter([](int n) { return n % 2 == 0; }) u
 
                  | std::views::transform([](int n) { return n * 2; })
 

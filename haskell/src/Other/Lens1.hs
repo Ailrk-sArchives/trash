@@ -7,7 +7,7 @@ import           Data.Functor.Const
 import           Data.Functor.Identity
 
 import           Control.Applicative
-import           Data.Function ((&))
+import           Data.Function         ((&))
 
 
 {-@ Lens provides access into the middle of a data structure.
@@ -161,6 +161,9 @@ type Traversal' s a = forall f. Applicative f => (a -> f a) -> s -> f s
 addr_strs :: Traversal' Address String
 addr_strs fn (A r c p) = (\r' c' -> A r' c' p) <$> (fn r) <*> (fn c)
 
+
+{-@  Iso
+@-}
 
 -- TODO
 {-@ Conclusion
