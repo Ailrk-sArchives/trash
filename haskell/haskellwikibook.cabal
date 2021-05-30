@@ -150,6 +150,7 @@ library
       Notes.Perf.Wc
 
       Nice.LoopBreak
+      Nice.Pause
 
   other-modules:
       Paths_haskellwikibook
