@@ -134,5 +134,3 @@ contramap :: Contravariant f => (a -> b) -> f b -> f a
 ```
 
 - The composition of two Functor is also a Functor is
-
-

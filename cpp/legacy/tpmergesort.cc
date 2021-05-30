@@ -14,7 +14,7 @@ template <int a, typename L> struct List {
   using tail = L;
 };
 
-// difine Pair.
+// define Pair.
 // it accomodates two types.
 template <typename A, typename B> struct Pair {
   using first = A;
