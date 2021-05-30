@@ -101,21 +101,25 @@ assoc3 m f g = do { x <- m;
 
 {-@ Everything boilds down to functions:
       Programming is just programming, does matter how much fancy words you are using, everything goes down
-      to some basic concepts. You perform instructions, you branch, you jump, you loop. No matter what you are using,
-      a purely functional langauge or assembhly, these things are always around you.
+      to some basic concepts. You perform instructions, you branch, you jump, you loop. No matter what you are using:
+      a purely functional langauge or assembhly; these things are always around you.
 
       Though monad is a concept from cat theory, if it's widely applciable on programming, it must relates to
-      those basic notaions some how. It's like, Arithmetics are also abstracted concepts.
-      But because you can use them to describe stuffs in daily life, you start to take them for granted.
+      those basic notaions some how. It's like, Arithmetics are also abstracted concepts. we talk about it because
+      it models daily life situations nicely.
 
-      Haskell has super fancy type system and larget set of syntax that makes it looks super complicated at the
-      first glance. However, the fundation of all of these is just lambda calculus:It is still a lambda calculus based language.
+      Haskell has a fancy type system and a large set of syntax that makes it looks super complicated at the
+      first glance. However, the fundation of all of these is just lambda calculus: It is still a lambda calculus based language.
       All abstractions you can play with essentially boil down to functions.
 
       Some exceptions like builtin types like integers and algebraic data types, which can also
       be encoded in lambda calculus. (chruch encoding, scott encoding etc.). At least, conceptually
       everything can be treated as functions, and thinking in this way makes a lot of thing much easier.
+      (At least the language design is much more uniform, and the fundation is more thourough)
 
+@-}
+
+{-@
       A side note before goes into Monad: typeclass:
         what is typeclass?
           1. Typeclass consists two parts: type level constraint and term level function overloading.
@@ -123,7 +127,7 @@ assoc3 m f g = do { x <- m;
           3. If a typeclass has term level funtion, you overload it. Overloading implies if you call the funcion
              on a value that is constrainted to be in typeclass, the right verision of the function will be invoked.
           4. typeclass help us to describe Monad eaiser, as the term level definition can to reflected to the type level.
-          5. But really, it has nothing to do with monad itself.
+          5. But really, it has nothing to do with monad itself. Nice thing to have but not necessasry.
           ok.
 
       So what's monad?
@@ -146,7 +150,9 @@ assoc3 m f g = do { x <- m;
             and
               step 1 perform the monad operation
               step 2 perform your arbitray operations based on the result of them monadic computation
+@-}
 
+{-@
       what are implicit operations?
         Look at Maybe. you can see it as an side effect denotes success and failure. Or you can view merely
         by it's definiton: a container that can be any value or Nothing; when using it, it return some of the any value,
@@ -154,8 +160,6 @@ assoc3 m f g = do { x <- m;
         The branching logic can be implied when chaining operations.
 
       what's the point of having implicit operations performed?
-        ppl emphasis too much on how monad is used to describe side effects, as if it's the only thing it does. But why
-        it can describe side effect? what is side effect?
 
           - Get rid of boiler plates.
             if you write c, how do you handle errors?
@@ -231,31 +235,78 @@ assoc3 m f g = do { x <- m;
               -- two may-failed operations with the same error handing logic.
 
 
+          - Another view: chain Side effects:
+              - what are side effects
 
-          - Side effects:
-            normally people give you examples like: mutation is side effect. performing io is side effect.
-            but what's the difference between mutation and calcualte 1 + 2? what draws a line between side effect and
-            non side effect?
+                normally people give you examples like: mutation is side effect. performing io is side effect.
+                but what's the difference between mutation and calcualte 1 + 2? what draws a line between side effect and
+                non side effect?
 
-              We normally heard haskell functions are pure functions. Pure functions are referential transparent.
+                  We normally heard haskell functions are pure functions. Pure functions are referential transparent.
 
-              we know referential transparency: one input determines one output. f(1) = 1, f(1) = 2 is not a function.
+                  we know referential transparency: one input determines one output. f(1) = 1, f(1) = 2 is not a function.
 
-              but in c for example, lots of functions doesn't perform this way:
-                int f(int x) {
-                  int a;
-                  scanf("%d\n", &a);
-                  return a + x;
-                }
-              in this case, you don't know what gonna come with scanf. can you?
-              you can't! you can't predict the future, and there is no rule to govern how scanf work. From the view of out
-              program, the value of a comes from a different world!
+                  but in c for example, lots of functions doesn't perform this way:
+                    int foo(int x) {
+                      int a;
+                      scanf("%d\n", &a);
+                      return a + x;
+                    }
+                  in this case, you don't know what gonna come with scanf. can you?
+                  you can't! you can't predict the future, and there is no rule to govern how scanf work. From the view of out
+                  program, the value of a comes from a different world!
+
+              - how to represent side effects in a purely functional language?
+                We don't need to explicit describe the sideffect in C, because purity is not part of it's design goal.
+                so type of foo is just int -> int.
+
+                However in haskell, all functions are pure. How do you make the return value of foo the same even the value Int
+                change all the time?
+
+                trick: We don't return Int anymore, we return a computation that yields Int.
+                  thus we have foo :: Int -> IO Int
+
+                This way, given any Int, we have the same value: A monad, a computation that gives a Int. the tricky part is in
+                haskell we can't see the definition of IO, we only know it exists and it yields x.
+                since the IO m is the same value, we keep the referential transparency. But what Int does IO Int give us is a
+                different story.
+
+              - So how is this related to monad?
+                Given:
+                  foo :: Int -> IO Int
+                  bar :: Int -> Int -> IO Int
+                  quux :: Int -> IO Int -> IO Int
+                we know they are just "purified" functions that works on Int. In c they all have the same signature
+               (quux might not, but doesn't matter now)
+
+                But after we purified them, these function nolonger work with each other anymore. How to make it work again?
+                we need to take the value in (IO Int) out (perform the IO action and get a Int), then use the Int as paramter
+                for the next computation. Because we cannot directly control the process, this happens implicilty.
+                What does it sounds like?
+
+                if we make IO a monad, we can >>= it.
+                  main :: IO Int
+                  main = do
+                    i <- foo 10
+                    quux i (bar i 20)
+
+                how does IO actually get performed? we don't care. at least in the language level it's not a concern.
 
             Can pure function has free variable?
+              consider this case
+                x = 10
+                f y = x
+              then f 1 = 10, f 2 = 10. is this a pure function?
+              Is just a constant, the function application is redundent.
+@-}
 
-
+{-@
       What does it mean to be "in a monad m"
-        First, do notation desugar to a >>= (\b -> ...)
+        Again let's use Maybe as example. With the notion of "possibly failed computation", we have
+          1. A function that returns (Maybe a), the function can either succeed or fail. The return value record
+             the senario of the execution process.
+          2. A function that takes a (Maybe a), the parameter maybe valid or not valid.
+          In
 
 
       Every monad has it's semantics.
@@ -309,7 +360,8 @@ instance Monad m => MonadPlus (MaybeT m) where
   mplus = (<|>)
 
 {-@ Monad is defined with join, but
-    in haskell you get >>= instead. how?
+    in haskell you get >>= instead.
+    reason explained above.
 @-}
 
 -- kind signature helps you to tell the kindness of type variable
@@ -327,7 +379,7 @@ kbind (Kleisli f) (Kleisli g) = Kleisli $ join . fmap g . f
 -- bind' :: Monad m => (a -> m b) -> (b -> m c) -> (a -> m c)
 -- bind' f g = join . fmap g . f
 
-{-@ Comonad is the duality of Monad @-}
+{-@ Comonad is the dual of Monad @-}
 
 -- unsafePerformIO is a cokleisli arrow.
 newtype Cokleisli w a b = Cokleisli (w a -> b)
