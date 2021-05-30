@@ -152,6 +152,25 @@ assoc3 m f g = do { x <- m;
               step 2 perform your arbitray operations based on the result of them monadic computation
 @-}
 
+-- put it here otherwise the comment is too long :)
+-- Monad transfromer is still a monad.
+instance Monad m => Monad (MaybeT m) where
+  return = MaybeT . return . Just
+  x >>= f = MaybeT $ do
+    maybe_value <- runMaybeT x
+    case maybe_value of
+      Nothing    -> return Nothing
+      Just value -> runMaybeT $ f value
+
+-- Monad requirements.
+instance Monad m => Applicative (MaybeT m) where
+  pure = return
+  (<*>) = ap
+
+instance Monad m => Functor (MaybeT m) where
+  fmap = liftM
+
+
 {-@
       what are implicit operations?
         Look at Maybe. you can see it as an side effect denotes success and failure. Or you can view merely
@@ -326,24 +345,6 @@ assoc3 m f g = do { x <- m;
         Essentially the only way to perform operations in sequence is by nesting.
 
 @-}
-
-
--- Monad transfromer is still a monad.
-instance Monad m => Monad (MaybeT m) where
-  return = MaybeT . return . Just
-  x >>= f = MaybeT $ do
-    maybe_value <- runMaybeT x
-    case maybe_value of
-      Nothing    -> return Nothing
-      Just value -> runMaybeT $ f value
-
--- Monad requirements.
-instance Monad m => Applicative (MaybeT m) where
-  pure = return
-  (<*>) = ap
-
-instance Monad m => Functor (MaybeT m) where
-  fmap = liftM
 
 -- some handy class
 -- Alternative is like a monoid with different semantic.

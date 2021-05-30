@@ -130,6 +130,20 @@ dupSkipChan (SkipChan main _) = do
 
     A thread can wait with `threadDelay`
 
+
+@-}
+
+{-@ How are green threads implemented?
+    Green threads needs a support from the run time. You need to shove in a system
+    into the binary to manage green threads.
+
+    Also green threads are cooperative multitasking, typically get implemneted as
+    coroutine.
+
+    This implies compiler needs to insert yeild point in functions to be able to hand
+    over control back and forth.
+
+    If a green thread is pinned to a OS thread, it's basically an OS thread.
 @-}
 
 

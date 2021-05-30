@@ -5,7 +5,7 @@
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE TypeFamilies               #-}
 
-module Types.ThinkingWithTypes where
+module Types.Cardinality where
 
 {-@ 1. the algebra behind type @-}
 

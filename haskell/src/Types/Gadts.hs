@@ -8,15 +8,17 @@ module Types.Gadts where
 
 import           GHC.TypeLits
 
-{-@ Frist, what's the motivation?
+{-@ what's the point?
  @-}
+
+-- Look at this:
+type X a = Either a a
 -- This is just a type alias, and it's also a type function.
 -- X can only be used at the type level, which takes
 -- a type parameter a and give us back a concrete type.
 
 -- in c++ it might look like this:
 -- template<tyename T> using X = Either<T, T>;
-type X a = Either a a
 
 {-@ Now we want the type function to be more powerful
     We want it to actually act like a function.
@@ -45,7 +47,9 @@ type X a = Either a a
              Colelction a = (Map a b)
 
  @-}
--- Now let's write stuffs above as ...typeclasses.
+
+-- Now let's write stuffs above as typeclasses.
+-- these are really just predicates at type level.
 class IsSimple a
 instance IsSimple Bool
 instance IsSimple Int
@@ -54,8 +58,7 @@ instance IsSimple Double
 class Collection a c
 instance Collection a [a]
 
--- A type function that traverses to decide whether
--- it has Int somewhere.
+-- A type function that traverses to decide whether it has Int somewhere.
 class HasInt a
 instance HasInt Int
 
@@ -71,43 +74,34 @@ instance Replace t a b res => Replace (Maybe t) a b (Maybe res)
 instance Replace t a b t
 
 
-{-@ So we see, all of these type functions are implemented in haskell.
-    It's their syntax make it looks more like a constraint rather
-    then function. If you try to interpret type class as type function,
-    the function body seems to be reversed.
+{-@ Syntax for typeclasses looks more like a constraint rather
+    then function.
+
+    To interpret type class as type function the function body seems to be reversed.
       instance (HasInt a) => HasInt [a]
     is
       type HasInt [a] = HasInt a
-
-    Let's see, we now have type to type functions, data to data functions,
-    what about type to data?
-       data Maybe = Just a | Nothing
-    Here we make a type to data translation with two possible results.
-
-    Compare with type class and functions we can see data declaration is
-    quite inflexible.  it supports recursion, support multiple statement and
-    muiltiple results. (No pattern matching no guard...)
 @-}
 
 
 {-@ Generalized Abstract data type
-    Now you can have pattern matching and constant at t he left hand size
-    of data statement!
+
     Say you want to do this:
       data T String = D1 Int
            T Bool   = D2
-           T [a]    = D3
+           T [a]    = D3 (a, a)
     you need to use GADT and write this:
+
       data T a where
         D1 :: Int -> T String     -- match when return T String
         D2 :: T Bool              -- match when return T Bool
         D3 :: (a, a) -> T [a]     -- match when return T [a]
+
+    Pattern mathcing on the data constructor can help you determine what a should be.
 @-}
+
 -- to implement an evaluator for sk combinator
 
--- without gdat we write like this
--- notice K', S' are really the same kind, they can
--- replace one with another.
 data Term' = K' | S' | Term' :@ Term'
 infixl 6 :@
 
@@ -115,32 +109,19 @@ infixl 6 :@
 eval' (K' :@ x :@ _)      = x
 eval' (S' :@ x :@ y :@ z) = x :@ z :@ (y :@ z)
 eval' x                   = x
--- we know for S and K they actually ahve a type, some
--- input should not be valid.
--- But because the primitive data declaration makes no
--- distinction between this two other than saying K' and
--- S' and two different Term', there is no constraint
--- on how to use them
--- for example, you can write this:
-eval' (S' :@ _ :@ y)      = y
--- or this
 eval' (K' :@ x)           = x
--- which is bad bad.
 
 
 {-@ GADT based small step evaluator
     Comparing with the one above, data constructor's return type
     is specified explicitly.
-    Here it really just a pattern matching mechanism. We are saying
+    It's just a pattern matching. We are saying
     data Term (a -> b -> a) = K
     data Term ((a -> b -> c) -> (a -> b) -> a -> c) = S
     data Term a = a
     data Term b = Term (a -> b) -> Term a
  @-}
 -- a full implementation of small step SK evalutor with GADT
--- Now with Gadt, constructor can carry more type information.
--- For the type checker if it sees K, it knows (a -> b -> a)
--- needs to follow, otherwise it won't type check.
 data Term x where
   K :: Term (a -> b -> a)
   S :: Term ((a -> b -> c) -> (a -> b) -> a -> c)

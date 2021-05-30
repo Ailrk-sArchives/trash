@@ -17,7 +17,7 @@ bar a b = a + b
 {-# INLINEABLE bar #-} -- this will appear in interface file.
 
 -- INLINE
---    1. like INLINABLE, function is included in the
+--    1. like INLINABLE, functions are  included in the
 --       interface file.
 --    2. GHC will be very keen to inline these functions
 --    3. bloat compile time. compile each inlined call site
@@ -26,7 +26,7 @@ bar a b = a + b
 --       further will have no benefits. Rather than saving a function
 --       call.
 --    5. If a function is inlined, and within the context it can trigger
---       more compiler optimization than being stand alone, it will be golden.
+--       more compiler optimization than being stand alone, it's the best.
 --    6. use INLINE to force RULES to fire.
 bar' :: Int -> Int -> Int
 bar' a b = a + b
@@ -34,8 +34,7 @@ bar' a b = a + b
 -- inlined
 
 bar'' :: Int -> Int
-bar'' a = a + 1 -- this will automatically inlined no doubt. And it will be
--- an optmized unfolding.
+bar'' a = a + 1 -- this will automatically inlined. And it will be an optmized unfolding.
 
 -- Unfolding
 --    unfolding of a function f is what f is replaced by after it is inlined.

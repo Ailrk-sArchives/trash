@@ -27,13 +27,12 @@ data Bo a = Bo a
 data Bobo (a :: * -> *) b = Bobo (a b)
 
 
--- withl poly kind the kind is polymorphic by default
+-- with poly kind the kind is polymorphic by default
 -- data T (m :: k -> *) (a :: k) = Mkt (m a)
 -- this means a has polymorphic kind k.
 data T m a = MkT (m a)
 
--- but if you add a kind signature, you can constrain
--- the kindness.
+-- but if you add a kind signature, you can constrain the kind.
 data T' m (a :: *) = MkT' (m a)
 
 -- This means m is a type with kind (k -> *), so it

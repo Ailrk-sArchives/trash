@@ -107,7 +107,7 @@ foo = do
 {-@ Why UndecidableInstances is usually needed for MPTC and FD?
 @-}
 
--- first let's try to define a mtl style MonadState.
+-- first try define a mtl style MonadState.
 -- It's a MPTC with function dependency, it says given monad m, the state of
 -- MonadState is uniquely defined to be s.
 class Monad m => MonadState' s m | m -> s where
@@ -124,21 +124,21 @@ class Monad m => MonadState' s m | m -> s where
     put' s
     return a
 
--- follow the curse of n^2 instances, let's implement MonadState for ReaderT monad
--- transformer.
+-- Next we make an instance of MonadState for ReaderT
 
 -- According to haskell's standard, this is undecidable instance
 -- A decidable instance needs to have a smaller constraint than then instace head.
 -- All constraints should at least eliminate one type constructor, so by induction haskell
 -- knows the instances for sure terminates.
 --
--- Because MonadState is MPTC, our instance only eliminate constructor of (ReaderT e m)
+-- Because MonadState is MPTC, our instance only eliminates constructor of (ReaderT e m)
 -- but not on s, so it's undecidable.
 --
 -- But it's really decidable because s is determined by m, so if m is shrinking it doesn't
 -- matter what s is since it's a function of m.
 --
 -- So in these case it's ok to use undecidable instances.
+--
 instance MonadState' s m => MonadState' s (ReaderT e m)
 -- this instance uses default implementation:
 

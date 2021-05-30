@@ -38,27 +38,11 @@ instance Functor Expr where
   fmap = apply
 
 
--- If we nest expression together, we will have the type looks like
--- Expr (Expr (Expr ...)), how many Expr depends on the depth of the
--- tree.
 
--- the problem of Expr a is, it doesn't really do what we want. To
--- form a expr tree, the leav node must be `Literal`, beacuse all
--- other types are parameterized.
-
--- To get the feature, we want a type that once we determine the type of a,
--- it accepts all type in form Expr (Expr (Expr ...))
-
--- Essentally, no matter how deeply nested the type is, it's sub structure is
--- always similar to itself. We need the infinite type to express this.
-
--- to repeately apply something to itself is well known topic in lambda calculus.
--- We can use Y combinator to acheive arbirary recursion.
-
--- We can try to encode Y combinator at the type level to make the ininite type.
-
-{-@ The essense is to use functor fixpoint to define recursive datatype.
-    it's an example of codata.
+{-@ Get the fix point of Expr a with Term.
+    Why you want this?
+    We can isolate the definition of each expression and nested
+    expression.
 @-}
 
 data Term f = In (f (Term f))
@@ -95,9 +79,10 @@ n5 = let term = In (Binary (In (Paren (In (Literal (IntLit 3)))))
       in out term
 
 {-@ Note for Term f, f is a functor
-    So we say Term is a fix point of the functor f.
 
-    Now we can try to generialize the traversal of the recursive data type.
+    So Term is a fix point of the functor f.
+
+    To generialize the traversal of the recursive data type.
     To traverse, we can roughly do these things:
     1. unpack Term to access all it's children (with the out function).
     2  recursively apply f to all children

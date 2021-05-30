@@ -7,9 +7,9 @@ module Libs.ReadFile where
 import           Control.Exception
 import           System.IO
 
--- Lazy IO is evil and you should get rid of it
--- for all cost!
-
+-- Lazy IO give you suprise, in terms of (Not having RAII behavior although
+-- you are using a RAII idiom)
+--
 -- Lazyness is a property for purity, not for side
 -- effects.
 

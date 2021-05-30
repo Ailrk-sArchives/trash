@@ -1,15 +1,5 @@
 {-# LANGUAGE DeriveFunctor              #-} {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
--- The point of continuation is to alter the control flow of a program.
--- You can early return by call the continuation in the middle of the program.
--- You also can use continuation to handle exceptions and failures by passing
--- a continuation for success case, and another for failure case.
---
--- Parsec interally use continuation heavily. ParsecT has 4 callbacks, each
--- one will be invoked at certain circustance.
---
--- With continuation, you have the next computation at hand, and you can
--- make the decision where to continue the computation.
 module PL.Continuation where
 
 
@@ -30,17 +20,15 @@ id' a = a
 idCPS :: a -> (a -> r) -> r
 idCPS a cont = cont a
 
--- the big idea is instead of return a value,
--- pass the continuation of the execution as a parameter
--- of the function, and feed the result as an argument of the
--- continuation.
+-- instead of return a value, pass the vlaue as an argument to the
+-- continuation of the execution.
 
 -- consider ($) :: (a -> b) -> a -> b
 -- ($ 2) makes it as if we are appling a value to a function.
 demo1 = map ($ 2) [(2 *), (3 *), (4 +)]
 
 {-@ suspend computation @-}
--- look at  this type
+
 -- f :: (a -> r) -> r
 -- f is a suspend computation.
 -- to complete it, we need to pass a
@@ -153,6 +141,7 @@ class Monad m => MonadCont' m where
 
 instance MonadCont' (Cont' r) where
   callCC' f = Cont' $ \k -> runCont' (f (\a -> Cont' $ \_ -> k a)) k
+
 -- how is continuation be used?
 fun :: Int -> String
 fun n = (`runCont` id) $ do

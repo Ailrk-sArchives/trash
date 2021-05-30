@@ -17,11 +17,14 @@ import           GHC.Generics
     some level of type erasure.
     You know there is a type, but you don't know what it eactly is.
 
-    first of all we have universal type ∀.
+    T
+
+    first we have universal type ∀.
+
     ∀x.t means for all type x we have t. Here we don't have any assumption
     of x, so this type should work for every x.
 
-    existential type is the opposite of universal type. We say
+    existential type is the dual of universal type. We say
     ∃x.t, meaning exists a type x such that y.
 
     existential quantifier type can be encoded with universal quantifier:

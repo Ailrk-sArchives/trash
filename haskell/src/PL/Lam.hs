@@ -22,7 +22,7 @@ module PL.Lam where
       e₀ = λx.x           -- this is a combinator
       e₁ = λx.x(λy.ay)y   -- this is not a combinator
 
-    Variables that appears multiple times are ound by the inner most binder.
+    Variables that appears multiple times are bounded by the inner most binder.
       λxy.(λxz.x+y)   -- inner x has nothing to do with outer x.
 @-}
 

@@ -21,9 +21,21 @@ import           Control.Monad.Writer
 import           Data.Char                      as Char
 import           Data.List
 
--- helper name
+-- helper name. This is how it's defined in mtl.
+-- How to catch an exception?
+-- catch an exception means takes a monad that may throws an exception, and a
+-- function that can turn an exception back into a ok value.
+-- return the same (m a) if no error, other return the return value of (e -> m a)
 type Catch e m a = m a -> (e -> m a) -> m a
 
+-- what is an exception? exception is something that either be an intended value or
+-- an exceptional value.
+--
+-- what is an exceptT? ExceptT is some monadic computation that return eitehr a intended
+-- value or an exceptional value.
+--
+-- what is an exceptional value? It's a value that is not expected in a successful execution path.
+-- we can use it to throw useful information of how the exception happened.
 newtype ExceptT e (m :: * -> *) a = ExceptT {runExceptT :: m (Either e a)}
 
 instance Monad m => Functor (ExceptT e m) where
@@ -41,17 +53,32 @@ instance Monad m => Monad (ExceptT e m) where
       Left e  -> (return . Left) e
       Right a -> runExceptT (k a)
 
+-- what is a monad transformer instance for ExceptT e ?
+-- Monad transformer instance for  ExceptT e is a monad that supports lift.
+--
+-- what is lift?
+-- lift is a funtion that lift a monadic computation to ExceptT so it can be
+-- performed at the same level.
+--
+-- what does it mean to perform monadic computation at the same level?
+-- it means propagate the value of the result of the underlying computation.
+-- In this case, the underlying monad will produce a value, to bring it up to
+-- ExceptT means wrap it in ExceptT . Right.
+--
 -- lift a monad by one layer into ExceptT
 instance MonadTrans (ExceptT e) where
   lift = ExceptT . fmap Right
 
--- if it's IO, liftIO is id.
--- otherwise keep lifting the IO type until hit IO (base case).
--- this is a recursion in a global scope.
+-- monad transfromer is explained in Eh.hs
 instance MonadIO m => MonadIO (ExceptT e m) where
   liftIO = lift . liftIO
 
 -- with these ingradients we can simulate try catch.
+-- By defualt, lift propagate Right.
+-- But what if we want to propagate an error?
+--
+-- We need another function to do that. This function is essentially the same as lift, just
+-- return a Left value instead of Right.
 throwE :: Monad m => e -> ExceptT e m a
 throwE = ExceptT . return . Left -- return but for Left value.
 
@@ -62,15 +89,11 @@ m `catchE` h = ExceptT $ do
     Left e  -> runExceptT (h e)
     Right r -> return (Right r)
 
--- generalize the idea of throwing and catching exceptions.
--- we make it a mtl style type class.
-
 class Monad m => MonadError e m | m -> e where
   throwError :: e -> m a
   catchError :: m a -> (e -> m a) -> m a
 
 -- use mtl to generalize some existed error handling monads
-
 instance MonadError IOException IO where
   throwError = ioError
   catchError = catch
@@ -87,8 +110,11 @@ instance Monad m => MonadError e (ExceptT e m) where
 liftEither :: MonadError e m => Either e a -> m a
 liftEither = either throwError return
 
--- not to make MonadError work with other monad transformer,
--- we need to make an instance for that transformer as well...
+-- To make MonadError work with another monad transformer,
+-- we need to make an instance for that transformer as well.
+--
+-- To make MonadError work with 2 other monads transformer,
+-- we need to make 2 instances for those transformers .
 -- this is the n square instance problem.
 
 liftCatchReaderT :: Catch e m a -> Catch e (ReaderT r m) a
@@ -101,9 +127,9 @@ instance MonadError e m => MonadError e (ReaderT r m) where
   catchError = undefined
 
 -- examples
--- Once you look at the type, you realize several things:
+-- look at the type, you see:
 -- 1. this function is possible to fail.
--- 2. you can use throwError to Indicate a faildure
+-- 2. you can use throwError to Indicate a failure
 -- 3. The caller can call catchError with a handler to handle
 --    the faliure case.
 
@@ -145,9 +171,7 @@ catchMe2 n f =
 
 -- testing ExceptT
 try4 = runExceptT $ catchMe2 10 throwMe2
-
 try5 = runExceptT $ catchMe2 (-1) throwMe2
-
 try6 = runExceptT $ catchMe2 111 throwMe2
 
 -- some bigger example to combine multiple mondas together.
@@ -192,22 +216,3 @@ validateBandedWords input
   where
     input' = words input
     banned = ["peepee", "poopoo", "woowoo"]
-
--- ok now try our combination
-
--- newtype NameValidator a = NameValidator
---   { runNameValidator :: ExceptT NameError (ReaderT UserInput IO) a
---   }
---   deriving newtype
---     ( Functor,
---       Applicative,
---       Monad,
---       MonadIO,
---       MonadError NameError,
---       MonadReader UserInput
---     )
-
--- validateName :: String -> NameValidator String
--- validateName name = do
---   input <- ask
---   return "asd"

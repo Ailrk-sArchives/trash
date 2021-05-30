@@ -1,8 +1,11 @@
 module GHCs.Laziness where
 
--- haskell is not really lazyness, it's non strict.
--- you can't memoize the result of all function calls simply
--- because that takes too much space.
+-- haskell is not really lazy, it's non-strict.
+--
+-- Lazy: call by need, memoize everything.
+-- Non-struct: call by name, don't need to memoize everything.
+--
+-- But this definition is a bit nit picky.
 
 itsok = fst (1, undefined)
 bomb = snd (1, undefined)   -- you can load this.
@@ -29,7 +32,7 @@ mightBoom = \f -> f fst snd (1, undefined)
 hypo :: IO ()
 hypo = do
   let x :: Integer
-      x = undefined     -- when it's lazily evalute this function might be fine.
+      x = undefined     -- when it's lazily evalute this function is fine.
   s <- getLine
   case x `seq` s of     -- force to evaluate the bottom here.
     "hi" -> print x
@@ -69,11 +72,11 @@ discriminatory2 b =
         True -> 1
 
 
--- 1. A thunk can have a bottom in them.
+-- 1. A thunk can have a bottom within.
 
 -- call by name call by need
--- call by name is strict and call by need is full lazyness.
--- you have memoizatio for call by need.
+-- call by name is non-strict and call by need is full lazyness.
+-- meaning you have full memoization for call by need.
 
 {-@ try :sprint [1,2,3], this will print the fully evalutated list.
     this is because GHC will optimize the case when everything is just

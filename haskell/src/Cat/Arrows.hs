@@ -7,8 +7,8 @@
 {-# OPTIONS_GHC -Wno-inline-rule-shadowing #-}
 module Cat.Arrows where
 
-{-@ Arrow, new abstracation!
-    Arrow represents compositin and data flow.
+{-@ Arrow, new abstracation
+    Arrow represents composition and data flow.
 
    --|f|-->
 @-}

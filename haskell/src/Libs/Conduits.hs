@@ -19,6 +19,9 @@ import           Data.Functor.Identity
 
 import qualified Data.ByteString          as B
 
+-- there are similar libraryies for handling effectful streams.
+-- pipe and streaming are two famous ones.
+
 {-@ Why using conduit if we already have lazyness?
 
     - Laziness doesn't allow you to perform IO inbetween each chunks.

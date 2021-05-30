@@ -30,7 +30,7 @@ _ `shaves` _ = False
 _ = 0 `shaves` 0
 
 {-@ bottom type _|_ @-}
--- as we just saw, although function shaves should return a Bool, and it is indeed well typed,
+-- Although `shaves` should return a Bool, and it is indeed well typed,
 -- for input 0 0 it will never halt and we can never get the bool it promise.
 -- As long as there is way to create self reference struture, every function that promise to
 -- return something has the chance to fail that claim.
