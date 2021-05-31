@@ -102,7 +102,7 @@ library
       Libs.Misc
       Libs.LensPractice
       Libs.Concurrent
-
+      Libs.TraversableFoldable
       Libs.TH.TemplateH
       Libs.TH.QQHtml
       Libs.TH.QQHtmlRunner

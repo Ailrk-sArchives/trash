@@ -12,8 +12,8 @@
 #include <string>
 #include <thread>
 #include <unordered_map>
-#include <vector>
 #include <variant>
+#include <vector>
 
 class Complex {
   double re, im;
@@ -486,14 +486,14 @@ template <typename T> auto mswap(T &a, T &b) {
 }
 
 template <typename T, typename... Args>
-auto mkunique(Args &&... args) -> std::unique_ptr<T> {
+auto mkunique(Args &&...args) -> std::unique_ptr<T> {
   return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
 auto arrayf() {
   std::array<int, 4> arr = {1, 2, 3, 4};
   // c interface
-  auto to_vec = [&arr](int* p, int sz) -> std::vector<int> {
+  auto to_vec = [&arr](int *p, int sz) -> std::vector<int> {
     std::vector<int> v;
     std::copy(arr.begin(), arr.end(), std::back_inserter(v));
     return v;
@@ -502,26 +502,23 @@ auto arrayf() {
 }
 
 auto bsetf() -> std::array<std::bitset<10>, 5> {
-  std::bitset<10> bs {"11100011"};
+  std::bitset<10> bs{"11100011"};
   std::bitset<10> bs1 = ~bs;
   std::bitset<10> bs2 = bs & bs1;
   std::bitset<10> bs3 = bs << 2;
   std::bitset<10> bs4 = bs | bs2;
 
-  return std::array {bs, bs1, bs2, bs3, bs4};
+  return std::array{bs, bs1, bs2, bs3, bs4};
 }
 
 auto ptuple() -> std::string {
-  std::tuple<std::string, int, double> t1 {"Shark", 12, 2.14};
+  std::tuple<std::string, int, double> t1{"Shark", 12, 2.14};
   auto t2 = std::make_tuple(std::string{"good"}, 3, 1.2);
-  std::tuple t3 {"Cod", 20, 9.9};
+  std::tuple t3{"Cod", 20, 9.9};
   std::string s = std::get<0>(t1);
   return s;
 }
 
 } // namespace Utilities
 
-
-namespace Concurrency {
-
-}
+namespace Concurrency {}
