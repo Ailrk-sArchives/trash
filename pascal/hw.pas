@@ -1,6 +1,7 @@
 program HelloWorld;
 uses crt, SysUtils;
 
+// this does not exist in algol60.
 type
   Book = record
     title: string;

@@ -16,6 +16,7 @@ main =  getCurrentDirectory >>= getDirectoryContents >>= \xs -> do
         ".exrc" -> mempty
         other -> case dropWhile (/= '.') other of
                    ".alg" -> mempty
+                   ".md" -> mempty
                    _ -> return x
 
   for_ xs' (\x -> removeFile x)

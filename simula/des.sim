@@ -1,0 +1,56 @@
+Simulation Begin
+
+  ! simulation with simula ;
+  ! discrete event simulations, built on oop and coroutine;
+
+   Class FittingRoom; Begin
+      Ref (Head) door;  ! essentially a queue;
+      Boolean inUse;
+
+      ! enqueue to wait ;
+      Procedure request; Begin
+         If inUse Then Begin
+             Wait (door);
+             door.First.Out; ! remove the first one;
+         End;
+         inUse:= True;
+      End;
+
+    ! dequeue when leave ;
+     Procedure leave; Begin
+         inUse:= False;
+         Activate door.First;
+      End;
+
+      ! initalize the door;
+      door:- New Head;
+   End;
+
+   Procedure report (message); Text message; Begin
+      OutFix (Time, 2, 0); OutText (": " & message); OutImage;
+   End;
+
+   ! Person :> Process ;
+   Process Class Person (pname); Text pname; Begin
+      While True Do Begin
+         Hold (Normal (12, 4, u));
+         report  (pname & " is requesting the fitting room");
+         fittingroom1.request;
+         report (pname & " has entered the fitting room");
+         Hold (Normal (3, 1, u));
+         fittingroom1.leave;
+         report (pname & " has left the fitting room");
+      End;
+   End;
+
+   Integer u;
+   Ref (FittingRoom) fittingRoom1;
+
+   fittingRoom1:- New FittingRoom;
+   Activate New Person ("Sam");
+   Activate New Person ("Sally");
+   Activate New Person ("Andy");
+
+   ! holds 100 minutes before the program terminates;
+   Hold (100);
+End;

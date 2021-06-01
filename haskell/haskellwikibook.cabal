@@ -108,6 +108,7 @@ library
       Libs.TH.QQHtmlRunner
 
       MiniProject.EchoServer
+      MiniProject.Haskell99
       MiniProject.LensPong
       MiniProject.Lens2048
       MiniProject.TicTacToe

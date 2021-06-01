@@ -1,3 +1,4 @@
+{-# LANGUAGE ConstrainedClassMethods   #-}
 {-# LANGUAGE DataKinds                 #-}
 {-# LANGUAGE DeriveDataTypeable        #-}
 {-# LANGUAGE ExistentialQuantification #-}
@@ -165,7 +166,6 @@ dapplied = do
   f1 <- dynApply (toDyn addIntWrappter) (toDyn (IntWrapper 1))
   r <- dynApply f1 (toDyn (IntWrapper 2))
   fromDynamic r
-
 
 {-@ Conclusion
     1. Typeable is what gives you runtime type information check.

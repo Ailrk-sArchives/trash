@@ -8,6 +8,5 @@ begin
     do B ->
       {P ∧ B} S {P}
     end {P ∧ B}
-
   end;
 end

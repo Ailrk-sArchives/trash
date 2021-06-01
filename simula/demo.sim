@@ -1,0 +1,50 @@
+begin
+  class Glyph;
+    virtual: procedure print Is procedure print;;
+  begin
+  end;
+
+  Glyph class Char (c);
+    character c;
+  begin
+    Procedure print;
+      OutChar(c);
+  end;
+
+  Glyph class Line (elements);
+    ref (glyph) array elements;
+  begin
+    procedure print;
+    begin
+      integer i;
+      for i:= 1 step 1 until UpperBound (elements, 1) do
+        elements (i).print;
+      OutImage;
+    end;
+  end;
+
+  ! define call by name function;
+  ! default eval strategy is call by value instead of call by name;
+  ! this is different from Algol60;
+  real procedure signma (k, m, n, u);
+    name k, u;  ! call by name, get a thunk;
+    integer k, m, n; real u;
+  begin
+    real s;
+    k := m;
+    while k <= n do begin s := s + u; k := k + 1; end;
+    sigma := s;
+  end;
+
+  ref (Glyph) rg;
+  ref (Glyph) array rgs (1 : 4);
+
+  begin
+    rgs (1):- new Char ('A');
+    rgs (2):- new Char ('A');
+    rgs (3):- new Char ('A');
+    rgs (4):- new Char ('A');
+    rg:- new Line (rgs);
+    rg.print;
+  end;
+end;

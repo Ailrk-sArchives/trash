@@ -17,8 +17,4 @@ begin
             i := p; k := q
           end
   end Absmax;
-
-  begin
-  end;
-
 end

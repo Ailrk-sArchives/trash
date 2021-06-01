@@ -1,6 +1,8 @@
 begin
   comment begin
     Algol 60:
+      first committee designed langauge to be machine independent
+      high level langauge.
       1. evaluation strategies: call by value, call by name.
   end;
 
@@ -64,6 +66,7 @@ begin
     outinteger(1, i);
   end;
 
+
   begin
     outstring(1, "\n====\n");
     i := 100;
@@ -73,5 +76,4 @@ begin
   end;
 
   outstring(1, "\n");
-
 end

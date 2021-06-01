@@ -162,15 +162,10 @@ f30 = cycle [1, 2, 3]
 -- span separat the list from the frist element that the predicate
 -- is false.
 f31 = span (< 3) xs
-
 f32 = splitAt 3 xs
-
 f33 = zip xs xs
-
 f34 = zip3 xs xs xs
-
 f35 = zipWith (+) xs xs
-
 f36 = unzip (zip xs xs)
 
 
@@ -178,11 +173,8 @@ f36 = unzip (zip xs xs)
 
 -- ok we do have range.
 f37 = range (1, 10)
-
 f38 = index (1, 10) 3
-
 f39 = inRange (1, 10) (zipWith3 (\a b c -> a + b + c) xs xs xs !! 0)
-
 f40 = rangeSize (0, length xs)
 
 -- We can derive Ix from a Enum, which is pretty nice.
