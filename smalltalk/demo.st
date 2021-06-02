@@ -1,7 +1,7 @@
-" Rules are simple.
-" 1. everything is an object
-" 2. functions are not called, messages are sent to objects
-" 3. three types of mesesages: unary, binary, keyword.
+" Rules are simple. "
+" 1. everything is an object "
+" 2. functions are not called, messages are sent to objects "
+" 3. three types of mesesages: unary, binary, keyword. "
 
 "basics"
 
