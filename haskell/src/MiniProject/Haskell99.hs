@@ -170,11 +170,19 @@ isPalindrome' :: Eq a => [a] -> Bool
 isPalindrome' = liftA2 (==) id reverse
 
 
-
-
-
-
 -- 7.   ----------------------------------------
+--  (**) Flatten a nested list structure.
+-- Transform a list, possibly holding lists as elements into
+-- a `flat' list by replacing each list with its elements (recursively).
+
+data NestedList a = E a | L [NestedList a]
+
+flattern :: NestedList a
+flattern = undefined
+-- flattern (L (xs@(L _):xss)) = L (flattern xs:)
+
+
+--
 -- 8.   ----------------------------------------
 -- 9.   ----------------------------------------
 -- 10.  ----------------------------------------
