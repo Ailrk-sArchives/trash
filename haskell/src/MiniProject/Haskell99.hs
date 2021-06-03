@@ -347,68 +347,310 @@ encode'' = fmap ((,) <$> length <*> head) . group
 @-}
 
 -- 21.  ----------------------------------------
+-- Insert an element at a given position into a list.
+
+
 
 -- 22.  ----------------------------------------
+-- Create a list containing all integers within a given range.
+
+
 
 -- 23.  ----------------------------------------
+-- Extract a given number of randomly selected elements from a list.
+
+
 
 -- 24.  ----------------------------------------
+-- Lotto: Draw N different random numbers from the set 1..M.
+
+
 
 -- 25.  ----------------------------------------
+-- Generate a random permutation of the elements of a list.
+
+
 
 -- 26.  ----------------------------------------
+-- (**) Generate the combinations of K distinct objects chosen from the N elements of a list
+
+
 
 -- 27.  ----------------------------------------
+-- Group the elements of a set into disjoint subsets.
+
+
 
 -- 28.  ----------------------------------------
+-- Sorting a list of lists according to length of sublists
+
+
 
 {-@ Question 31 to 40 Arihtmeic
 @-}
-
--- 29.  ----------------------------------------
-
--- 30.  ----------------------------------------
-
 -- 31.  ----------------------------------------
+-- (**) Determine whether a given integer number is prime.
+
+
 
 -- 32.  ----------------------------------------
+-- (**) Determine the greatest common divisor of two positive integer numbers. Use Euclid's algorithm.
+
 
 -- 33.  ----------------------------------------
+-- (*) Determine whether two positive integer numbers are coprime. Two numbers are coprime if their greatest common divisor equals 1.
+
+
 
 -- 34.  ----------------------------------------
+-- (**) Calculate Euler's totient function phi(m).
+
+
 
 -- 35.  ----------------------------------------
+-- (**) Determine the prime factors of a given positive integer. Construct a flat list containing the prime factors in ascending order.
+
+
 
 -- 36.  ----------------------------------------
+-- (**) Determine the prime factors of a given positive integer.
+
+
 
 -- 37.  ----------------------------------------
+-- (**) Calculate Euler's totient function phi(m) (improved).
+
+
 
 -- 38.  ----------------------------------------
+-- (*) Compare the two methods of calculating Euler's totient function.
+
+
 
 -- 39.  ----------------------------------------
+-- (*) A list of prime numbers.
+
+
 
 -- 40.  ----------------------------------------
+-- (**) Goldbach's conjecture.
+
+
 
 -- 41.  ----------------------------------------
+-- (**) Given a range of integers by its lower and upper limit, print a list of all even numbers and their Goldbach composition.
 
 
-{-@ Question 41 to 50 logic and codes
+
+{-@ Question 46 to 50 logic and codes
 @-}
 
-{-@ Question 41 to 50 binary trees
+-- 46.  ----------------------------------------
+-- (**) Define predicates and/2, or/2, nand/2, nor/2, xor/2, impl/2 and equ/2
+-- (for logical equivalence) which succeed or fail according to the result of their
+-- respective operations; e.g. and(A,B) will succeed, if and only if both A and B succeed.
+
+-- 47.  ----------------------------------------
+-- (*) Truth tables for logical expressions (2).
+
+-- 48.  ----------------------------------------
+-- (**) Truth tables for logical expressions (3).
+
+-- 49.  ----------------------------------------
+-- (**) Gray codes.
+
+
+-- 49.  ----------------------------------------
+-- (***) Huffman codes.
+
+
+{-@ Question 54A to 60 binary trees
 @-}
 
-{-@ Question 41 to 50 binary trees continued
+data Tree a = Empty | Branch a (Tree a) (Tree a) deriving (Show, Eq)
+
+branch x l r = Branch x l r
+leaf x = Branch x Empty Empty
+
+-- 54A.  ---------------------------------------
+-- Check whether a given term represents a binary tree
+
+-- 55.  ----------------------------------------
+-- Construct completely balanced binary trees
+
+-- 56.  ----------------------------------------
+-- Symmetric binary trees
+
+-- 57.  ----------------------------------------
+-- Binary search trees (dictionaries)
+
+-- 58.  ----------------------------------------
+-- Generate-and-test paradigm
+
+-- 59.  ----------------------------------------
+-- Construct height-balanced binary trees
+
+
+-- 60.  ----------------------------------------
+-- Construct height-balanced binary trees with a given number of nodes
+
+
+{-@ Question 61 to 69 binary trees continued
 @-}
 
-{-@ Question 41 to 50 multiway trees
+-- 61.  ----------------------------------------
+-- Count the leaves of a binary tree
+
+
+-- 61A.  ---------------------------------------
+-- Collect the leaves of a binary tree in a list
+
+
+-- 62.  ----------------------------------------
+-- Collect the internal nodes of a binary tree in a list
+
+
+
+-- 62B. ----------------------------------------
+-- Collect the nodes at a given level in a list
+
+
+
+-- 63.  ----------------------------------------
+-- Construct a complete binary tree
+
+
+
+-- 64.  ----------------------------------------
+--  a layout algorithm for binary tree 1
+
+
+-- 65.  ----------------------------------------
+--  another layout algorithm for binary tree 1
+
+-- 66.  ----------------------------------------
+--  yet another layout algorithm for binary tree 1
+
+-- 67A. ----------------------------------------
+-- A string representation of binary trees
+
+
+-- 68.  ----------------------------------------
+-- Preorder and inorder sequences of binary trees.
+-- We consider binary trees with nodes that are identified by single lower-case letters,
+-- as in the example of problem P67.
+
+
+-- 69.  ----------------------------------------
+-- Dotstring representation of binary trees.
+
+
+
+{-@ Question 70B to 73 multiway trees
+@-}
+data MTree a = Node a [MTree a] deriving (Eq, Show)
+
+
+-- 70B. ----------------------------------------
+-- (*) Check whether a given term represents a multiway tree.
+
+-- 70C. ----------------------------------------
+-- (**) Tree construction from a node string.
+
+-- 71.  ----------------------------------------
+-- (*) Determine the internal path length of a tree.
+
+-- 72.  ----------------------------------------
+-- (*) Construct the bottom-up order sequence of the tree nodes.
+
+-- 73.  ----------------------------------------
+-- (**) Lisp-like tree representation.
+
+
+{-@ Question 80 to 89 graphs
 @-}
 
-{-@ Question 41 to 50 graphs
+-- 80.   ----------------------------------------
+-- (***) Conversions
+
+-- 81.   ----------------------------------------
+-- (**) Path from one node to another one
+
+
+-- 82.   ----------------------------------------
+-- (*) Cycle from a given node
+
+
+-- 83.   ----------------------------------------
+-- (**) Construct all spanning trees
+
+
+-- 84.   ----------------------------------------
+-- (**) Construct the minimal spanning tree
+
+
+
+-- 85.   ----------------------------------------
+-- (**) Graph isomorphism
+
+
+-- 86.   ----------------------------------------
+-- (**) Node degree and graph coloration
+
+
+-- 87.   ----------------------------------------
+-- (**) Depth-first order graph traversal (alternative solution)
+
+
+-- 88.   ----------------------------------------
+-- (**) Connected components (alternative solution)
+
+
+-- 89.   ----------------------------------------
+-- (**) Bipartite graphs
+
+
+
+{-@ Question 90 to 94 Miscellaneous problems
+@-}
+-- 90.   ----------------------------------------
+-- (**) Eight queens problem
+
+
+-- 91.   ----------------------------------------
+-- (**) Knight's tour
+
+
+-- 92.   ----------------------------------------
+-- (***) Von Koch's conjecture
+
+-- 93.   ----------------------------------------
+-- (***) An arithmetic puzzle
+
+
+-- 94.   ----------------------------------------
+-- (***) Generate K-regular simple graphs with N nodes
+
+
+{-@ Question 85 to 99 Miscellaneous continued
 @-}
 
-{-@ Question 41 to 50 Miscellaneous problems
-@-}
 
-{-@ Question 41 to 50 Miscellaneous continued
-@-}
+-- 95.   ----------------------------------------
+-- (**) English number words
+
+
+-- 96.   ----------------------------------------
+-- (**) Syntax checker
+
+
+-- 97.   ----------------------------------------
+-- (**) Sudoku
+
+-- 98.   ----------------------------------------
+-- (***) Nonograms
+
+
+-- 99.   ----------------------------------------
+-- (***) Crossword puzzle
+
