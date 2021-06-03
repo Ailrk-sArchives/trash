@@ -240,22 +240,157 @@ compress'' = map head . group
 
 
 -- 9.   ----------------------------------------
+-- (**) Pack consecutive duplicates of list elements into sublists.
+-- If a list contains repeated elements they should be placed in separate sublists.
+
+-- >>> pack ['a', 'a', 'a', 'a', 'b', 'c', 'c', 'a', 'a', 'd', 'e', 'e', 'e', 'e']
+-- ["aaaa","b","cc","aa","d","eeee"]
+
+pack :: Eq a => [a] -> [[a]]
+pack = foldr op []
+  where
+    op a [] = [[a]]
+    op a (b:bs)
+      | a == head b = (a : b) : bs
+      | otherwise = [a] : (b:bs)
+
+-- span separate a list into two, the first half stop at the first element satisfies
+-- predicate.
 --
+-- A typical use case is to recursively separate a list until empty.
+--
+-- >>> pack' ['a', 'a', 'a', 'a', 'b', 'c', 'c', 'a', 'a', 'd', 'e', 'e', 'e', 'e']
+-- ["aaaa","b","cc","aa","d","eeee"]
+pack' :: Eq a => [a] -> [[a]]
+pack' (x:xs) = let (first, rest) = span (==x) xs
+                in (x:first) : pack rest
+pack' [] = []
+
 
 -- 10.  ----------------------------------------
---
+-- (*) Run-length encoding of a list. Use the result of problem P09 to implement the
+-- so-called run-length encoding data compression method. Consecutive duplicates of
+-- elements are encoded as lists (N E) where N is the number of duplicates of the element E.
 
+-- >>> encode "aaaabccaadeeee"
+-- [(4,'a'),(1,'b'),(2,'c'),(2,'a'),(1,'d'),(4,'e')]
+--
+encode :: Eq a => [a] -> [(Int, a)]
+encode = foldr op []
+  where
+    op a [] = [(1, a)]
+    op a xs@((i, b):bs)
+      | a == b = (i + 1, b) : bs
+      | otherwise = (1, a) : xs
+
+
+-- >>> encode' "aaaabccaadeeee"
+-- [(4,'a'),(1,'b'),(2,'c'),(2,'a'),(1,'d'),(4,'e')]
+encode' :: Eq a => [a] -> [(Int, a)]
+encode' = fmap (\a -> (length a, head a)) . group
+
+-- use applicative to partially apply
+-- >>> encode'' "aaaabccaadeeee"
+-- [(4,'a'),(1,'b'),(2,'c'),(2,'a'),(1,'d'),(4,'e')]
+--
+encode'' :: Eq a => [a] -> [(Int, a)]
+encode'' = fmap ((,) <$> length <*> head) . group
 
 
 {-@ Question 11 to 20 Lists, continued
 @-}
 
+-- 11.  ----------------------------------------
+-- (*) Modified run-length encoding.
 
-{-@ Question 21 to 30 List again
+-- 12.  ----------------------------------------
+-- (**) Decode a run-length encoded list.
+
+
+-- 13.  ----------------------------------------
+-- (**) Run-length encoding of a list (direct solution).
+
+
+-- 14.  ----------------------------------------
+-- (*) Duplicate the elements of a list.
+
+
+-- 15.  ----------------------------------------
+-- (**) Replicate the elements of a list a given number of times.
+
+
+-- 16.  ----------------------------------------
+-- (**) Drop every N'th element from a list.
+
+
+
+-- 17.  ----------------------------------------
+-- (*) Split a list into two parts; the length of the first part is given.
+
+
+
+-- 18.  ----------------------------------------
+-- (**) Extract a slice from a list.
+
+
+-- 19.  ----------------------------------------
+-- (**) Rotate a list N places to the left.
+
+
+
+-- 20.  ----------------------------------------
+-- (*) Remove the K'th element from a list.
+
+
+
+{-@ Question 21 to 28 List again
 @-}
+
+-- 21.  ----------------------------------------
+
+-- 22.  ----------------------------------------
+
+-- 23.  ----------------------------------------
+
+-- 24.  ----------------------------------------
+
+-- 25.  ----------------------------------------
+
+-- 26.  ----------------------------------------
+
+-- 27.  ----------------------------------------
+
+-- 28.  ----------------------------------------
 
 {-@ Question 31 to 40 Arihtmeic
 @-}
+
+-- 29.  ----------------------------------------
+
+-- 30.  ----------------------------------------
+
+-- 31.  ----------------------------------------
+
+-- 32.  ----------------------------------------
+
+-- 33.  ----------------------------------------
+
+-- 34.  ----------------------------------------
+
+-- 35.  ----------------------------------------
+
+-- 36.  ----------------------------------------
+
+-- 37.  ----------------------------------------
+
+-- 38.  ----------------------------------------
+
+-- 39.  ----------------------------------------
+
+-- 40.  ----------------------------------------
+
+-- 41.  ----------------------------------------
+
 
 {-@ Question 41 to 50 logic and codes
 @-}
