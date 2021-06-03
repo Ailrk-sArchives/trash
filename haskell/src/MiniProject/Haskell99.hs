@@ -14,10 +14,12 @@ import           Control.Monad
 import           Test.Hspec
 import           Test.QuickCheck     ()
 
+
 {-@ Question 1 to 10 List
 @-}
 
 -- 1.   ----------------------------------------
+-- ---------------------------------------------
 -- (*) Find the last element of a list.
 -- (Note that the Lisp transcription of this problem is incorrect.)
 
@@ -44,6 +46,7 @@ last_''' :: [a] -> a
 last_''' = foldr1 (curry snd)
 
 -- 2.   ----------------------------------------
+-- ---------------------------------------------
 -- (*) Find the last but one element of a list.
 
 -- >>> butLast_ [1..10]
@@ -68,6 +71,7 @@ butLast_'' = head . tail . reverse
 
 
 -- 3.   ----------------------------------------
+-- ---------------------------------------------
 -- (*) Find the K'th element of a list. The first element in the list is number 1.
 
 -- >>> elementAt_ [1..10] 2
@@ -97,6 +101,7 @@ elementAt_'' xs n
 
 
 -- 4.   ----------------------------------------
+-- ---------------------------------------------
 -- (*) Find the number of elements of a list.
 
 -- >>> length_ [1..10]
@@ -117,6 +122,7 @@ length_'' = sum . (fmap $ const 1)
 
 
 -- 5.   ----------------------------------------
+-- ---------------------------------------------
 -- (*) Reverse a list.
 
 -- >>> reverse_ [1..10]
@@ -155,6 +161,7 @@ reverse_''' xs = runST $ do
 
 
 -- 6.   ----------------------------------------
+-- ---------------------------------------------
 -- (*) Find out whether a list is a palindrome. A palindrome can be read forward or backward;
 --     e.g. (x a m a x).
 
@@ -172,6 +179,7 @@ isPalindrome' = liftA2 (==) id reverse
 
 
 -- 7.   ----------------------------------------
+-- ---------------------------------------------
 --  (**) Flatten a nested list structure.
 -- Transform a list, possibly holding lists as elements into
 -- a `flat' list by replacing each list with its elements (recursively).
@@ -210,6 +218,7 @@ flattern''' (L xs) = xs >>= flattern'''
 
 
 -- 8.   ----------------------------------------
+-- ---------------------------------------------
 -- (**) Eliminate consecutive duplicates of list elements.
 
 -- >>> compress "aaaabccaadeeee"
@@ -240,6 +249,7 @@ compress'' = map head . group
 
 
 -- 9.   ----------------------------------------
+-- ---------------------------------------------
 -- (**) Pack consecutive duplicates of list elements into sublists.
 -- If a list contains repeated elements they should be placed in separate sublists.
 
@@ -257,7 +267,7 @@ pack = foldr op []
 -- span separate a list into two, the first half stop at the first element satisfies
 -- predicate.
 --
--- A typical use case is to recursively separate a list until empty.
+-- NOTE: A typical use case is to recursively separate a list until empty.
 --
 -- >>> pack' ['a', 'a', 'a', 'a', 'b', 'c', 'c', 'a', 'a', 'd', 'e', 'e', 'e', 'e']
 -- ["aaaa","b","cc","aa","d","eeee"]
@@ -268,6 +278,7 @@ pack' [] = []
 
 
 -- 10.  ----------------------------------------
+-- ---------------------------------------------
 -- (*) Run-length encoding of a list. Use the result of problem P09 to implement the
 -- so-called run-length encoding data compression method. Consecutive duplicates of
 -- elements are encoded as lists (N E) where N is the number of duplicates of the element E.
@@ -296,50 +307,161 @@ encode' = fmap (\a -> (length a, head a)) . group
 encode'' :: Eq a => [a] -> [(Int, a)]
 encode'' = fmap ((,) <$> length <*> head) . group
 
-
 {-@ Question 11 to 20 Lists, continued
 @-}
 
 -- 11.  ----------------------------------------
+-- ---------------------------------------------
 -- (*) Modified run-length encoding.
 
+
+-- >>> encodeModified "aaaabccaadeeee"
+-- [Multiple 4 'a',Single 'b',Multiple 2 'c',Multiple 2 'a',Single 'd',Multiple 4 'e']
+--
+data Dup a = Multiple Int a | Single a deriving (Show, Eq)
+
+encodeModified :: Eq a => [a] -> [Dup a]
+encodeModified = fmap f . group
+  where
+    f a
+      | length a == 1 =  Single . head $ a
+      | otherwise = Multiple (length a) (head a)
+
+-- >>> encodeModified' "aaaabccaadeeee"
+-- [Multiple 4 'a',Single 'b',Multiple 2 'c',Multiple 2 'a',Single 'd',Multiple 4 'e']
+encodeModified' :: Eq a => [a] -> [Dup a]
+encodeModified' = fmap f . encode
+  where
+    f (1, x) = Single x
+    f (n, x) = Multiple n x
+
+
 -- 12.  ----------------------------------------
+-- ---------------------------------------------
 -- (**) Decode a run-length encoded list.
+
+-- >>> decodeModified [Multiple 4 'a',Single 'b',Multiple 2 'c', Multiple 2 'a',Single 'd',Multiple 4 'e']
+-- "aaaabccaadeeee"
+decodeModified [] = []
+decodeModified (Single x:xs) = x:decodeModified xs
+decodeModified ((Multiple 2 x):xs) = x : decodeModified ((Single x):xs)
+decodeModified ((Multiple n x):xs) = x : decodeModified ((Multiple (n - 1) x):xs)
+
+-- >>> decodeModified' [Multiple 4 'a',Single 'b',Multiple 2 'c', Multiple 2 'a',Single 'd',Multiple 4 'e']
+-- "aaaabccaadeeee"
+decodeModified' :: [Dup a] -> [a]
+decodeModified' = concatMap f
+  where
+    f (Single x)     = [x]
+    f (Multiple n x) = replicate n x
 
 
 -- 13.  ----------------------------------------
+-- ---------------------------------------------
 -- (**) Run-length encoding of a list (direct solution).
+
+-- >>> encodeDirect "aaaabccaadeeee"
+-- [Multiple 4 'a',Single 'b',Multiple 2 'c',Multiple 2 'a',Single 'd',Multiple 4 'e']
+--
+encodeDirect :: Eq a => [a] -> [Dup a]
+encodeDirect = foldr op []
+  where
+    op a []                = [Single a]
+    op a xs@((Single b):bs)
+      | a == b = (Multiple 2 a) : bs
+      | otherwise = (Single a):xs
+    op a xs@((Multiple n b):bs)
+      | a == b = (Multiple (n + 1) a) : bs
+      | otherwise = (Single a):xs
 
 
 -- 14.  ----------------------------------------
+-- ---------------------------------------------
 -- (*) Duplicate the elements of a list.
+
+-- >>> dupli [1, 2, 3]
+-- [1,1,2,2,3,3]
+dupli :: [a] -> [a]
+dupli []     = []
+dupli (x:xs) = x:x:dupli xs
+
+-- >>> dupli' [1, 2, 3]
+-- [1,1,2,2,3,3]
+dupli' :: [a] -> [a]
+dupli' = foldr (\a b -> a:a:b) []
+
+-- >>> dupli'' [1, 2, 3]
+-- [1,1,2,2,3,3]
+dupli'' :: [a] -> [a]
+dupli'' = foldMap (\a -> [a, a])
+
+-- NOTE: monad for list is foldMap / concatMap
+-- >>> dupli''' [1, 2, 3]
+-- [1,1,2,2,3,3]
+dupli''' :: [a] -> [a]
+dupli''' xs = xs >>= \x -> [x, x]
+
+-- NOTE: apply applicative over functions is a very common technique
+--       Note <*> for function:
+--        f <*> g => \x -> (f x) (g x)
+--        ap f g x = ap (f x) (g x)
+--        both function f, g waiting for the same input x.
+--        the result of (g x) is used as paramter of (f x)
+--
+--          ((.) <$> (:) <*> (:))
+--       => ((.) . (:) <*> (:))
+--       => (\x -> (.) (x:)) <*> (:)
+--       => \y -> (\x -> (.) (x:)) y (y:)
+--       => \y -> ((.) (y:)) (y:)
+--       => \y -> (y:) (y:)
+--       => \y -> \z -> (y:) ((y:) z)
+--       => y z y:y:z
+--
+-- >>> dupli'''' [1, 2, 3]
+dupli'''' :: [a] -> [a]
+dupli'''' = foldr ((.) <$> (:) <*> (:)) []
 
 
 -- 15.  ----------------------------------------
+-- ---------------------------------------------
 -- (**) Replicate the elements of a list a given number of times.
+
+repli :: [a] -> Int -> [a]
+repli = undefined
 
 
 -- 16.  ----------------------------------------
 -- (**) Drop every N'th element from a list.
 
+dropEvery :: [a] -> Int -> [a]
+dropEvery = undefined
 
 
 -- 17.  ----------------------------------------
 -- (*) Split a list into two parts; the length of the first part is given.
 
+split :: [a] -> Int -> ([a], [a])
+split = undefined
 
 
 -- 18.  ----------------------------------------
 -- (**) Extract a slice from a list.
 
+slice :: [a] -> Int -> Int -> [a]
+slice = undefined
 
 -- 19.  ----------------------------------------
 -- (**) Rotate a list N places to the left.
 
+rotate :: [a] -> Int -> [a]
+rotate = undefined
 
 
 -- 20.  ----------------------------------------
 -- (*) Remove the K'th element from a list.
+
+removeAt :: [a] -> Int -> [a]
+removeAt = undefined
 
 
 
