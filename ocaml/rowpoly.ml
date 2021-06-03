@@ -1,3 +1,4 @@
+(* this is not row poly! beause it doesn't work! *)
 type name_home = {
   name: string;
   home: string

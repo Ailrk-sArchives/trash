@@ -1,6 +1,7 @@
 module MiniProject.Haskell99 where
 
 import           Data.Foldable
+import           Data.List
 import           Data.Traversable
 
 import           Control.Monad.ST
@@ -177,15 +178,74 @@ isPalindrome' = liftA2 (==) id reverse
 
 data NestedList a = E a | L [NestedList a]
 
-flattern :: NestedList a
-flattern = undefined
--- flattern (L (xs@(L _):xss)) = L (flattern xs:)
-
-
+-- >>> flattern (E 5)
+-- [5]
 --
+-- >>> flattern (L [E 1, L [E 2, L [E 3, E 4], E 5]])
+-- [1,2,3,4,5]
+--
+-- >>> flattern (L [])
+-- []
+flattern :: NestedList a -> [a]
+flattern (L [])        = []
+flattern (E x)         = [x]
+flattern (L (E x: xs)) = x : (mconcat . fmap flattern $ xs)
+
+
+-- concatMap map f to each elements and concat the result.
+flattern' :: NestedList a -> [a]
+flattern' (E x)  = [x]
+flattern' (L xs) = concatMap flattern' xs
+
+-- foldMap can be thought as the generalization of concatMap.
+flattern'' :: NestedList a -> [a]
+flattern'' (E x)  = [x]
+flattern'' (L xs) = foldMap flattern'' xs
+
+-- bind for list is just concatMap.
+flattern''' :: NestedList a -> [a]
+flattern''' (E x)  = return x
+flattern''' (L xs) = xs >>= flattern'''
+
+
+
 -- 8.   ----------------------------------------
+-- (**) Eliminate consecutive duplicates of list elements.
+
+-- >>> compress "aaaabccaadeeee"
+-- "abcade"
+--
+compress :: Eq a => [a] -> [a]
+compress = foldr op []
+  where
+    op a b
+      | b == [] = a : b
+      | otherwise = case b of
+                      x:xs -> if x == a then x:xs else a:x:xs
+
+
+-- >>> compress' "aaaabccaadeeee"
+-- "abcade"
+
+compress' :: Eq a => [a] -> [a]
+compress' []          = []
+compress' t@(x:xs) = let rest = (dropWhile (==x) t)
+                      in x:compress' rest
+
+-- >>> compress' "aaaabccaadeeee"
+-- "abcade"
+compress'' :: Eq a => [a] -> [a]
+compress'' = map head . group
+
+
+
 -- 9.   ----------------------------------------
+--
+
 -- 10.  ----------------------------------------
+--
+
+
 
 {-@ Question 11 to 20 Lists, continued
 @-}
