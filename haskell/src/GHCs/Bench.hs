@@ -5,6 +5,7 @@ import           Criterion.Main
 
 -- bench our own indexing operator
 
+
 #ifdef NAIVE_VERSION
 infixl 9 !?
 _ !? n | n < 0 = Nothing

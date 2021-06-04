@@ -55,6 +55,7 @@ import qualified Data.ByteString          as B
 
 {-@ simple example: @-}
 
+
 -- Explain:
 -- A conduit with no input data type. This implies it's the source of
 -- the entire conduit.

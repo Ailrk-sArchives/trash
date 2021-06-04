@@ -52,6 +52,7 @@ library
 
       Cat.AlternativeandMonadPlus
       Cat.Monads
+      Cat.Monads1
       Cat.CoMonads
       Cat.MonadTransformer
       Cat.ErrorHandling

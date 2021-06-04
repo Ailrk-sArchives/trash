@@ -13,6 +13,7 @@ module Cat.Arrows where
    --|f|-->
 @-}
 
+
 import           Data.Coerce        (coerce)
 import           Data.Type.Coercion
 import           Data.Type.Equality

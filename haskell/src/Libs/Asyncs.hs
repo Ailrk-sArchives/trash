@@ -158,6 +158,7 @@ counter =
         loop $! i + 1
    in loop 1
 
+
 -- inner never return eailer than counter
 -- nice!
 withCounter :: IO a -> IO a
