@@ -733,15 +733,23 @@ rndPermu' xs = do
 
 -- 26.  ----------------------------------------
 -- (**) Generate the combinations of K distinct objects chosen from the N elements of a list
+-- 1 2 3 4 5
+-- 1 2 3 / 1 2 4 / 1 2 5 / 1 3 4 / 1 3 5 / 1 4 5
+-- 2 3 4 / 2 3 5 / 2 4 5
+-- 3 4 5
 
 -- >>> combinations 3 ['a'..'f']
-combinations :: Int -> [a] -> [a]
-combinations n (x:xs) = undefined
+--
+combinations :: Show a => Int -> [a] -> [[a]]
+combinations 0 _ = []
+combinations n t@(x:xs)
+  | length t < n = trace "here" $ []
+  | otherwise = trace (show t ++ show " " ++ show n)
+              $ fmap (x:) (combinations (n - 1) xs) ++ (combinations n xs)
 
+  -- trace (show (x:xs))
+  --                     $ (fmap (x:) $ combinations (n - 1) xs) ++ (combinations n xs)
 
--- >>> combinations' 3 ['a'..'f']
-combinations' :: Int -> [a] -> [a]
-combinations' = undefined
 
 
 -- 27.  ----------------------------------------
