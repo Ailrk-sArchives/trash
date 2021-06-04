@@ -99,7 +99,6 @@ elementAt_'' xs n
   | otherwise = snd . head . dropWhile (\(idx, _) -> idx < n) $ (zip [1..] xs)
 
 
-
 -- 4.   ----------------------------------------
 -- ---------------------------------------------
 -- (*) Find the number of elements of a list.
@@ -426,36 +425,139 @@ dupli'''' = foldr ((.) <$> (:) <*> (:)) []
 -- ---------------------------------------------
 -- (**) Replicate the elements of a list a given number of times.
 
+-- >>> repli "abc" 3
+-- "aaaabbbbcccc"
 repli :: [a] -> Int -> [a]
-repli = undefined
+repli [] _ = []
+repli xs n = foldMap (go n) xs
+  where
+    go 0 x = [x]
+    go n x = x : go (n - 1) x
+
+-- feels like cheating
+-- >>> repli' "abc" 3
+-- "aaabbbccc"
+--
+repli' :: [a] -> Int -> [a]
+repli' xs n = foldMap (replicate n) xs
+
+-- >>> repli'' "abc" 3
+-- "aaabbbccc"
+repli'' :: [a] -> Int -> [a]
+repli'' xs n = xs >>= replicate n
+
+-- fold is really powerful..?!
+-- >>> repli''' "abc" 3
+-- "aaabbbbcccc"
+repli''' :: [a] -> Int -> [a]
+repli''' [] _     = []
+repli''' (x:xs) n = foldr (const (x:)) (repli xs n) [1..n]
 
 
 -- 16.  ----------------------------------------
 -- (**) Drop every N'th element from a list.
 
+-- >>> dropEvery ['a'..'z'] 3
+-- "abdeghjkmnpqstvwyz"
 dropEvery :: [a] -> Int -> [a]
-dropEvery = undefined
+dropEvery [] _ = []
+dropEvery xs n = take (n - 1) xs ++ dropEvery (drop n xs) n
 
 
 -- 17.  ----------------------------------------
 -- (*) Split a list into two parts; the length of the first part is given.
 
+-- >>> split [1..10] 3
+-- ([1,2,3],[4,5,6,7,8,9,10])
+--
 split :: [a] -> Int -> ([a], [a])
-split = undefined
+split xs = go ([], xs)
+  where
+    go :: ([a], [a]) -> Int -> ([a], [a])
+    go (acc, xs) 0   = (acc, xs)
+    go (acc, x:xs) n = go (acc ++ [x], xs) (n - 1)
+
+-- >>> split' [1..10] 3
+-- ([1,2,3],[1,2,3,4,5,6,7,8,9,10])
+split' :: [a] -> Int -> ([a], [a])
+split' xs n = let xs' = (zip xs [1..])
+                  lpred = (<=n) . snd
+                  rpred = (>n) . snd
+               in (,) <$> fmap fst . takeWhile lpred <*> fmap fst . dropWhile rpred $ xs'
+
+-- >>> split'' [1..10] 3
+-- ([1,2,3],[4,5,6,7,8,9,10])
+split'' :: [a] -> Int -> ([a], [a])
+split'' xs n = (take n xs, drop n xs)
 
 
 -- 18.  ----------------------------------------
 -- (**) Extract a slice from a list.
 
+-- the question asking for slice from 1, a bit weird.
+
+-- >>> slice ['a'..'z'] 3 7
+-- "cdefg"
+-- >>> slice ['a'..'z'] 0 7
+-- invalid range
+-- >>> slice ['a'..'z'] 1 7
+-- "abcdefg"
+-- >>> slice ['a'..'z'] 2 7
+-- "bcdefg"
+--
 slice :: [a] -> Int -> Int -> [a]
-slice = undefined
+slice [] _ _ = []
+slice xs l r
+  | l < 1 || r < 1 || r < l  = error "invalid range"
+  | r - l > length xs = error "range too large"
+  | otherwise = take (r-l+1)
+              . drop (l - 1)
+              $ xs
+
+-- >>> slice' ['a'..'z'] 3 7
+-- "cdefg"
+slice' :: [a] -> Int -> Int -> [a]
+slice' xs l r
+  | l < 1 || r < 1 || r < l  = error "invalid range"
+  | r - l > length xs = error "range too large"
+slice' xs l r = let (_, rest) =  splitAt (l - 1) xs
+                    (initial, _) = splitAt (r - l + 1) rest
+                 in initial
+
+-- >>> slice'' ['a'..'z'] 3 7
+-- "cdefg"
+-- >>> slice'' ['a'..'z'] 0 7
+-- invalid range
+-- >>> slice'' ['a'..'z'] 1 7
+-- "abcdefg"
+-- >>> slice'' ['a'..'z'] 2 7
+-- "bcdefg"
+slice'' :: [a] -> Int -> Int -> [a]
+slice'' xs l r
+  | l < 1 || r < 1 || r < l  = error "invalid range"
+  | r - l > length xs = error "range too large"
+slice'' xs l r = fmap (fst)
+               . filter ((\i -> i >= l && i <= r ) . snd)
+               $ (zip xs [1..])
+
 
 -- 19.  ----------------------------------------
 -- (**) Rotate a list N places to the left.
 
+-- >>> rotate ['a'..'g'] 3
+-- "defgabc"
+--
 rotate :: [a] -> Int -> [a]
-rotate = undefined
+rotate xs n = slice xs (n + 1) (length xs) ++ slice xs 1 n
 
+-- >>> rotate' ['a'..'g'] 3
+-- "defgabc"
+rotate' :: [a] -> Int -> [a]
+rotate' xs n = let (ls, rs) = splitAt n xs
+                in rs ++ ls
+
+rotate'' :: [a] -> Int -> [a]
+rotate'' xs n = undefined
 
 -- 20.  ----------------------------------------
 -- (*) Remove the K'th element from a list.
