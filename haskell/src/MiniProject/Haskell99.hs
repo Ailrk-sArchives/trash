@@ -10,6 +10,12 @@ import           Data.STRef
 import           Debug.Trace
 import           System.Random
 
+import           Data.Ord
+
+import           Data.Maybe
+
+import           Data.Function
+
 import           Control.Applicative
 import           Control.Monad
 
@@ -738,27 +744,89 @@ rndPermu' xs = do
 -- 2 3 4 / 2 3 5 / 2 4 5
 -- 3 4 5
 
--- >>> combinations 3 ['a'..'f']
+
+-- >>> combinations 3 [1..5]
+-- [[1,2,3],[1,2,4],[1,2,5],[1,3,4],[1,3,5],[1,4,5],[2,3,4],[2,3,5],[2,4,5],[3,4,5]]
 --
-combinations :: Show a => Int -> [a] -> [[a]]
-combinations 0 _ = []
+combinations :: Int -> [a] -> [[a]]
+combinations 1 xs = fmap (:[]) xs
 combinations n t@(x:xs)
-  | length t < n = trace "here" $ []
-  | otherwise = trace (show t ++ show " " ++ show n)
-              $ fmap (x:) (combinations (n - 1) xs) ++ (combinations n xs)
+  | length t < n = []
+  | otherwise = fmap (x:) (combinations (n - 1) xs) ++ (combinations n xs)
 
-  -- trace (show (x:xs))
-  --                     $ (fmap (x:) $ combinations (n - 1) xs) ++ (combinations n xs)
 
+-- >>> combinations' 3 [1..5]
+-- [[1,2,3],[1,2,4],[1,3,4],[2,3,4],[1,2,5],[1,3,5],[2,3,5],[1,4,5],[2,4,5],[3,4,5]]
+combinations' :: Int -> [a] -> [[a]]
+combinations' n xs = filter ((n==) . length) (subsequences xs)
+
+
+-- >>> combinations'' 3 [1..5]
+-- [[1,2,3],[1,2,4],[1,2,5],[1,3,4],[1,3,5],[1,4,5],[2,3,4],[2,3,5],[2,4,5],[3,4,5]]
+--
+combinations'' :: Int -> [a] -> [[a]]
+combinations'' _ [] = [[]]
+combinations'' 0 _ = [[]]
+combinations'' n (x:xs) = let begin = [x : rest | rest <- combinations'' (n - 1) xs]
+                              rest = if n <= length xs then combinations'' n xs else []
+                           in begin ++ rest
 
 
 -- 27.  ----------------------------------------
 -- Group the elements of a set into disjoint subsets.
 
+-- >>> group' [2,3,4] ["aldo","beat","carla","david"]
+-- [[["aldo","beat"],["aldo","carla"],["aldo","david"],["beat","carla"],["beat","david"],["carla","david"]],[["aldo","beat","carla"],["aldo","beat","david"],["aldo","carla","david"],["beat","carla","david"]],[["aldo","beat","carla","david"]]]
+group' :: [Int] -> [a] -> [[[a]]]
+group' ns xs =  fmap (flip combinations $ xs) ns
 
 
 -- 28.  ----------------------------------------
 -- Sorting a list of lists according to length of sublists
+
+-- Naive approach. if you're really out of idea, at least one thing you can
+-- do is to tag information as a tuple.
+-- Doing so the code will become messier, but it's easier to come up a solution this
+-- way. You can access more information.
+-- >>> lsort ["abc","de","fgh","de","ijkl","mn","o"]
+-- ["o","de","de","mn","abc","fgh","ijkl"]
+lsort :: [[a]] -> [[a]]
+lsort [] = []
+lsort xs = fmap snd . sortBy (compare `on` fst)  $ (zip (fmap length xs)  xs)
+
+-- >>> lsort' ["abc","de","fgh","de","ijkl","mn","o"]
+-- ["o","de","de","mn","abc","fgh","ijkl"]
+lsort' :: [[a]] -> [[a]]
+lsort' = sortBy (comparing length)
+
+
+-- >>> lsort'' ["abc","de","fgh","de","ijkl","mn","o"]
+-- ["o","de","de","mn","abc","fgh","ijkl"]
+--
+lsort'' :: [[a]] -> [[a]]
+lsort'' = sortBy (compare `on` length)
+
+
+-- this is really hard to debug tbh...
+-- again, keeping too much information makes the code more complicated than it
+-- should be.
+-- on takes (a -> a -> c) and a (a -> b), and convert the binop into (b -> b -> c)
+--
+-- >>> lfsort ["abc","de","fgh","de","ijkl","mn","o"]
+-- ["o","ijkl","abc","fgh","de","de","mn"]
+lfsort :: [[a]] -> [[a]]
+lfsort = fmap snd
+       . sortBy (compare `on` fst)
+       . mconcat
+       . fmap (\xs -> fmap (\ys -> (length xs,  snd ys)) xs)
+       . groupBy ((==) `on` fst)
+       . sortBy (compare `on` fst)
+       . fmap ((,) <$> length <*> id)
+
+
+-- >>> lfsort ["abc","de","fgh","de","ijkl","mn","o"]
+lfsort' :: [[a]] -> [[a]]
+lfsort' = mconcat . lsort' . groupBy ((==) `on` length) . lsort
 
 
 
@@ -767,55 +835,75 @@ combinations n t@(x:xs)
 -- 31.  ----------------------------------------
 -- (**) Determine whether a given integer number is prime.
 
+isPrime :: Integer -> Bool
+isPrime = undefined
 
 
 -- 32.  ----------------------------------------
 -- (**) Determine the greatest common divisor of two positive integer numbers. Use Euclid's algorithm.
 
+gcd' :: Integer -> Integer -> Integer
+gcd' = undefined
 
 -- 33.  ----------------------------------------
 -- (*) Determine whether two positive integer numbers are coprime. Two numbers are coprime if their greatest common divisor equals 1.
 
+coprime :: Integer -> Integer -> Bool
+coprime = undefined
 
 
 -- 34.  ----------------------------------------
 -- (**) Calculate Euler's totient function phi(m).
 
+phi :: Integer -> Integer
+phi = undefined
 
 
 -- 35.  ----------------------------------------
 -- (**) Determine the prime factors of a given positive integer. Construct a flat list containing the prime factors in ascending order.
 
+primeFactors :: Integer -> [Integer]
+primeFactors = undefined
 
 
 -- 36.  ----------------------------------------
 -- (**) Determine the prime factors of a given positive integer.
 
+primeFactorsMult :: Integer -> [Integer]
+primeFactorsMult = undefined
 
 
 -- 37.  ----------------------------------------
 -- (**) Calculate Euler's totient function phi(m) (improved).
 
+phiImproved :: Integer -> Integer
+phiImproved = undefined
 
 
 -- 38.  ----------------------------------------
 -- (*) Compare the two methods of calculating Euler's totient function.
 
-
+-- refl
 
 -- 39.  ----------------------------------------
 -- (*) A list of prime numbers.
 
+primeR :: Integer -> Integer -> [Integer]
+primeR = undefined
 
 
 -- 40.  ----------------------------------------
 -- (**) Goldbach's conjecture.
 
+godlbach :: Integer -> (Integer, Integer)
+godlbach = undefined
 
 
 -- 41.  ----------------------------------------
 -- (**) Given a range of integers by its lower and upper limit, print a list of all even numbers and their Goldbach composition.
 
+godlbachList :: Integer -> [(Integer, Integer)]
+godlbachList = undefined
 
 
 {-@ Question 46 to 50 logic and codes
@@ -826,14 +914,20 @@ combinations n t@(x:xs)
 -- (for logical equivalence) which succeed or fail according to the result of their
 -- respective operations; e.g. and(A,B) will succeed, if and only if both A and B succeed.
 
+
 -- 47.  ----------------------------------------
 -- (*) Truth tables for logical expressions (2).
+
+
 
 -- 48.  ----------------------------------------
 -- (**) Truth tables for logical expressions (3).
 
+
+
 -- 49.  ----------------------------------------
 -- (**) Gray codes.
+
 
 
 -- 49.  ----------------------------------------
@@ -851,20 +945,26 @@ leaf x = Branch x Empty Empty
 -- 54A.  ---------------------------------------
 -- Check whether a given term represents a binary tree
 
+
 -- 55.  ----------------------------------------
 -- Construct completely balanced binary trees
+
 
 -- 56.  ----------------------------------------
 -- Symmetric binary trees
 
+
 -- 57.  ----------------------------------------
 -- Binary search trees (dictionaries)
+
 
 -- 58.  ----------------------------------------
 -- Generate-and-test paradigm
 
+
 -- 59.  ----------------------------------------
 -- Construct height-balanced binary trees
+
 
 
 -- 60.  ----------------------------------------
@@ -878,8 +978,10 @@ leaf x = Branch x Empty Empty
 -- Count the leaves of a binary tree
 
 
+
 -- 61A.  ---------------------------------------
 -- Collect the leaves of a binary tree in a list
+
 
 
 -- 62.  ----------------------------------------
@@ -901,11 +1003,14 @@ leaf x = Branch x Empty Empty
 --  a layout algorithm for binary tree 1
 
 
+
 -- 65.  ----------------------------------------
 --  another layout algorithm for binary tree 1
 
+
 -- 66.  ----------------------------------------
 --  yet another layout algorithm for binary tree 1
+
 
 -- 67A. ----------------------------------------
 -- A string representation of binary trees
@@ -930,14 +1035,18 @@ data MTree a = Node a [MTree a] deriving (Eq, Show)
 -- 70B. ----------------------------------------
 -- (*) Check whether a given term represents a multiway tree.
 
+
 -- 70C. ----------------------------------------
 -- (**) Tree construction from a node string.
+
 
 -- 71.  ----------------------------------------
 -- (*) Determine the internal path length of a tree.
 
+
 -- 72.  ----------------------------------------
 -- (*) Construct the bottom-up order sequence of the tree nodes.
+
 
 -- 73.  ----------------------------------------
 -- (**) Lisp-like tree representation.
@@ -948,6 +1057,7 @@ data MTree a = Node a [MTree a] deriving (Eq, Show)
 
 -- 80.   ----------------------------------------
 -- (***) Conversions
+
 
 -- 81.   ----------------------------------------
 -- (**) Path from one node to another one
