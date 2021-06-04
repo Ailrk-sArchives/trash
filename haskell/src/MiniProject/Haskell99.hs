@@ -7,9 +7,12 @@ import           Data.Traversable
 import           Control.Monad.ST
 import           Data.STRef
 import           Debug.Trace
+import           System.Random
 
 import           Control.Applicative
 import           Control.Monad
+
+import           System.IO.Unsafe    (unsafePerformIO)
 
 import           Test.Hspec
 import           Test.QuickCheck     ()
@@ -507,12 +510,7 @@ split'' xs n = (take n xs, drop n xs)
 --
 slice :: [a] -> Int -> Int -> [a]
 slice [] _ _ = []
-slice xs l r
-  | l < 1 || r < 1 || r < l  = error "invalid range"
-  | r - l > length xs = error "range too large"
-  | otherwise = take (r-l+1)
-              . drop (l - 1)
-              $ xs
+slice xs l r = take (r-l+1) . drop (l - 1) $ xs
 
 -- >>> slice' ['a'..'z'] 3 7
 -- "cdefg"
@@ -556,15 +554,40 @@ rotate' :: [a] -> Int -> [a]
 rotate' xs n = let (ls, rs) = splitAt n xs
                 in rs ++ ls
 
+-- >>> rotate'' ['a'..'g'] 3
+-- "defgabc"
 rotate'' :: [a] -> Int -> [a]
-rotate'' xs n = undefined
+rotate'' xs n = let (l, r) = go [] xs n
+                 in l ++ reverse r
+  where
+    go acc xs 0     = (xs, acc)
+    go acc (x:xs) n = go (x:acc) xs (n - 1)
+
 
 -- 20.  ----------------------------------------
 -- (*) Remove the K'th element from a list.
 
-removeAt :: [a] -> Int -> [a]
-removeAt = undefined
 
+-- >>> removeAt [1..10] 3
+-- [1,2,3,5,6,7,8,9,10]
+--
+removeAt :: [a] -> Int -> [a]
+removeAt [] _     = []
+removeAt (x:xs) 0 = xs
+removeAt (x:xs) n = x : removeAt xs (n - 1)
+
+-- >>> removeAt' [1..10] 3
+-- [1,2,3,5,6,7,8,9,10]
+--
+removeAt' :: [a] -> Int -> [a]
+removeAt' xs n = let (ls, rs) = splitAt n xs
+                  in ls ++ tail rs
+
+-- >>> removeAt'' [1..10] 3
+-- [1,2,3,5,6,7,8,9,10]
+--
+removeAt'' :: [a] -> Int -> [a]
+removeAt'' xs n = fmap fst . filter ((/=(n+1)) . snd) $ zip xs [1..]
 
 
 {-@ Question 21 to 28 List again
@@ -573,16 +596,65 @@ removeAt = undefined
 -- 21.  ----------------------------------------
 -- Insert an element at a given position into a list.
 
-
+-- TODO one off.
+-- >>> insertAt 'X' "abcd" 2
+-- "aXbcd"
+--
+insertAt :: a -> [a] -> Int -> [a]
+insertAt x xs n = let (ls, rs) = splitAt (n-1) xs
+                   in ls ++ (x:rs)
 
 -- 22.  ----------------------------------------
 -- Create a list containing all integers within a given range.
 
+-- avoid use length when work with infinite list.
+-- >>> range 4 9
+-- [4,5,6,7,8,9]
+--
+range :: Int -> Int -> [Int]
+range l r = slice [1..] l r
+
+-- >>> range' 4 9
+-- [4,5,6,7,8,9]
+range' :: Int -> Int -> [Int]
+range' l r
+  | l == r = [r]
+  | l < r = l : range (l + 1) r
+  | otherwise = error "invalid"
+
+-- >>> range'' 4 9
+-- [5,6,7,8,9]
+range'' :: Int -> Int -> [Int]
+range'' l r = take (r - l) . drop l $ [1..]
 
 
 -- 23.  ----------------------------------------
 -- Extract a given number of randomly selected elements from a list.
 
+-- >>> unsafePerformIO $ rndSelect ['a'..'f'] 3
+-- "bcc"
+-- "ccb"
+-- "dae"
+--
+rndSelect :: [a] -> Int -> IO [a]
+rndSelect xs n
+  | n < 0 = error "n can't be negative"
+  | otherwise = do
+    idxs <- sequence [randomRIO (0, length xs - 1) | _ <- [1..n]]
+    return $ fmap (xs !!) idxs
+
+-- >>> unsafePerformIO $ rndSelect' ['a'..'f'] 3
+-- "aec"
+-- "bcf"
+-- "bbd"
+--
+rndSelect' :: [a] -> Int -> IO [a]
+rndSelect' [] _ = return []
+rndSelect' xs n
+  | n < 0 = error "n can't be negative"
+  | otherwise = do
+    idxs <- replicateM n . getStdRandom $ randomR (0, length xs - 1)
+    return [xs !! i | i <- idxs]
 
 
 -- 24.  ----------------------------------------
