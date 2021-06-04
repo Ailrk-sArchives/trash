@@ -914,25 +914,58 @@ godlbachList = undefined
 -- (for logical equivalence) which succeed or fail according to the result of their
 -- respective operations; e.g. and(A,B) will succeed, if and only if both A and B succeed.
 
+and' :: Bool -> Bool -> Bool
+and' = undefined
+
+or':: Bool -> Bool -> Bool
+or'= undefined
+
+xor':: Bool -> Bool -> Bool
+xor'= undefined
+
+nor':: Bool -> Bool -> Bool
+nor'= undefined
+
+nand':: Bool -> Bool -> Bool
+nand'= undefined
+
+impl':: Bool -> Bool -> Bool
+impl'= undefined
+
+equ':: Bool -> Bool -> Bool
+equ' = undefined
+
+-- truth table
+table :: (a -> a -> Bool)
+table = undefined
+
 
 -- 47.  ----------------------------------------
 -- (*) Truth tables for logical expressions (2).
 
+table2 :: (a -> a -> Bool)
+table2 = undefined
 
 
 -- 48.  ----------------------------------------
 -- (**) Truth tables for logical expressions (3).
 
+table3 :: ([a] -> Bool)
+table3 = undefined
 
 
 -- 49.  ----------------------------------------
 -- (**) Gray codes.
 
+gray :: Int -> [String]
+gray = undefined
 
 
 -- 49.  ----------------------------------------
 -- (***) Huffman codes.
 
+huffman :: [(Char, Int)] -> [(Char, Int)]
+huffman = undefined
 
 {-@ Question 54A to 60 binary trees
 @-}
@@ -945,30 +978,44 @@ leaf x = Branch x Empty Empty
 -- 54A.  ---------------------------------------
 -- Check whether a given term represents a binary tree
 
+-- Not a problem in Haskell... So why list it in the question set though...?
 
 -- 55.  ----------------------------------------
 -- Construct completely balanced binary trees
 
+cbalTree :: Int -> Tree a
+cbalTree = undefined
 
 -- 56.  ----------------------------------------
 -- Symmetric binary trees
 
+isSymmetric :: Tree a -> Bool
+isSymmetric = undefined
 
 -- 57.  ----------------------------------------
 -- Binary search trees (dictionaries)
+
+mkBinarySearchTree :: Ord a => [a] -> Tree a
+mkBinarySearchTree = undefined
 
 
 -- 58.  ----------------------------------------
 -- Generate-and-test paradigm
 
+symCbalTrees :: Int -> Tree a
+symCbalTrees = undefined
 
 -- 59.  ----------------------------------------
 -- Construct height-balanced binary trees
 
-
+hbalTree :: a -> Int -> Tree a
+hbalTree = undefined
 
 -- 60.  ----------------------------------------
 -- Construct height-balanced binary trees with a given number of nodes
+
+hbalTreeNodes :: a -> Int -> Int
+hbalTreeNodes = undefined
 
 
 {-@ Question 61 to 69 binary trees continued
@@ -977,49 +1024,109 @@ leaf x = Branch x Empty Empty
 -- 61.  ----------------------------------------
 -- Count the leaves of a binary tree
 
+countLeaves :: Tree a -> Int
+countLeaves = undefined
 
 
 -- 61A.  ---------------------------------------
 -- Collect the leaves of a binary tree in a list
 
-
+leaves :: Tree a -> [a]
+leaves = undefined
 
 -- 62.  ----------------------------------------
 -- Collect the internal nodes of a binary tree in a list
 
+internals :: Tree a -> [a]
+internals = undefined
 
 
 -- 62B. ----------------------------------------
 -- Collect the nodes at a given level in a list
 
-
+atLevel :: (Tree a) -> Int -> [a]
+atLevel = undefined
 
 -- 63.  ----------------------------------------
 -- Construct a complete binary tree
 
+completeBinaryTree :: Int -> Tree a
+completeBinaryTree = undefined
 
 
 -- 64.  ----------------------------------------
 --  a layout algorithm for binary tree 1
+tree64 = Branch 'n'
+                (Branch 'k'
+                        (Branch 'c'
+                                (Branch 'a' Empty Empty)
+                                (Branch 'h'
+                                        (Branch 'g'
+                                               (Branch 'e' Empty Empty)
+                                                Empty)
+                                        Empty))
+                        (Branch 'm' Empty Empty))
+                (Branch 'u'
+                        (Branch 'p'
+                                Empty
+                                (Branch 's'
+                                        (Branch 'q' Empty Empty)
+                                        Empty))
+                        Empty)
 
-
+layout :: Tree a -> Tree a
+layout  = undefined
 
 -- 65.  ----------------------------------------
 --  another layout algorithm for binary tree 1
+
+tree65 = Branch 'n'
+                (Branch 'k'
+                        (Branch 'c'
+                                (Branch 'a' Empty Empty)
+                                (Branch 'e'
+                                        (Branch 'd' Empty Empty)
+                                       (Branch 'g' Empty Empty)))
+                        (Branch 'm' Empty Empty))
+                (Branch 'u'
+                        (Branch 'p'
+                                Empty
+                                (Branch 'q' Empty Empty))
+                        Empty)
+
+
+layout1 :: Tree a -> Tree a
+layout1  = undefined
 
 
 -- 66.  ----------------------------------------
 --  yet another layout algorithm for binary tree 1
 
+layout2 :: Tree a -> Tree a
+layout2  = undefined
+
 
 -- 67A. ----------------------------------------
 -- A string representation of binary trees
+
+treeToString :: Tree a -> String
+treeToString = undefined
+
+stringToTree :: String -> Tree a
+stringToTree = undefined
 
 
 -- 68.  ----------------------------------------
 -- Preorder and inorder sequences of binary trees.
 -- We consider binary trees with nodes that are identified by single lower-case letters,
 -- as in the example of problem P67.
+
+preorder :: Tree a -> [a]
+preorder = undefined
+
+inorder :: Tree a -> [a]
+inorder = undefined
+
 
 
 -- 69.  ----------------------------------------
