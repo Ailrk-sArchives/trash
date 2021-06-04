@@ -5,6 +5,7 @@ import           Data.List
 import           Data.Traversable
 
 import           Control.Monad.ST
+import           Data.IORef
 import           Data.STRef
 import           Debug.Trace
 import           System.Random
@@ -631,6 +632,7 @@ range'' l r = take (r - l) . drop l $ [1..]
 -- 23.  ----------------------------------------
 -- Extract a given number of randomly selected elements from a list.
 
+-- oh I guess the quesition is asking non replace selecting, well,
 -- >>> unsafePerformIO $ rndSelect ['a'..'f'] 3
 -- "bcc"
 -- "ccb"
@@ -642,6 +644,7 @@ rndSelect xs n
   | otherwise = do
     idxs <- sequence [randomRIO (0, length xs - 1) | _ <- [1..n]]
     return $ fmap (xs !!) idxs
+
 
 -- >>> unsafePerformIO $ rndSelect' ['a'..'f'] 3
 -- "aec"
@@ -660,16 +663,85 @@ rndSelect' xs n
 -- 24.  ----------------------------------------
 -- Lotto: Draw N different random numbers from the set 1..M.
 
+-- replicateM can be more useful than traverse sometimes.
+-- it's like dotimes
+-- >>> diffSelect 10 60
+-- [6,51,29,22,26,45,30,15,26,46]
+-- [53,53,57,51,2,42,9,29,17,47]
+--
+diffSelect :: Int -> Int -> IO [Int]
+diffSelect n ub = replicateM n (randomRIO (1, ub))
+
+-- >>> diffSelect' 10 60
+-- [22,11,33,18,58,43,28,7,15,6]
+-- [45,30,52,35,4,32,33,15,19,36]
+--
+diffSelect' :: Int -> Int -> IO [Int]
+diffSelect' n ub = replicateM n . getStdRandom $ randomR (1, ub)
+
+-- >>> diffSelect'' 10 60
+-- [18,48,60,17,38,43,48,57,20,35]
+-- [39,18,50,11,39,59,50,45,41,22]
+--
+diffSelect'' :: Int -> Int -> IO [Int]
+diffSelect'' n ub = traverse (const . randomRIO $ (1, ub)) [1..n]
+
+-- >>> diffSelect''' 10 60
+diffSelect''' :: Int -> Int -> IO [Int]
+diffSelect''' n ub = sequence (fmap (\a -> randomRIO (1, ub)) [1..n])
+
 
 
 -- 25.  ----------------------------------------
 -- Generate a random permutation of the elements of a list.
+
+-- use pure combinators we made so far.
+-- >>> rndPermu [1..10]
+-- [3,7,5,8,9,1,10,2,4,6]
+-- [1,3,2,5,7,4,8,9,6,10]
+-- [6,1,3,4,8,5,9,2,7,10]
+rndPermu :: [a] -> IO [a]
+rndPermu xs = do
+  idxs <- traverse (const . randomRIO $ (0, size)) [1..size]
+  return $ go xs idxs
+  where
+    size = length xs
+    shuffle' xs j = let x = head xs
+                     in insertAt x (removeAt xs 0) j
+    go xs []      = xs
+    go xs (i:idx) = go (shuffle' xs i) idx
+
+
+-- >>> rndPermu' [1..10]
+-- [10,9,7,4,5,8,1,6,3,2]
+-- [7,2,3,4,8,6,1,5,9,10]
+-- [1,6,9,2,8,3,5,7,4,10]
+rndPermu' :: [a] -> IO [a]
+rndPermu' xs = do
+  let n = length xs - 1
+  xsRef <- traverse newIORef xs
+  replicateM_ n $ do
+    i <- randomRIO (0, n)
+    j <- randomRIO (0, n)
+    x <- readIORef (xsRef !! i)
+    y <- readIORef (xsRef !! j)
+    writeIORef (xsRef !! j) x
+    writeIORef (xsRef !! i) y
+  traverse readIORef xsRef
 
 
 
 -- 26.  ----------------------------------------
 -- (**) Generate the combinations of K distinct objects chosen from the N elements of a list
 
+-- >>> combinations 3 ['a'..'f']
+combinations :: Int -> [a] -> [a]
+combinations n (x:xs) = undefined
+
+
+-- >>> combinations' 3 ['a'..'f']
+combinations' :: Int -> [a] -> [a]
+combinations' = undefined
 
 
 -- 27.  ----------------------------------------
