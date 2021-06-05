@@ -4,6 +4,7 @@ module Cat.Monads1 where
 import           Data.Function
 import           Data.Maybe
 
+-- ref: The essence of functional programming (Phil Walder)
 
 {-@ Using monad to extend a simple interpreter.
     Monads with only basic algebraic data type and functions.
@@ -152,7 +153,7 @@ m `bindOSPE` k = OSPE $
 
 
 -- Output monde
-
+outOSPE :: Show a => a -> OSPE s (SPE b ())
 outOSPE a = OSPE .unitSPE $ (show a ++ "; ", unitSPE ())
 
 
@@ -210,6 +211,17 @@ t4 = (unPE (unSPE (unOSPE t) "initial state")) (Pos 0 0)
 type M = OSPE Int
 unitM = unitOSPE
 bindM = bindOSPE
+unM s t = (unPE (unSPE (unOSPE t) s)) (Pos 0 0)
+
+errorM = errorOSPE
+resetM = resetOSPE
+
+modifyM = modifyOSPE
+getM = getOSPE
+putM = putOSPE
+
+outM :: Show a => a -> M (SPE s ())
+outM = outOSPE
 
 -- additional operation for all monads
 --
@@ -221,6 +233,9 @@ mapForM f m = m `bindM` (\a -> unitM (f a))
 -- >>= once consume one layer.
 joinM :: M (M a) -> M a
 joinM z = z `bindM` id
+
+tickM :: M ()
+tickM = modifyOSPE (\s -> s + 1)
 
 
 {-@ Monad Laws
@@ -263,6 +278,7 @@ data Term  = Var Name
            | Add Term Term
            | Lam Name Term
            | App Term Term
+           | Cout
            | At Position Term
            | Out Term
 
@@ -294,9 +310,15 @@ eval (App t u) e = eval t e `bindM` \f ->
                    eval u e `bindM` \a ->
                    apply f a
 
+eval (Cout) e = getOSPE `bindM` (\s -> unitM (Num s))
+
 -- effecful operations
+
+-- print the value to the output, and return the value unchanged.
 eval (Out u) e = eval u e `bindM` (\a ->
                  outOSPE a `bindM` (\_ -> unitM a))
+
+-- modify the position info
 eval (At p t) e = resetOSPE p (eval t e)
 
 lookup' :: Name -> Env -> M Value
@@ -306,16 +328,33 @@ lookup' x ((y, b):e)
   | otherwise = lookup' x e
 
 add :: Value -> Value -> M Value
-add (Num i) (Num j) = unitM $ Num (i + j)
+add (Num i) (Num j) = tickM `bindM` (\_ -> unitM $ Num (i + j))
 add _ _             = errorOSPE "Arguments need to be Num"
 
 apply :: Value -> Value -> M Value
-apply (Fun k) a = k a
+apply (Fun k) a = tickM `bindM` (\_ -> k a)
 apply _ _       = errorOSPE "wrong application"
 
 
+-- test
+t' = unM 0 $ eval (At (Pos 1 2) (App (Cont 1) (Cont 2))) []
+
+t'' = unM 0 $ eval (Out
+  (Add
+    (Add (Out (Cont 1)) (Out(Cont 2)))
+    (Add (Out Cout) (Out Cout)))) []
+
+t''' = unM 0 $ eval (Out (Cont 1)) []
 
 
+{-@ Call by name and monad @-}
+-- argument of the function is just a value.
+foo :: a -> m b
+foo = undefined
+
+-- turn argument of the function into a computation
+bar :: m a -> m b
+bar = undefined
 
 {-@ Continuation monad
 
