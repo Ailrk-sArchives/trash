@@ -59,7 +59,7 @@ join'' m = m >>=== id
 --      implication:
 --        any value shoulbe be able to directly engage in a monadic operation by using pure.
 leftId1 x f = do { x' <- return x;
-                   f x
+                   f x'
                  }
 leftId2 x f = do { f x }
 

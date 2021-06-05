@@ -1,5 +1,7 @@
+{-# LANGUAGE RankNTypes #-}
 module Cat.Monads1 where
 
+import           Data.Function
 import           Data.Maybe
 
 
@@ -7,8 +9,14 @@ import           Data.Maybe
     Monads with only basic algebraic data type and functions.
     because there is no typeclass, we can't overload >>=, instead
     each monad has it's own bind.
+
+    A monad can be thought as a triple (M, unitM, bindM), where M is the
+    constructor.
 @-}
 
+
+-- you can convert this to scott encoding to make the entire implementation only
+-- rely on function
 data Position = Pos { col :: Int, line :: Int } deriving (Eq, Show)
 
 -- We are describing effect with functons and data types only, it's clear to
@@ -27,6 +35,7 @@ data Position = Pos { col :: Int, line :: Int } deriving (Eq, Show)
 data I a = I a
 
 -- Monad Instance --
+-- monad has two operations bind and unit.
 unitI :: a -> I a
 unitI = I
 
@@ -35,6 +44,7 @@ bindI (I a) f =  f a
 ------------------------------------------------
 
 -- E monad: Error ------------------------------
+
 data E a = Success a | Error String deriving (Eq, Show)
 
 
@@ -43,14 +53,16 @@ unitE a = Success a
 (Success a) `bindE` k = k a
 (Error e) `bindE` _   = Error e
 
+-- | For error monad, we have an additional operation errorE.
+-- | We call this method to signal the error.
 errorE s = Error s
-
-showE (Success a) = "Success: " ++ show a
-showE (Error e)   = "Error: " ++ e
 ------------------------------------------------
 
 
 -- PE monad: Position + Error  -----------------
+--
+-- Mannually crank up a monad transformer.
+-- PE :: Position -> E a
 newtype PE a = PE { unPE :: (Position -> E a) }
 
 -- Monad Instance --
@@ -66,12 +78,13 @@ m `bindPE` k = PE $ \p ->
 resetPE :: Position -> PE x -> PE x
 resetPE pos (PE m) = PE (\p -> m pos)
 
+-- lifting
 errorPE s = PE $ \p -> errorE (s ++ ", Position:" ++ show p)
 ------------------------------------------------
 
 
-
 -- SPE monad: Position + Error + State Transformer
+-- SPE :: s -> Position -> E (a, s)
 newtype SPE s a = SPE { unSPE :: (s -> PE (a, s)) }
 
 unitSPE a = SPE $ \s -> unitPE (a, s)
@@ -83,9 +96,14 @@ m `bindSPE` k = SPE $ \s ->
       unitPE (b, s'')))
 
 -- test1 (seems work)
+-- to unwrap a monad transformer, we need to do it outside in.
 t1 = (unPE (unSPE t "initial state")) (Pos 0 0)
   where
     t = (unitSPE 1) `bindSPE` (\x ->
+
+      -- sequence. The monadic function doesn't use the input, but an effect is performed
+      -- by putSPE implicitly.
+      -- Effect is accessible within the funciton now.
       putSPE "state" `bindSPE` (\_ ->
       modifySPE (\s -> "modified state") `bindSPE` (\_ ->
       errorSPE ("It just throws an error for some reason"))))
@@ -96,7 +114,6 @@ t2 = (unPE (unSPE t "initial state")) (Pos 0 0)
       putSPE "state" `bindSPE` (\_ ->
       modifySPE (\s -> "modified state") `bindSPE` (\_ ->
       unitSPE 10)))
-
 
 
 -- State specifics
@@ -115,13 +132,13 @@ getSPE = SPE $ \s -> unitPE (s, s)
 errorSPE a = SPE $ \s -> errorPE a
 
 -- reset
--- resetSPE pos (SPE m) = SPE $ \s -> let (m', s') = m s
---                                     in (resetPE pos m' , s)
-
+resetSPE :: Position -> SPE s x -> SPE s x
+resetSPE pos (SPE m) = SPE $ \s -> resetPE pos (m s)
 
 ------------------------------------------------
 
 -- OSPE monad: Position + Error + State Transformer + Output
+-- OSPE :: s -> Position -> E ((String, a), s)
 
 newtype OSPE s a = OSPE { unOSPE :: SPE s (String, a) }
 
@@ -135,7 +152,8 @@ m `bindOSPE` k = OSPE $
 
 
 -- Output monde
-outOSPE a = (show a ++ "; ", unitSPE ())
+
+outOSPE a = OSPE .unitSPE $ (show a ++ "; ", unitSPE ())
 
 
 -- lifting, eh...
@@ -163,24 +181,81 @@ getOSPE = OSPE $
 errorOSPE a = OSPE $ errorSPE a
 
 -- reset
-resetOSPE pos (OSPE m) = OSPE $
-  undefined
+resetOSPE pos (OSPE m) = OSPE $ resetSPE pos m
 
 --   (o, resetSPE pos m)
 
+t3 = (unPE (unSPE (unOSPE t) "initial state")) (Pos 0 0)
+  where
+    t = unitOSPE 1 `bindOSPE` (\x ->
+      putOSPE "new state" `bindOSPE` (\_ ->
+      modifyOSPE (++ ", appened with this") `bindOSPE` (\_ ->
+      outOSPE ("new message" ++ show x) `bindOSPE` (\_ ->
+      outOSPE ("another message") `bindOSPE` (\_ ->
+      errorOSPE "done")))))
+
+t4 = (unPE (unSPE (unOSPE t) "initial state")) (Pos 0 0)
+  where
+    t = unitOSPE 1 `bindOSPE` (\x ->
+      putOSPE "new state" `bindOSPE` (\_ ->
+      modifyOSPE (++ ", appened with this") `bindOSPE` (\_ ->
+      outOSPE ("new message" ++ show x) `bindOSPE` (\_ ->
+      outOSPE ("another message") `bindOSPE` (\_ ->
+      unitOSPE "done")))))
+
+
 ------------------------------------------------
 
-type M = I
-unitM = unitI
-bindM = bindI
 
--- type M = OSPE Int
+type M = OSPE Int
+unitM = unitOSPE
+bindM = bindOSPE
 
--- bindM = bindOSPE
--- unitM = unitOSPE
+-- additional operation for all monads
+--
+-- functor
+mapForM :: (a -> b) -> M a -> M b
+mapForM f m = m `bindM` (\a -> unitM (f a))
+
+-- join nested monads.
+-- >>= once consume one layer.
+joinM :: M (M a) -> M a
+joinM z = z `bindM` id
+
+
+{-@ Monad Laws
+    Left identity:
+      pure a >>= k = k a
+
+    Right identity:
+      m >>= pure = m
+
+    Associativity:
+      m >>= (\a -> k a >>= (\b -> k b))
+      =
+      (m >>= \a -> k a) >>=)\b -> k b
+
+    A law abiding monad compose!
+@-}
+t5 = (unPE (unSPE (unOSPE t) "initial state")) (Pos 0 0)
+  where
+    -- by left identity law: (pure a) >>= k = k a
+    -- in practice left identify means if you just want to shove a value into a
+    -- monadic computation, just use the mnadic function is enough, no bind is needed.
+    t = 1 & (\x ->
+      putOSPE "new state" `bindOSPE` (\_ ->
+      modifyOSPE (++ ", appened with this") `bindOSPE` (\_ ->
+
+      -- by associativity law
+      -- in practice it means you can carve an expression in the middle, define it
+      -- somewhere else, and refer to it in the big expression.
+      (outOSPE ("new message" ++ show x) `bindOSPE` (\_ ->
+      outOSPE ("another message")) `bindOSPE` (\_ ->
+      unitOSPE "done")))))
 
 
 
+--------- language -----------------------------------
 type Name = String
 
 data Term  = Var Name
@@ -193,7 +268,7 @@ data Term  = Var Name
 
 data Value = Wrong
            | Num Int
-           | Fun (Value -> I Value)
+           | Fun (Value -> M Value)
 
 type Env = [(Name, Value)]
 
@@ -201,6 +276,9 @@ showval :: Value -> String
 showval Wrong   = "<wrong>"
 showval (Num i) = show i
 showval (Fun f) = "<function>"
+
+instance Show Value where
+  show = showval
 
 eval :: Term -> Env -> M Value
 eval (Var x) e = lookup' x e
@@ -216,29 +294,49 @@ eval (App t u) e = eval t e `bindM` \f ->
                    eval u e `bindM` \a ->
                    apply f a
 
--- eval (At p t) e = resetP p (eval t e)
+-- effecful operations
+eval (Out u) e = eval u e `bindM` (\a ->
+                 outOSPE a `bindM` (\_ -> unitM a))
+eval (At p t) e = resetOSPE p (eval t e)
 
 lookup' :: Name -> Env -> M Value
-lookup' x [] = unitM Wrong
+lookup' x [] = errorOSPE "not in environment"
 lookup' x ((y, b):e)
   | x == y = unitM b
   | otherwise = lookup' x e
 
-add :: Value -> Value -> I Value
+add :: Value -> Value -> M Value
 add (Num i) (Num j) = unitM $ Num (i + j)
-add _ _             = unitM Wrong
+add _ _             = errorOSPE "Arguments need to be Num"
 
-apply :: Value -> Value -> I Value
+apply :: Value -> Value -> M Value
 apply (Fun k) a = k a
-apply _ _       = unitM Wrong
+apply _ _       = errorOSPE "wrong application"
 
 
 
 
-{-@ Monad Laws guarantees monad compose. @-}
 
 {-@ Continuation monad
+
+    Continuation Passing style was first developede with denotational
+    semantics.
+
+    CPS provides control over the execution order of a program.
 @-}
+
+-- what is continuation?
+--  a continuation takes a function that accepts a value a, and return the
+-- result of the function.
+newtype K a = K { cont :: forall r. (a -> r) -> r }
+
+-- how to lift value into continuation?
+--  create a fun
+unitK a = K (\c -> c a)
+
+bindK :: K a -> (a -> K b) -> K b
+(K m) `bindK` k = K (\c -> m (\a -> (cont $ k a) c))
+
 
 
 {-@ Monad and CPS @-}
