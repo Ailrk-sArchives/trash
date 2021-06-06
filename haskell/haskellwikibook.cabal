@@ -63,6 +63,10 @@ library
       Cat.Arrows
       Cat.ArrowPractice
       Cat.FreeMonad
+      Cat.MonadsCPS.CPSInterp
+      Cat.MonadsCPS.MonadInterp
+      Cat.MonadsCPS.Monads
+      Cat.MonadsCPS.MonadsCPS
 
       Cat.Cat.C1
 
