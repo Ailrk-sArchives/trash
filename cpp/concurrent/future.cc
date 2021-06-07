@@ -58,9 +58,16 @@
 //   Now you not only have lower level primitives like promise + thread, you also can built
 //   async which is a higher level interface.
 //
-// - Is c++ async model CSP? (communitaion sequential process)
+// - What's the theory behind promise and future?
+//   It's similar to actor model, as all operations happen asynchronously.
+//   Promise and future forms two end of a communication.
 //
+//   - Promise "send message to mailbox" by set value in future.
+//   - Future "get message from the mailbox" by accessing it's value.
+//   if future accesses it's value but it's not there, it just wait.
 //
+//   Different from CSP which the producer cannot send the request if the consumer is
+//   not waiting to receive.
 
 // std::future provides mechanism to access the result of asynchronous
 // operations. What is an asynchronous operation?

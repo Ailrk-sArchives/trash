@@ -54,5 +54,3 @@ callccK f = K $ \c -> let k a = K $ \_ -> c a
 @-}
 
 {-@ Monad and CPS @-}
-
-
