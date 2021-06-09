@@ -22,7 +22,6 @@ import           Control.Monad
 import           System.IO.Unsafe    (unsafePerformIO)
 
 import           Test.Hspec
-import           Test.QuickCheck     ()
 
 
 {-@ Question 1 to 10 List
@@ -835,49 +834,112 @@ lfsort' = mconcat . lsort' . groupBy ((==) `on` length) . lsort
 -- 31.  ----------------------------------------
 -- (**) Determine whether a given integer number is prime.
 
+
+-- Primality test is really based on cases.
+-- You need to break it down and consider different possiblities separately.
+-- >>> filter ((==) <$> snd <*> const True)(zip [1..20] (isPrime <$> [1..20]))
+-- [(2,True),(3,True),(5,True),(7,True),(11,True),(13,True),(17,True),(19,True)]
 isPrime :: Integer -> Bool
-isPrime = undefined
+isPrime n
+  | n <= 3 = n > 1
+  | even n = False
+  | otherwise = not . any (==0) . fmap (n `mod`) $ uniqueDivisors
+  where
+    uniqueDivisors  = [ i | i <-  [2..floor . sqrt . fromIntegral $  n] ]
 
 
 -- 32.  ----------------------------------------
 -- (**) Determine the greatest common divisor of two positive integer numbers. Use Euclid's algorithm.
 
+-- >>> gcd' 36 63
+-- 9
 gcd' :: Integer -> Integer -> Integer
-gcd' = undefined
+gcd' a 0 = a
+gcd' a b = gcd b (a `mod` b)
+
 
 -- 33.  ----------------------------------------
 -- (*) Determine whether two positive integer numbers are coprime. Two numbers are coprime if their greatest common divisor equals 1.
 
+-- >>> coprime 36 63
+-- False
+
+-- >>> coprime 36 61
+-- True
+
 coprime :: Integer -> Integer -> Bool
-coprime = undefined
+coprime a b = gcd a b == 1
 
 
 -- 34.  ----------------------------------------
 -- (**) Calculate Euler's totient function phi(m).
 
-phi :: Integer -> Integer
-phi = undefined
+-- >>> totientPhi 10
+-- 4
+-- >>> totientPhi 10090
+-- 4032
+totientPhi :: Integer -> Integer
+totientPhi 1 = 1
+totientPhi n = fromIntegral . length . filter (coprime n)  $ [1..n]
 
 
 -- 35.  ----------------------------------------
 -- (**) Determine the prime factors of a given positive integer. Construct a flat list containing the prime factors in ascending order.
 
+
+-- we test primes in [2, n/2]. If a prime is larger than half of n, the other possible
+-- prime factor must be smaller n/2 which we already tested.
+-- >>> primeFactors 315
+-- [3,3,5,7]
+--
+-- >>> primeFactors 6
+-- [2,3]
+--
+-- >>> primeFactors 2
+-- []
+--
+-- >>> primeFactors 10090
+-- [2,5,1009]
 primeFactors :: Integer -> [Integer]
-primeFactors = undefined
+primeFactors n
+  | isPrime n = []
+  | otherwise = let primes = filter isPrime . reverse $ [2..n `div` 2]
+                 in go n primes []
+  where
+    go 1 _ factors = factors
+    go n (x:xs) factors
+      | n `mod` x == 0 = go (n `div` x) (x:xs) (x:factors)
+      | otherwise = go n xs factors
 
 
 -- 36.  ----------------------------------------
 -- (**) Determine the prime factors of a given positive integer.
 
-primeFactorsMult :: Integer -> [Integer]
-primeFactorsMult = undefined
+-- >>> primeFactorsMult 315
+-- [(3,2),(5,1),(7,1)]
+--
+-- >>> primeFactorsMult 10090
+-- [(2,1),(5,1),(1009,1)]
+primeFactorsMult :: Integer -> [(Integer, Int)]
+primeFactorsMult = fmap ((,) <$> head <*> length) . group . primeFactors
 
 
 -- 37.  ----------------------------------------
 -- (**) Calculate Euler's totient function phi(m) (improved).
 
+-- >>> phiImproved 10
+-- 4
+--
+-- >>> phiImproved 16
+-- 8
+--
+-- >>> phiImproved 10090
+-- 4032
 phiImproved :: Integer -> Integer
-phiImproved = undefined
+phiImproved 1 = 1
+phiImproved n = foldr op 1 (primeFactorsMult n)
+  where
+    (p, m) `op` y = ((p - 1) * p ^ (m - 1)) * y
 
 
 -- 38.  ----------------------------------------
@@ -888,22 +950,45 @@ phiImproved = undefined
 -- 39.  ----------------------------------------
 -- (*) A list of prime numbers.
 
+-- >>> primeR [10, 20]
 primeR :: Integer -> Integer -> [Integer]
-primeR = undefined
+primeR n m = filter isPrime [n..m]
 
 
 -- 40.  ----------------------------------------
 -- (**) Goldbach's conjecture.
 
-godlbach :: Integer -> (Integer, Integer)
-godlbach = undefined
+-- >>> goldbach 28
+-- (5,23)
+-- >>> goldbach 6
+-- You disproved goldbach!
+goldbach :: Integer -> (Integer, Integer)
+goldbach n
+  | odd n || n == 2 = error "goldbach takes positive even numbers > 2 "
+  | otherwise = let primes = filter isPrime $ [2..n]
+                    (ls, rs) = if n < 8 then (primes, primes) else span (<= n `div` 2) primes
+                    go [] _ = error "You disproved goldbach!"
+                    go (x:xs) [] = go xs rs
+                    go (x:xs) (y:ys)
+                      | x + y == n = (x, y)
+                      | otherwise = go (x:xs) ys
+                 in go ls rs
+
+-- essentially the first verioon manually wired cartesion product...
+-- if you need cartesian product just use list comprehension.
+goldbach' :: Integer -> (Integer, Integer)
+goldbach' n = head [(x, y) | x <- primes, y <- primes, x + y == n]
+  where
+    primes = filter isPrime $ [2..n]
 
 
 -- 41.  ----------------------------------------
 -- (**) Given a range of integers by its lower and upper limit, print a list of all even numbers and their Goldbach composition.
 
-godlbachList :: Integer -> [(Integer, Integer)]
-godlbachList = undefined
+-- >>> goldbachList 10 20
+-- >>> goldbachList 10 40
+goldbachList :: Integer -> Integer -> [(Integer, Integer)]
+goldbachList l m = fmap goldbach . filter even $ [l..m]
 
 
 {-@ Question 46 to 50 logic and codes
