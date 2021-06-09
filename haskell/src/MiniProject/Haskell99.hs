@@ -995,48 +995,73 @@ goldbachList l m = fmap goldbach . filter even $ [l..m]
 @-}
 
 -- 46.  ----------------------------------------
+-- Do you know conbinational logic (described by boolean) is the simplest form of
+-- computational model? Output is a pure function of input.
+--
+-- The next more powerful model is finite automata
+--
 -- (**) Define predicates and/2, or/2, nand/2, nor/2, xor/2, impl/2 and equ/2
 -- (for logical equivalence) which succeed or fail according to the result of their
 -- respective operations; e.g. and(A,B) will succeed, if and only if both A and B succeed.
 
 and' :: Bool -> Bool -> Bool
-and' = undefined
+and' True True = True
+and' _ _       = False
 
 or':: Bool -> Bool -> Bool
-or'= undefined
+or' False False = False
+or' _ _         = True
 
 xor':: Bool -> Bool -> Bool
-xor'= undefined
+xor' True False = True
+xor' False True = True
+xor' _ _        = False
 
 nor':: Bool -> Bool -> Bool
-nor'= undefined
+nor' a b = not $ or' a b
 
 nand':: Bool -> Bool -> Bool
-nand'= undefined
+nand' a b = not $ and' a b
 
-impl':: Bool -> Bool -> Bool
-impl'= undefined
+not' :: Bool -> Bool
+not' True  = False
+not' False = True
+
+implies':: Bool -> Bool -> Bool
+implies' a b = (not' a) `or'` b
 
 equ':: Bool -> Bool -> Bool
-equ' = undefined
+equ' True True   = True
+equ' False False = True
+equ' _ _         = False
+
 
 -- truth table
-table :: (a -> a -> Bool)
-table = undefined
+-- >>> table (\a b -> (and' a (or' a b)))
+--
+table :: (Bool -> Bool -> Bool) -> IO ()
+table f = sequence [ putStrLn (show i ++ " " ++ show j ++ " " ++ show (f i j))
+                   | i <- bs, j <- bs ] >> return ()
+  where
+    bs = [True, False]
 
 
 -- 47.  ----------------------------------------
 -- (*) Truth tables for logical expressions (2).
 
-table2 :: (a -> a -> Bool)
-table2 = undefined
+table2 :: (Bool -> Bool) -> IO ()
+table2 f = sequence [ putStrLn (show i ++ " " ++ show (f i)) | i <- bs] >> return ()
+  where
+    bs = [True, False]
+
 
 
 -- 48.  ----------------------------------------
 -- (**) Truth tables for logical expressions (3).
 
-table3 :: ([a] -> Bool)
-table3 = undefined
+table3 :: ([a] -> Bool) -> IO ()
+table3 f = undefined
+
 
 
 -- 49.  ----------------------------------------
@@ -1046,7 +1071,7 @@ gray :: Int -> [String]
 gray = undefined
 
 
--- 49.  ----------------------------------------
+-- 50.  ----------------------------------------
 -- (***) Huffman codes.
 
 huffman :: [(Char, Int)] -> [(Char, Int)]
@@ -1055,7 +1080,12 @@ huffman = undefined
 {-@ Question 54A to 60 binary trees
 @-}
 
-data Tree a = Empty | Branch a (Tree a) (Tree a) deriving (Show, Eq)
+data Tree a = Empty | Branch a (Tree a) (Tree a) deriving (Eq)
+
+-- draw tree
+instance Show a => Show (Tree a) where
+  show = undefined
+
 
 branch x l r = Branch x l r
 leaf x = Branch x Empty Empty
@@ -1068,7 +1098,10 @@ leaf x = Branch x Empty Empty
 -- 55.  ----------------------------------------
 -- Construct completely balanced binary trees
 
-cbalTree :: Int -> Tree a
+-- for a complete tree, |left subtree| - |right subtree| <= 1.
+--
+
+cbalTree :: Int -> [Tree a]
 cbalTree = undefined
 
 -- 56.  ----------------------------------------
