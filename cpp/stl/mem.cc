@@ -20,7 +20,5 @@ int main(void) {
   // still the same
   std::allocator_traits<decltype(a1)>::rebind_alloc<std::string> a2_2;
 
-
-
   return 0;
 }
