@@ -3,36 +3,36 @@ Inputs=${baseInputs}${baseInputs}
 Inputs=(`echo ${Inputs}`)
 
 for p in $Inputs; do   # aquire dependencies
-    export PATH=$p/bin${PATH:+:}$PATH
+  export PATH=$p/bin${PATH:+:}$PATH
 done
 
 function unpackPhase() {
-    tar -xf $src
+  tar -xf $src
 
-    # cd into decompressed directory.
-    for d in *; do
-        if [ -d "$d" ]; then
-            cd "$d"
-            break
-        fi
-    done
+  # cd into decompressed directory.
+  for d in *; do
+      if [ -d "$d" ]; then
+          cd "$d"
+          break
+      fi
+  done
 }
 
 function configurePhase() {
-    ./configure --prefix=$out
+  ./configure --prefix=$out
 }
 
 function buildPhase() {
-    make
+  make
 }
 
 function installPhase() {
-    make install
+  make install
 }
 
 function genericBuild() {
-    unpackPhase
-    configurePhase
-    buildPhase
-    installPhase
+  unpackPhase
+  configurePhase
+  buildPhase
+  installPhase
 }

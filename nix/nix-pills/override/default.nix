@@ -1,6 +1,6 @@
 # use call package pattern
 let
-  nixpkgs = import <nixpkgs> {};    # import nixpkgs
+  nixpkgs = import <nixpkgs> { };    # import nixpkgs
   allpkgs = nixpkgs // pkgs;        # pkg is what the expression return. Rec define
   overridelib = import ./overridelib.nix;  #
   callPackage = path: overrides:
@@ -13,15 +13,15 @@ let
       # package alone.
       ogArgs = (intersectAttrs (functionArgs f) allpkgs) // overrides;
     in
-      makeOverridable f ogArgs;
+    makeOverridable f ogArgs;
   pkgs = with nixpkgs; {
     mkDerivation = import ./autotools.nix nixpkgs;
-    hello = callPackage ./hello.nix {};
-    graphviz = callPackage ./graphviz.nix {};
-    graphvizCore = callPackage ./graphviz.nix {gdSupport = false;};
+    hello = callPackage ./hello.nix { };
+    graphviz = callPackage ./graphviz.nix { };
+    graphvizCore = callPackage ./graphviz.nix { gdSupport = false; };
   };
 in
-  pkgs
+pkgs
 
 # 2020-04-29
 # Note we define allpkgs with allpkgs itself

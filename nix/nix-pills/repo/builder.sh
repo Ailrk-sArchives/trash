@@ -6,4 +6,3 @@
 set -e          # stop when error occur.
 source $setup
 genericBuild
-

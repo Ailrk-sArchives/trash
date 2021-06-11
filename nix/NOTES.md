@@ -55,10 +55,15 @@ Three commons are enough.
 
 - nix-env: Command that feels like pacman, you can install, uninstall. and others. This command works on symlinks rather than packages themslves. If you delete someting iwth nix-env, the binary may still be in /nix/store, but it will not be visible anywhere. To actually get rid of it you need nix-collect-garbage.
 
+
 ## Misc
-The main property of nix is to write nix expression once and build everywhere. This gives it large potential for doing different fun things. Nix expression is flexible enough to be a univesal language to describe dependencies in general.
+With nix you can write the derivation with nix expression once and build everywhere. This gives it large potential for doing different fun things. Nix expression is flexible enough to be a univesal language to describe dependencies in general.
 
 - Manage all your dotfiles with nix. Install `home-manager`, write the systme config in `~/.config/nixpkgs/home.nix`, each time call `home-manager switch` will run the `home.nix` script and update system config.
 
 - Manage haskell dependency with nix. If you have cabal2nix,  `cabal2nix . > default.nix` to generate the derivation, `cabal2ix --shell . > shell.nix` create the shell enviroment.
 
+
+## Standard library
+- Basic functions can be found in `builtin`.
+- `nixpkgs` itself is the upstream package collection,  but it also act as a standard library. Some basic functoins can be found in `nixpkgs/lib`.
