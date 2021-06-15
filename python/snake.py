@@ -22,7 +22,6 @@ class Game:
         self.map = [self.map_style * self.width for _ in range(self.height)]
         self.obj_list: List[Obj] = []
         self.snake = Snake(self.width, self.height)
-
         self.food = Food(self.width, self.height)
 
     def _form_obj_list(self):
@@ -95,7 +94,6 @@ class Game:
             print(row)
 
         time.sleep(0.03)
-
 
 class Obj:
     def __init__(self, x, y, style):

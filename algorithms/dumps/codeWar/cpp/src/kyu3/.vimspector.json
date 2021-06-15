@@ -1,0 +1,30 @@
+{
+  "configurations": {
+    "CPPDefault": {
+      "adapter": "vscode-cpptools",
+      "configuration": {
+        "request": "launch",
+        "program": "${workspaceRoot}/a",
+        "cwd": "${workspaceRoot}/",
+        "externalConsole": true,
+        "stopAtEntry": true,
+        "MIMode": "gdb",
+        "logging": {
+          "engineLogging": false
+        },
+        "setupCommands": [
+          {
+            "description": "Enable pretty-printing for gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
+          },
+          {
+            "description": "Auto load symbols when loading an .so file",
+            "text": "set auto-solib-add",
+            "ignoreFailures": false
+          }
+        ]
+      }
+    }
+  }
+}
