@@ -11,16 +11,16 @@ class Solution {
 
 public:
 // twoSum begin
-// Proof of correctness:
+// Proof correctness:
 //    Initial:
 //      Set up a map M so it's keys are values in the input vector, and
 //      values are indices of values in the vector.
 //      Set up a empty vector V to accumulate the final result.
 //    Maintain:
-//      Traverse over the input vector. In each iteration i we have
-//      t = target,
-//      n = nums[i] be the value in nums[i],
-//      we have e = t - n to be the expected value.
+//      Traverse over the input vector. In each iteration i:
+//        t = target,
+//        n = nums[i] be the value in nums[i],
+//        e = t - n to be the expected value.
 //      If m = M[e] exits and e + n = t,
 //      Then nums[m] + nums[i] = t,
 //      The first time we find m, we push m and i into V and break out of

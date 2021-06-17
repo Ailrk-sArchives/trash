@@ -1,5 +1,3 @@
 # Leetcode
 
-It's actually a good opportunity to analyse the time complexity...
-
-All correctness are proved, complexities are analyzed.
+Some leetcode solutions. It's better to make the solution and prove the correctness!
