@@ -39,6 +39,26 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Input stream specific operations
+;;; problems a input stream system needs to solve:
+;;; 0. where are things come from?
+;;; 1. what type is read.
+;;; 2. how many value is read at once?
+;;; 3. should I consume the input or just look at the input?
+;;; 4. input streams are designed for reading lisp and s-expression,
+;;;    in that case all white spaces are noise.
+;;;    but what if we actually want to read plain string?
+;;; 5. probe the status of the stream. (has values? empty?)
+
+;;; the most important one is read
+(defun slash-reader (stream char)
+  (declare (ignore char))
+  `(path . ,(loop for dir = (read-preserving-whitespace stream t nil t)
+                  then (progn (read-char stream t nil t)
+                              (read-preserving-whitespace stream t nil t))
+                  collect dir
+                  while (eql (peek-char nil stream nil nil t) #\/))))
+(set-macro-character #\/ #'slash-reader)
+
 ;;; clears any available inputs
 (defun read-sleepily (&optional (clear-p nil) (zzz 0))
   (list (progn (print '>) (read))
@@ -63,11 +83,51 @@
            nil  ; eof-value
            nil) ; recursive-p
 
+;;; read a char from the stream
+(with-input-from-string (is "123")
+  (do ((c (read-char is) (read-char is nil 'the-end)))
+      ((not (characterp c)))
+      (format t "~S" c)))
+
+(with-input-from-string (is "  1 2 3 4 5")
+  (format t "~S ~S ~S"
+          (peek-char t is)      ; skip white spaces
+          (peek-char #\4 is)    ; skip til 4 is found
+          (peek-char nil is)))  ; no skip.
+
+(with-input-from-string (is "0123")
+  (dotimes (i 6)
+    (let ((c (read-char is)))
+      (if (evenp i)
+        (format t "~&~S ~S~%" i c)
+        (unread-char c is)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Output stream specific operations
 
+;;; Problem needs to be solved by output stream system
+;;; 0. Where are we writing to?
+;;; 1. what type are we writing?
+;;; 2. what's the format of the output?
+;;; 3. how to set pretty printer for output?
+;;; 4. how many stuffs to write at once?
 
+;;; write the printed representation to the output stream
+;;; write is the core function to use, tehre are other short hands
+;;; specialize for specific situations.
+(princ "asd" *standard-output*)
+(princ "asd" t)
+(pprint "asd" t)
+(prin1 "asd" t)
+
+;;; finish output
+(progn (princ "am I seen?") (clear-output))
+
+;;; write char
+(with-output-to-string (s)
+  (write-char #\a s)
+  (write-char #\Space s)
+  (write-char #\b s))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; There are different types of streams
@@ -134,4 +194,3 @@
     ;; : output-stream -> string
     ;; return all the characters in string-out-stream
     (get-output-stream-string out)))
-
