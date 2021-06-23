@@ -1,5 +1,16 @@
-;; setf is a macro that sets a value to a place.
-;; a place is a form that has a self expansion.
+;;;; setf
+;;; is a macro that sets a value to a place.
+
+;; object: any lisp datum.
+;; form: an object meant to be evaluated / a symbol
+;; cell: a conceptual slot of an object. in lisp 2
+;;       an object can have two cells: variable cell and
+;;       function cell
+;; slot: a component of an object that can store a value
+;; symbol: used for objet identity
+;; place: a form which is suitable for uses as a generalized reference
+;;        / the conceptual location referred by a place
+;; generalized reference: a reference to a location storing an object
 
 (defmacro my-setf (place values-form &environment env)
   (multiple-value-bind (vars vals stores setter)

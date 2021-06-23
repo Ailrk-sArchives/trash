@@ -1,4 +1,5 @@
 ;;;; Type specifiers
+
 ;; types in common lisp are represented as symbols and lists.
 ;; symbols are used for naming predefined classes of objects and
 ;; lists are used to indicate the combination of simpler types.

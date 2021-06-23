@@ -2,6 +2,7 @@
 (require (for-syntax racket/match))
 (require (for-syntax racket/syntax))
 
+
 ;----------------------------------------
 ; Report on A quick overview of racket
 ; This report is not based on one particular paper, but rather a conclusion of
@@ -34,6 +35,7 @@
                             [_ (when (= n 9) 'eq9)])])]))
     'gt50)) ; Symbol
 
+
 ;----------------------------------------
 ; list
 ;----------------------------------------
@@ -46,6 +48,7 @@
            [list2 '(x y)]  ; make datum with quote
            [listss '((1 2 3) (a b c))]) ; naming convention. s for nested level
        (append listss list2 list1)))))
+
 
 ;----------------------------------------
 ; quasiquote
@@ -87,8 +90,7 @@
                  [deposit (-> Positive-Integer Void)])
   (: get-money (-> Void))
   (define (get-money)
-    (deposit 5))
-  )
+    (deposit 5)))
 
 ;----------------------------------------
 ; Macros
@@ -173,6 +175,7 @@
   (syntax-case stx ()
     [(_ condition true-expr false-expr)
      #'(cond [condition true-expr] [else false-expr])]))
+
 
 ; define-syntax-rule is a short hand for pattern in new-if3
 ; You can just write code in the body, and they will transform into

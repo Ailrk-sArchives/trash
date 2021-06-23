@@ -14,6 +14,8 @@
 (define (/& x y cont) (cont (/ x y)))
 (define (zero?& x y cont) (cont (zero? x y)))
 
+(define (*& x y cont) (cont (* x y)))
+
 ; new write it in continuation style.
 ; you keep passing the rest continuation
 (define expression
@@ -25,7 +27,6 @@
                 (+& r1 r2 k)))))))
 (expression identity)
 
-(define a 0)
 ; but what if the division is invalid? in case you are
 ; dividing a value by 0, you want to exit the evaluation
 ; all together. what should you do in that case?
