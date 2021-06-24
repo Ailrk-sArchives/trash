@@ -1,6 +1,5 @@
 ;;;; Type Systems
 
-
 ;;; type:
 ;;;   a set of objects. Types are never explicitly represented as
 ;;;   objects in cl, instead they are referred to by type
@@ -74,18 +73,30 @@
 (my-typep "good" (simple-array character (4))) ;; => t
 (my-typep "good" (simple-array character (5))) ;; => nil
 
+(typep 12 '(satisfies evenp))
+
+;; for some reason the example online uses satisfies with lambda
+;; expression, but according to the document satisifies only take
+;; symbols as it's argument.
+;; (typep 12 '(satisfies (lambda (x) (oddp x))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Define types
 ;;; type can be defined with deftype, defstruct, defclass and defcondition
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; deftype:
-;;;   define a derived type specifier
+;;; deftype: define a derived type specifier
+
+;;; We can define a new type that it's value satisfies some
+;;; specific predicates we defined somewhere else.
+;;; From here you can see how runtime type check predicates comes
+;;; hand in hand with the type itself.
 
 ;;; satisify can be used to indicate type predicate.
 ;;; new type defined by deftype can be used with typep
 ;;; satisfy : a -> bool
+
+;;; example1: square matrix
 (defun equidimensional (a)
   "equal dimensional array"
   (or (< array-rank 2)
@@ -112,21 +123,39 @@
   (format t "~A~%" m)
   (det-2x2 m))
 
-
+;;; example2 prime type
 (defun primep (x)
   "primality test"
   (let ((r (floor (sqrt x)))
         (isprime t))
-       (if (< x 2)
-           nil
-           (loop for i from 2 to r do
-                 (when (= 0 (mod x i))
-                       (setf isprime nil))))
-       isprime))
+    (if (< x 2)
+      nil
+      (loop for i from 2 to r do
+            (when (= 0 (mod x i))
+              (setf isprime nil))))
+    isprime))
 (deftype prime () '(and integer (satisfies primep)))
 (typep 11 'prime)
 (typep 12 'prime)
 (typep 13 'prime)
+
+;;; example 3 pair type
+(deftype pair (a b &optional typ)
+  `(satisfies (lambda (x)
+                (and (consp x)
+                     (typep (car x) (quote ,a))
+                     (typep (cdr x) (quote ,b))))))
+(typep '(1 . 2) '(pair integer integer))
+
+;;; example 4 list type
+(defun list-of-p (typ xs)
+  (and (listp xs) (every (lambda (x) (typep x typ))  xs)))
+
+(deftype list-of (typ)
+  `(satisfies (lambda (xs) (list-of-p (quote ,typ) xs))))
+
+(typep '(1 2) '(list-of integer))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; defstruct
@@ -145,13 +174,118 @@
   (name "Dawg" :type string)
   (leg-num 0 :type integer))
 
+(deftype person-or-dawg ()
+  `(or person dawg))
+(typep (make-dawg) 'person-or-dawg) ;; => true
+
 (let ((p1 (make-person :name "Peter J Ladin" :age 100))
       (dawg1 (make-dawg :name "potsu" :leg-num 2)))
   (and (typep p1 'person)
-       (person-p p1)))
+       (person-p p1)
+       (typecase p1     ;; this essentially allows you to pattern match.
+         (person "Person!")
+         (dawg "Dawg!"))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; &key parameters can have a type!
 
-;;; type specifier lists
+(declaim (ftype (function (string &key (:n integer))) foo))
+(defun foo (bar &key n) n)
+;; compile time check :n to be integer
+(let ((a (bar "asd" :n 1))) a)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; how to fit in type theory?
+;;; https://alhassy.github.io/TypedLisp
+
+;; t top type
+(typep 'x 't)
+(typep 1 t)
+
+;; bottom type
+(typep nil 'nil)
+
+;; unit
+(typep nil 'null)
+(typep () 'null)
+
+;; singleton type
+(typep 3 '(eql 3))
+(typep 10 '(eql 10))
+
+;; union type
+(typep 3 '(or integer char))
+
+;; intersection type
+(typep #(1) '(and array vector))
+
+;; predicate
+(typep 2 '(satisfies evenp))
+
+;; note, many lisp types that looks polymorphic are not
+;; polymorphic.
+;; e.g cons is just a type that contains two parts
+;; called car and cdr.
+
+;; unlike variables in statically typed languages where
+;; their types are fixed at compile time,
+;; variables don't have type in lisp, only values have.
+
+;; Because in lisp all variables have essentially the same type,
+;; everything is polymorphic, which means nothing is polymorphic...
+
+;; If everything is the same from each other, what's the point of
+;; having parametric polymorphism in the first place?
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; checking types
+
+;;; in lisp, types are inferred. By inferring it means you check the
+;;; type info when it matters.
+;;; e.g when you are passing a string as a function parameter, which
+;;; eventually will be used as an integer, it will fail somewhere in the
+;;; strack trace.
+
+;;;
+;;; For a compiler, type needs to be inferred by it's context. As
+;;; mentioned above, (check-type) can give compilers a good hint about
+;;; what type it supposes to have.
+
+;; tbh this type of thing is hard to do in Haskell. You need typeable
+;; coerce to Maybe Integer or something, lot of hassles to come by.
+(let ((ellew 321))
+  (list
+    (type-of ellew)
+    (progn
+      (setf ellew "mm")
+      (type-of ellew))))
+
+(defmacro my-checktype (v type)
+  (unless (typep v type) (error "type mismatch")))
+
+(my-checktype 1 integer)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; quote to prevent evaluation
+;;; x is the same as (eval x) unless specified.
+
+(eval 1)
+(eval (quote 1))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; coersion
+;;     e : a
+;; -----------------
+;;  (coerce e b) : b
+;; (coerce '(76 105 115 112) 'string)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; type annotation
+(+ (the integer 1)
+   (the integer 2))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Some type specifiers
 ;;; (vector double-float 100)
 ;;; (vector double-float *)     ;; leave the name unspecified
 ;;; (vector * 100)              ;; leave the name unspecified
@@ -194,7 +328,8 @@
 
 (declaim (ftype (function ((or integer string hash-table))) fn1))
 
-;;; runtime type check
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; typecase
 (defun fn1 (x)
   (typecase x
     (integer (format t "~%I got an integer"))

@@ -31,6 +31,12 @@
 ;;; if you are using an repl to develop struct, you should be careful
 ;;; compiling struct because if you want to modify anything after it's
 ;;; loaded, the only senible way is to restart the repl.
+
+;;; each defstruct also define some helper functions including:
+;;; 1. field accessors
+;;; 2. type specifier
+;;; 3. type predicate
+
 (defstruct (human (:constructor create-person (id name age)))
   id name age)
 
@@ -43,4 +49,6 @@
   (format t "This female is ~a~%" (female-name notme))
   (format t "This human is also ~a~%" (human-name notme))
   (format t "am I female? ~a" (female-p me))
-  (format t "female is a human: ~a" (subtypep 'female 'human)))
+  (format t "female is a human: ~a" (subtypep 'female 'human))
+  ;; structs fields are settable
+  (setf (human-age me) 23))

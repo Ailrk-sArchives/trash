@@ -40,7 +40,7 @@ int main(void) {
     std::cout << "> ";
     auto pnums = std::make_unique<std::vector<int>>(
         std::initializer_list<int>({1, 2, 3}));
-
+::
     for (const auto &v : *pnums) {
       std::cout << "before move: " << v << " ";
     }
