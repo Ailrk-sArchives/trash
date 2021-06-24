@@ -1,9 +1,21 @@
 ;;;; condition system
 
+;; combinations of exceptions and warnings
+;;
+;; In a java/python like exception system, each time a code throws
+;; an exception, the stack will unwind, and the call site will be destoried.
+;; So even if the caller get signaled that some exception happened, it can't
+;; do much to fix it because the callee no longer exists.
+;;
+;; But with common lisp conditon system, we can have keep the callee intact,
+;; while choose what handler to call to fix the exception. As if you can
+;; freeze the time and choose what to do.
+;;
 ;; Three components of a condition system
 ;; 1. signaling a condition
 ;; 2. handling a condition
 ;; 3. recover from a condition
+
 
 ;;; condition system is a more powerful try catch mechanism.
 ;;; try catch allows you to attempt execute a block of code,
@@ -33,48 +45,6 @@
 ;;; more specficially it's a CLOS object with arbitrary slots. We can carry
 ;;; various information with condition, change a condition at runtime, and
 ;;; do everything else we can do with an object.
-
-;;; The most basic way to throwing a condition is to call (error 'condt ..)
-;;; this will throw a condtion and propagate upwards like in a conventional
-;;; expcetion system.
-;;; If the expression is controled by a (handler-case e c .. ) somewhere
-;;; in it's backtrace, and the condtion is capture by the handler-case
-;;; expression, the corresponding handler code will be executed. After
-;;; that's done, the orgina lstack is unwinded. This works like normal
-;;; try catch.
-;;; Note in this case the handler code is defined in the handler-case
-;;; expression, in another word, the caller defines what to do.
-
-;;; Not like convential exception handling, in condition system we can
-;;; define the counter action in the callee as well. To do so
-;;; we define possible "restarts" in a (restart-case) expression
-;;; in the callee. A restart-case can define several restarts, each with
-;;; a unique name. Note restart-case doesn't bind restart to a particular
-;;; condition, it just define the possible reaction.
-;;; To use these restarts defined in the callee, we use handler-bind and
-;;; invoke-restart from the caller.
-;;; The mechanism is similar to handler-case, we match on the case for
-;;; handling the condition, and call (invoke-restart 'restart) to choose
-;;; the restart provided by the callee.
-
-;;; What's the benefit of this more complex system comparing with a simple
-;;; try catch system?
-;;; Try-catch separate the exception signaling and exception handling into
-;;; two parts. While condition system breaks it into three parts:
-;;;   1. signaling a condition
-;;;        this happens at the callee level. When situations emerge
-;;;        we call (error), a new condition get created and propagated
-;;;   2. handling a condition
-;;;        for handler-case:
-;;;           execute the handling code, unwind stack
-;;;
-;;;        for handler-bind:
-;;;           execute the handling code, doesn't unwind the stack
-;;;   3. recover from a condition
-;;;        for handler-case:
-;;;           keep going, doesn't recover from the exception
-;;;        for handler-bind:
-;;;           use invoke-restart to choose a restart to run.
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -202,11 +172,10 @@
 ;;;      restart.
 (defun div-and-handle-error (x y)
   (handler-bind     ;; capture restart conditons and choose what to do.
-    ((division-by-zero
-       (lambda (c)
-         (format t "Got error ~a~%" c)
-         (format t "will divide by 1 ~%")
-         (invoke-restart 'divide-by-one))))
+    ((division-by-zero (lambda (c)
+                         (format t "Got error ~a~%" c)
+                         (format t "will divide by 1 ~%")
+                         (invoke-restart 'divide-by-one))))
     (div-restart x y)))
 (div-and-handle-error 3 0)
 
