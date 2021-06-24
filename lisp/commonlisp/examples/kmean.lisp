@@ -1,4 +1,5 @@
-; kmean
+;;;; kmean
+;; a little practice of kmean algorithm
 (defun classify (means data dist-fun)
   (let ((sets (loop for m in means collect '())))
     (loop for d in data do
@@ -10,5 +11,3 @@
                           dist (funcall dist-func d m))))
             (push d (nth min stes))))
     sets))
-
-(+ 1 2)

@@ -13,6 +13,7 @@
 
 ;;; when implementing reader macros, recursive-p should always be true
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; stream primer
 ;;; first try to understand where does things come from
 (defun stream-primer ()
@@ -24,6 +25,7 @@
             (read ss nil nil)   ;; points to the nil, only nil to read
             (read ss nil nil)))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; quote
 ;;; simplest macro that translate form '<a> to (quote a)
 ;;; we use ^ instead of '
@@ -43,6 +45,7 @@
 ;;; 3. single-quote-reader is called, which in turn calls read again.
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; json
 
 (defconstant +left-bracket+ #\[)

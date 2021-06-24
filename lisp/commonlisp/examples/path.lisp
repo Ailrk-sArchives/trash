@@ -1,3 +1,4 @@
+;;;; path
 (probe-file "foo")
 
 ;; better portability

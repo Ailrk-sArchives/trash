@@ -28,17 +28,17 @@
   a)
 
 
-; this doesn't work for setq
-; (let ((a '(1 2 3)))
-;   (setq (elt a 1) 20)
-;   a)
+;;; this doesn't work for setq
+;;; (let ((a '(1 2 3)))
+;;;   (setq (elt a 1) 20)
+;;;   a)
 
-;; setf is a macro
-;; setf is designed for more generic set. it works for all setq
-;; cases, as they just get expanded to (setq a x)
-
-;; but you can define you own place with defsetf, meaning you can
-;; customize a place to be settable.
+;;; setf is a macro
+;;; setf is designed for more generic set. it works for all setq
+;;; cases, as they just get expanded to (setq a x)
+;
+;;; but you can define you own place with defsetf, meaning you can
+;;; customize a place to be settable.
 
 (defun eleventh (ls)
   (elt ls 10))
@@ -53,7 +53,7 @@
   l)
 
 
-;; some experiments
+;;; some experiments
 (let ((a 10))
   (setf a 10)   ;; (setq a 10)
   (incf a)      ;; (setq a (+ 1 a))

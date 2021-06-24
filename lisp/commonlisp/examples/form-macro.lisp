@@ -1,5 +1,6 @@
-;; takes a form with name substituted
+;;;; form macro
 
+;; takes a form with name substituted
 
 (defmacro with-name ((s name) &body body)
   `(progn

@@ -1,4 +1,4 @@
-;;;; Two commonly used assoc list.
+;;;; alist and plist
 ;; plist is simply key value alterantivly stored in the list.
 ;; alist is a list of key value pairs.
 
