@@ -1,4 +1,14 @@
 ;;;; Type Systems
+;; PS: 1. trick with slimv: ,i to inspect a package
+;;     2. trace a function with ,t
+;;     3. in the restart mannual, move cursor to a local var
+;;        and press ,i to inspect local variable.
+;;     4. inspect on frame with global vars like *stanard-output*
+;;        to check the value of the varin that frame.
+;;     5. ,xl under a name to check where the function is called
+;;        ,xe check what functions are called
+
+(declaim (optimize (speed 0) (safety 3) (debug 3)))
 
 ;;; type:
 ;;;   a set of objects. Types are never explicitly represented as
@@ -150,6 +160,8 @@
 ;;; example 4 list type
 (defun list-of-p (typ xs)
   (and (listp xs) (every (lambda (x) (typep x typ))  xs)))
+(list-of-p 'integer '(1 2 3))
+
 
 (deftype list-of (typ)
   `(satisfies (lambda (xs) (list-of-p (quote ,typ) xs))))

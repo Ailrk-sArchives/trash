@@ -15,36 +15,8 @@
 ;; 1. signaling a condition
 ;; 2. handling a condition
 ;; 3. recover from a condition
-
-
-;;; condition system is a more powerful try catch mechanism.
-;;; try catch allows you to attempt execute a block of code,
-;;; if some situation happen, the block can voluntarily throw
-;;; an exception. The exception will propagage upward to it's
-;;; caller until a catch block is found.
-;;; Then, the control flow is hand over to that catch block,
-;;; code in the block get executed, and the original stack frame
-;;; get unwind.
-;;; Getting unwind means the stack get destroyed. But all resources
-;;; will be released before destroy everything in the stack.
-
-;;; Common lisp is different from ordinary languages in the sense that
-;;; it heavily use the repl feature to develop interactively. It has
-;;; the mechanism called restart, whenever something exceptions happen,
-;;; the repl will bring you to the restrat menu, which gives you a list
-;;; of possible way to handle this situation. Options in the list are either
-;;; predefined or defined by the user.
-;;; You decide how to handle the condition, and the repl will restart the
-;;; function again.
-
-;;; To have a error catching mechansim that supports this concept of
-;;; restarting, common lisp's condition system made several differemt
-;;; design choces.
-
-;;; First, like most other languages, conditions (exceptions) are object.
-;;; more specficially it's a CLOS object with arbitrary slots.
-;;; Being a CLOS means the object
-
+;; You can handle exceptions at lower level functions, not like in languages like
+;; python, error handlers are all defined in higher level functions.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; ignore an error
@@ -140,7 +112,7 @@
 ;;; restart-case
 
 (defun div-restart (x y)
-  (restart-case (/ x y)   ;; we define cases in restart-case
+  (restart-case (/ x y)
     (return-zero () ;; create a new restart called "return-zero"
                  :report "Return 0"
                  0)
@@ -152,31 +124,7 @@
                      :interactive (lambda ()
                                     (prompt-new-value "Please enter: "))
                      (div-restart x value))))
-
-(defun prompt-new-value (prompt)
-  (format *query-io* prompt)  ;; special stream to make user query
-  (force-output *query-io*)
-  (list (read *query-io*)))
-
 (div-restart 3 0)
-
-
-;;; restart prorammatically (handler-bind, invoke-restart)
-;;; process:
-;;;   1. invoke div-restart
-;;;   2. restart cases get defined in div-restart
-;;;   3. div-restart throw a condtion 'division-by-zero
-;;;   4. it's propagated to div-and-handle-error, bind to
-;;;      the corresponding case, invoke the 'divide-by-one
-;;;      restart.
-(defun div-and-handle-error (x y)
-  (handler-bind     ;; capture restart conditons and choose what to do.
-    ((division-by-zero (lambda (c)
-                         (format t "Got error ~a~%" c)
-                         (format t "will divide by 1 ~%")
-                         (invoke-restart 'divide-by-one))))
-    (div-restart x y)))
-(div-and-handle-error 3 0)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; some examples
