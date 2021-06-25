@@ -149,6 +149,8 @@
 (typep 12 'prime)
 (typep 13 'prime)
 
+;;; TODO this two doesn't work because satisfies doesn't
+;;; accept anything other than symbol
 ;;; example 3 pair type
 (deftype pair (a b &optional typ)
   `(satisfies (lambda (x)
@@ -248,6 +250,9 @@
 
 ;; If everything is the same from each other, what's the point of
 ;; having parametric polymorphism in the first place?
+
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; checking types
