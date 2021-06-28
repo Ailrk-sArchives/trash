@@ -41,7 +41,14 @@
   id name age)
 
 ;;; structs can have single inheritance, works as you expected.
-(defstruct (female (:include human)) (gender "female" :type string))
+(defstruct (female
+             (:include human)
+             (:print-function
+               (lambda (struct stream depth)
+                 (declare (ignore depth))
+                 (print "customized printer: ")
+                 (print (female-name struct)))))
+  (gender "female" :type string))
 
 (let ((me (create-person 1 "me" 10))
       (notme (make-female :id 10 :name "notme" :age 20)))
@@ -52,3 +59,7 @@
   (format t "female is a human: ~a" (subtypep 'female 'human))
   ;; structs fields are settable
   (setf (human-age me) 23))
+
+
+;;; define show struct is stored in memeory
+(defstruct (bar (:type vector)) a b c)

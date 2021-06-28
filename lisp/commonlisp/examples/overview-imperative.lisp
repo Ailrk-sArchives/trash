@@ -93,6 +93,10 @@
        'here)   ;; this will never be executed
 
 
+(block nil
+       (return 1)   ;; simplified return
+       (return 2))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; transfering control flows
 ;;; This can be done in any languages, implemented with
@@ -132,8 +136,23 @@
 ;;; transferred away from a block, handlers on the stack will be destroyed,
 ;;; so unreachble heap memory will be detected at the next gc cycle and get
 ;;; swept away. But this doesn't save us from close external resources like
-;;; files and sockets.
+;;; files.
 
+;;; A solution for this is to create an expression such that even when
+;;; the control flow transferred away in the middle of the expression,
+;;; some functions still get called. (unwind-protect) helps us with this.
+
+;;; This method can be abstracted away into a context manager, where the
+;;; acquisition and the release of the resource are managed together within
+;;; the block, and the release is protected.
+
+;;; In common lisp, any transfer of control will go through these steps:
+;;; 1. extend (lifetime) of the exit point are abandoned
+;;;    (can't go back again)
+;;; 2. clean up clause of (unwind-protect) are evaluated
+;;; 3. related dynamic bindings of special veriables, tags, handlers ...
+;;;    are undone (clean up general stuffs)
+;;; 4. lifetime of exit point end, control get passed.
 
 ;;; code in unwind-project will be executed no matter
 ;;; when it's jumped out.
@@ -145,7 +164,7 @@
               (format t "In beta~%")
               (unwind-protect
                 (return-from alpha)
-                (print "still executed")))  ;; this is still executed
+                u(print "still executed")))  ;; this is still executed
        (setq d nil)
        (format t "End of alpha"))   ;; this will never be executed
 
@@ -181,3 +200,98 @@
   (print 'before-throw) (throw 'fn-a 'done) (print 'after-throw))
 
 (fn-a)
+
+
+;;; tag and go
+;;; this is really bad... don't use it
+(let ((val 1))
+  (tagbody
+    (setq val 1)
+    (go a)
+    (incf val 16)
+    a
+    (incf val 4)
+    (go b)
+    (incf val 32)
+    b
+    (incf val 8))
+  val)
+
+
+;;; fortran style declare + labels + bunch of statements
+(prog ((x 2) (y 1) z)
+      a
+      (setq x 10)
+      (if (not (eql x y))
+        (progn
+          (format t ": not equal at first~%")
+          (go b))
+        (format t ": equal now~%"))
+      (return (if (eql x y) '= '\=))
+      b   ;; set y to x
+      (setf y x)
+      (go a))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; loops!
+
+;;; Everybody's favorite structure programming strcuture
+
+(dotimes (n 10 n))
+(dotimes (i 10) (format t "~a " i))     ; result is nil
+(dotimes (i 10 i) (format t "~a " i))   ; result is i
+(dotimes (i 10 t) (format t "~a " i))   ; result is t
+
+;;; char is a setf place ...
+(defun palindromep (string &optional (start 0) (end (length string)))
+  (dotimes (k (floor (- end start) 2) t)
+    (unless (eql (char string (+ start k))
+                 (char string (- end k 1)))
+      (return nil))))
+
+;;; dolist also supports different return results
+(dolist (n '(1 2 3) t) (format t "~a" n))
+
+
+;;; do. really uncessary structure
+
+(do
+  ((tmp1 1 (1+ tmp1))
+   (tmp2 0 (1- tmp2)))
+  ((> (- tmp1 tmp2) 5)    ;; end test form
+   tmp1   ;; end result
+   ))
+
+(defun list-reverse (list)
+  (do
+    ((x list (cdr x))     ;; init form [step form]
+    (y '() (cons (car x) y)))
+    ((endp x) y)))        ;; end test form
+
+;;; (var init-value next-value)
+;;; note other vars referred in next-value position is the value in the
+;;; last loop.
+(defun fib (n)
+  (do
+    ((cnt 0 (1+ cnt))
+     (i 0 j)
+     (j 1 (+ i j))
+     (acc '() (cons j acc)))
+    ((= cnt n) acc)))
+
+
+;;; loop
+
+(loop
+  (print "Here I am.")
+  (return 17)
+  (print "Not here"))
+
+;;; there is no need for do
+(let ((n 0))
+  (loop
+    (when (> n 10) (return))
+    (print n)
+    (prin1 (* n n))
+    (incf n)))
