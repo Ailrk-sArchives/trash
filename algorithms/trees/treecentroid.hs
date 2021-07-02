@@ -19,4 +19,3 @@ module Treecentroid where
 --           / \   \
 --          0   0   0
 --
-

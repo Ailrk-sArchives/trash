@@ -85,21 +85,18 @@
     (labels ((set-color (node color) (setf (cdr (assoc node color-table)) color))
              (next-color (n) (mod (+ n 1) 2)))
       (set-color root color)
-      (block done
-             (loop while queue do
+      (block done (loop while queue do
                (let ((v (dequeue queue)))
                  ;; u's color should be the reverse of v's color.
                  (setf color (next-color (cdr (assoc v color-table))))
                  (loop for u in (gethash v graph) do
                        (if (not (member u visited))
-                           (progn
-                             (push u visited)
-                             (enqueue u queue)
-                             (set-color u color))
-                           (progn
-                             (if (not (equal (cdr (assoc u color-table)) color))
-                                 (progn
-                                   (return-from done nil))))))))
+                         (progn
+                           (push u visited)
+                           (enqueue u queue)
+                           (set-color u color))
+                         (when (not (equal (cdr (assoc u color-table)) color))
+                           (return-from done nil))))))
              color-table))))
 
 (defun bipartite (graph)

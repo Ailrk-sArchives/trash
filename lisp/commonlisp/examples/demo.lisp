@@ -104,6 +104,7 @@
 (multiple-value-bind (r theta) (polar 3 4)
   (vector r theta))
 
+
 ;; get rid of the multi value return
 (defun floor-1 (x y) (floor x y) x)
 

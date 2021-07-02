@@ -1,5 +1,4 @@
 -- Part I
-
 start = {
     main = function()
         io.open('a')
@@ -27,22 +26,20 @@ start = {
 }
 
 Ch2EightQueen = {
-    main = function ()
+    main = function()
         local N = 8
-        local function isplaceok (a, n, c)
+        local function isplaceok(a, n, c)
             for i = 1, n - 1 do
-                if (a[i] == c) or
-                   (a[i] - 1 == c - n) or
-                   (a[i] + 1 == c + n) then
-                   return false
+                if (a[i] == c) or (a[i] - 1 == c - n) or (a[i] + 1 == c + n) then
+                    return false
                 end
             end
             return true
         end
 
-        local function printsolution (a)
-            for i=1, N do
-                for j=1, N do
+        local function printsolution(a)
+            for i = 1, N do
+                for j = 1, N do
                     io.write(a[i] == j and "X" or ".", " ")
                 end
                 io.write("\n")
@@ -50,12 +47,12 @@ Ch2EightQueen = {
             io.write("\n")
         end
 
-        local function addqueen (a, n)
+        local function addqueen(a, n)
             if n > N then
                 printsolution(a)
                 do return end
             else
-                for c=1, N do
+                for c = 1, N do
                     if isplaceok(a, n, c) then
                         a[n] = c
                         addqueen(a, n + 1)
@@ -84,9 +81,7 @@ Ch4String = {
         local function remove(src, i, j)
             return string.sub(src, 1, i) .. string.sub(src, j, -1)
         end
-        local function ispali(src)
-            return string.reverse(src) == src
-        end
+        local function ispali(src) return string.reverse(src) == src end
 
         insert("long string", 5, "-o-")
         remove("good evening dwag", 5, 14)
@@ -97,27 +92,27 @@ Ch4String = {
 
 -- Ch 5 data structures with table.
 Ch5Table = {
-    define = function ()
+    define = function()
         local seasons = {"Spring", "Summer", "Autumn", "Winter"} -- table as array
         print(seasons)
-        local point = { x = 0, y = 0 }                           -- table as record
+        local point = {x = 0, y = 0} -- table as record
         print(point)
 
-        local polyline = {  -- table constructor mixed.
-            color="blue",
-            thickness=2,
-            npoints=4,
-            {x=0, y=0},
-            {x=-10, y=0},
-            {x=10, y=0},
-            {x=1, y=0},
+        local polyline = { -- table constructor mixed.
+            color = "blue",
+            thickness = 2,
+            npoints = 4,
+            {x = 0, y = 0},
+            {x = -10, y = 0},
+            {x = 10, y = 0},
+            {x = 1, y = 0}
         }
 
-        local polyline2 = {  -- for special characters as key.
-            ["+"]="add",
-            ["-"]="minus",
-            ["*"]="multiply",
-            ["/"]="divide",
+        local polyline2 = { -- for special characters as key.
+            ["+"] = "add",
+            ["-"] = "minus",
+            ["*"] = "multiply",
+            ["/"] = "divide"
         }
         print(polyline[2].x == -10)
         print(polyline2["-"] == "minus")
@@ -126,27 +121,21 @@ Ch5Table = {
     traversal = function()
         -- as list
         local list1 = {}
-        for i = 1, 10 do
-            list1[i] = io.read()
-        end
+        for i = 1, 10 do list1[i] = io.read() end
 
-        local printlist = function (list)
-            for i=1, #list do
-                print(list[i])
-            end
+        local printlist = function(list)
+            for i = 1, #list do print(list[i]) end
         end
         printlist(list1)
 
-        local t = {10, print, x=12, k="hi"}
-        for k, v in pairs(t) do
-            print(k, v)
-        end
+        local t = {10, print, x = 12, k = "hi"}
+        for k, v in pairs(t) do print(k, v) end
 
     end,
 
     safenav = function()
         local E = {}
-        local company = { director = { address = { zipcode = 1}} }
+        local company = {director = {address = {zipcode = 1}}}
         local zip1 = (((company or E).director or E).address or E).zipcode
         local zip2 = (((company1 or E).director or E).address or E).zipcode
         print(zip1 == 1)
@@ -157,12 +146,9 @@ Ch5Table = {
         -- recursive reference
         local a = {}
         a.a = a
-        a.a.a.a.a.a.a.a.a.a.a.a = 100  -- now a.a is 100
+        a.a.a.a.a.a.a.a.a.a.a.a = 100 -- now a.a is 100
 
-        local escapeseq = {
-            ["\n"] = "line break",
-            ["\r"] = "return",
-        }
+        local escapeseq = {["\n"] = "line break", ["\r"] = "return"}
 
         local function do_polynomial(t, x)
             local acc = 0
@@ -174,7 +160,7 @@ Ch5Table = {
 
         local function isseq(t)
             local flag = true
-            for i=1, #t do
+            for i = 1, #t do
                 if t[i] == nil then
                     print("spot")
                     flag = false
@@ -184,8 +170,8 @@ Ch5Table = {
         end
 
         local function insert_list(dest, src, idx)
-            for i=1, #src do
-                table.insert(dest, i+idx-1, src[i])
+            for i = 1, #src do
+                table.insert(dest, i + idx - 1, src[i])
             end
         end
 
@@ -198,10 +184,10 @@ Ch5Table = {
             return result
         end
 
-        do_polynomial({1,3,5,7}, 10)
-        isseq({1,2,3})
-        isseq({1,2,nil,3})
-        insert_list({1,2,3,4}, {10, 20, 30}, 2)
+        do_polynomial({1, 3, 5, 7}, 10)
+        isseq({1, 2, 3})
+        isseq({1, 2, nil, 3})
+        insert_list({1, 2, 3, 4}, {10, 20, 30}, 2)
     end
 }
 
@@ -210,36 +196,30 @@ Ch6Functions {
 
         local s, e = string.find("hello Lua user", "Lua")
 
-        local function foo()
-            return "a", "b", "c"
-        end
+        local function foo() return "a", "b", "c" end
 
-        a, b, c = foo()  -- unpack tuple
-        foot = {foo()}   -- unpack in table.
+        a, b, c = foo() -- unpack tuple
+        foot = {foo()} -- unpack in table.
     end,
 
     varadic = function()
         local function add(...)
             local s = 0
-            for _, v in ipairs{...} do  -- sugar.
+            for _, v in ipairs {...} do -- sugar.
                 s = s + v
             end
             return s
         end
         add(1, 2, 3, 4, 5)
 
-        local function printf(fmt, ...)
-            io.write(string.format(fmt, ...))
-        end
+        local function printf(fmt, ...) io.write(string.format(fmt, ...)) end
         printf("%d", 1)
 
-        local function pack(...)
-            return table.pack(...)
-        end
+        local function pack(...) return table.pack(...) end
 
         local t = {1, 2, 3}
 
-        print(t == pack(table.unpack{t}))
+        print(t == pack(table.unpack {t}))
 
     end,
 
@@ -247,31 +227,36 @@ Ch6Functions {
         -- f call g at last line. we know f has nothing else to
         -- do when calling g, so its stack is nolong needed.
         local function g(x) return x end
-        local function f(x) x = x + 1; return g(x) end
-        local function foo(n) if n > 0 then return foo(n - 1) else return n end end
+        local function f(x)
+            x = x + 1;
+            return g(x)
+        end
+        local function foo(n)
+            if n > 0 then
+                return foo(n - 1)
+            else
+                return n
+            end
+        end
     end,
 
     exercise = function()
 
         local printlist = function(list, idx)
-            for i=(idx or 1), #list do
-                print(list[i])
-            end
+            for i = (idx or 1), #list do print(list[i]) end
         end
 
-        local skipfirst = function(list)
-            printlist(list, 2)
-        end
-        print(skipfirst({1,2,3}))
+        local skipfirst = function(list) printlist(list, 2) end
+        print(skipfirst({1, 2, 3}))
 
         -- random
         local randint = function(from, to)
             return math.ceil(math.random() * (from - to) + to)
         end
 
-        local shuffle =function(list)
+        local shuffle = function(list)
             local randomness = 500
-            for _=1, randomness do
+            for _ = 1, randomness do
                 local randidx = randint(1, #list)
                 local picked = list[randidx]
                 table.remove(list, randidx)
@@ -280,8 +265,8 @@ Ch6Functions {
             return list
         end
 
-        for i=1, 100 do
-            print(table.concat(shuffle{1,2,3,4,5,6,7,8,9}, " "))
+        for i = 1, 100 do
+            print(table.concat(shuffle {1, 2, 3, 4, 5, 6, 7, 8, 9}, " "))
         end
 
     end
@@ -306,21 +291,17 @@ Ch7IO {
             end
         end
 
-        local sortfile = function ()
+        local sortfile = function()
             local lines = {}
-            for line in io.lines() do
-                lines[#lines + 1] = line
-            end
+            for line in io.lines() do lines[#lines + 1] = line end
             table.sort(lines)
 
-            for _, l in pairs(lines) do
-                io.write(l, "\n")
-            end
+            for _, l in pairs(lines) do io.write(l, "\n") end
         end
 
         local block = function()
             while true do
-                local block = io.read(2^3) -- read 8 bytes.
+                local block = io.read(2 ^ 3) -- read 8 bytes.
                 if not block then break end
                 io.write("write: \n")
                 io.write(block)
@@ -351,13 +332,13 @@ Ch8Gaps = {
             x1 = a2 + d
             x2 = a2 - d
         end
-        print (x1, x2)
+        print(x1, x2)
     end,
 
-    returnlimit = function()  -- return must be next to a end keyword.
+    returnlimit = function() -- return must be next to a end keyword.
         local function foo(x)
             if x > 10 then
-                do return 10 end  -- use do block to return in the middle
+                do return 10 end -- use do block to return in the middle
             end
             return x
         end
@@ -371,46 +352,53 @@ Ch8Gaps = {
         end
 
         goto room1
-        ::room1:: do
+        ::room1::
+        do
             info("room 1")
             local move = io.read()
-            if move == "s" then goto room3
-            elseif move == "e" then goto  room2
+            if move == "s" then
+                goto room3
+            elseif move == "e" then
+                goto room2
             else
                 print("invalid move")
                 goto room1
             end
         end
 
-        ::room2:: do
+        ::room2::
+        do
             info("room 2")
             local move = io.read()
-            if move == "s" then goto room3
-            elseif move == "e" then goto  room1
+            if move == "s" then
+                goto room3
+            elseif move == "e" then
+                goto room1
             else
                 print("invalid move")
                 goto room2
             end
         end
 
-        ::room3:: do
+        ::room3::
+        do
             info("room 3")
             local move = io.read()
-            if move == "s" then goto room1
-            elseif move == "e" then goto  room4
+            if move == "s" then
+                goto room1
+            elseif move == "e" then
+                goto room4
             else
                 print("invalid move")
                 goto room2
             end
         end
 
-        ::room4:: do
-            print("You win")
-        end
+        ::room4::
+        do print("You win") end
     end
 
 }
-
 
 -- Part II
 
@@ -418,33 +406,35 @@ Ch9Closure {
 
     trysort = function()
         local network = {
-            {name="grauna", Ip="210.26.30.34"},
-            {name="arraial", Ip="210.26.30.23"},
-            {name="lua", Ip="210.26.30.12"},
-            {name="derain", Ip="210.26.23.20"},
+            {name = "grauna", Ip = "210.26.30.34"},
+            {name = "arraial", Ip = "210.26.30.23"},
+            {name = "lua", Ip = "210.26.30.12"},
+            {name = "derain", Ip = "210.26.23.20"}
         }
-        table.sort(network, function (a, b) return a.name > b.name end)
+        table.sort(network, function(a, b) return a.name > b.name end)
         return network
     end,
 
-     derivate = function (f, delta)
+    derivate = function(f, delta)
         delta = delta or 1e-4
-        return function (x) return (f(x + delta) - f(x)) / delta end
+        return function(x) return (f(x + delta) - f(x)) / delta end
     end,
 
     lib = function()
         local Lib = {}
-        Lib.foo = function (x, y) return x + y end
-        Lib.bar = function (x, y) return x - y end
-        print(Lib.foo(1,2))
-        print(Lib.bar(1,2))
+        Lib.foo = function(x, y) return x + y end
+        Lib.bar = function(x, y) return x - y end
+        print(Lib.foo(1, 2))
+        print(Lib.bar(1, 2))
     end,
 
     localfunction = function()
-        local fact  -- declare local first, so it is defined in recursive call.
+        local fact -- declare local first, so it is defined in recursive call.
         fact = function(n)
-            if n == 0 then return 1
-            else return n * fact (n - 1)
+            if n == 0 then
+                return 1
+            else
+                return n * fact(n - 1)
             end
         end
         print(fact(10))
@@ -458,7 +448,7 @@ Ch9Closure {
                 return count
             end
         end
-        local c1 = newCounter()  -- two different closures.
+        local c1 = newCounter() -- two different closures.
         local c2 = newCounter()
         print("c2")
         print(c2())
@@ -471,15 +461,15 @@ Ch9Closure {
         print(c2())
     end,
 
-    redefine = function ()
+    redefine = function()
         do
             local oldsin = math.sin
-            local k = math.pi / 180  -- degree to rad
+            local k = math.pi / 180 -- degree to rad
             math.sin = function(x) return oldsin(x / k) end
             -- run
             local thetadegree = 90
             local thetarad = thetadegree * k
-            print(math.sin(thetarad))  -- rad sin
+            print(math.sin(thetarad)) -- rad sin
             math.sin = oldsin
             print(math.sin(thetadegree)) -- degree sin
         end
@@ -489,12 +479,13 @@ Ch9Closure {
         do
             local oldopen = io.open
             local accessok = function(filename, mode)
-                return true  --fake check.
+                return true -- fake check.
             end
-            io.open = function (filename, mode)  -- sandbox open
+            io.open = function(filename, mode) -- sandbox open
                 if accessok(filename, mode) then
                     return oldopen(filename, mode)
-                else return nil, "access denies"
+                else
+                    return nil, "access denies"
                 end
             end
         end
@@ -502,14 +493,14 @@ Ch9Closure {
 
     Geosystem = {
         shape = {
-            disk = function (cx, cy, r)
+            disk = function(cx, cy, r)
                 return function(x, y)
-                    return (x - cx) ^ 2 + (y - cy) ^ 2 <= r^2
+                    return (x - cx) ^ 2 + (y - cy) ^ 2 <= r ^ 2
                 end
             end,
 
-            rect = function (l, r, b, t)
-                return function (x, y)
+            rect = function(l, r, b, t)
+                return function(x, y)
                     return l <= x and x <= r and y <= t and b <= y
                 end
             end
@@ -517,40 +508,34 @@ Ch9Closure {
 
         op = {
 
-            complement = function (r)
-                return function(x, y)
-                    return not r(x, y)
-                end
+            complement = function(r)
+                return function(x, y) return not r(x, y) end
             end,
 
             union = function(r1, r2)
-                return function (x, y)
-                    return r1(x, y) or r2(x, y)
-                end
+                return function(x, y) return r1(x, y) or r2(x, y) end
             end,
 
-            inserect = function (r1, r2)
+            inserect = function(r1, r2)
                 return function(x, y)
                     return r1(x, y) and r2(x, y)
                 end
             end,
 
-            difference = function (r1, r2)
+            difference = function(r1, r2)
                 return function(x, y)
                     return r1(x, y) and not r2(x, y)
                 end
             end,
 
-            translate = function (r, dx, dy)
-                return function (x, y)
-                    return r(x - dx, y - dx)
-                end
+            translate = function(r, dx, dy)
+                return function(x, y) return r(x - dx, y - dx) end
             end
         },
 
-        plot = function(r, m, n)  -- portable bitmap.
+        plot = function(r, m, n) -- portable bitmap.
             io.write("P1\n", m, " ", n, "\n")
-            for i=1, n do
+            for i = 1, n do
                 local y = (n - i * 2) / n
                 for j = 1, m do
                     local x = (j * 2 - m) / m
@@ -569,7 +554,7 @@ Ch10PatternMatching = {
         print(string.sub(str, string.find(str, "morning")))
     end,
 
-    gs = function ()
+    gs = function()
         local s = string.gsub("Lua is cute", "cute", "great")
         print(s)
         s = string.gsub("Lua lua lua is cute", "lua", "Lua", 1)
@@ -579,9 +564,7 @@ Ch10PatternMatching = {
     gm = function()
         local s = "some string"
         local words = {}
-        for w in string.gmatch(s, "%a+") do
-            words[#words + 1] = w
-        end
+        for w in string.gmatch(s, "%a+") do words[#words + 1] = w end
         print(table.concat(words, ", "))
     end,
 
@@ -606,9 +589,11 @@ Ch10PatternMatching = {
             print(":::::::::::::")
             local res = str:match("%((.*)%)")
             local parenopen = res:find("%(")
-            local a, parenclose = res:find(".*".."%)".."()")
+            local a, parenclose = res:find(".*" .. "%)" .. "()")
             print(parenopen, parenclose)
-            if parenopen and parenclose then foo(res:sub(parenopen, parenclose)) end
+            if parenopen and parenclose then
+                foo(res:sub(parenopen, parenclose))
+            end
         end
         foo(lisp)
     end,
@@ -627,15 +612,15 @@ Ch10PatternMatching = {
 
     capture3 = function()
         local s = [[Then he said: "It's all right!"]]
-        local _, quotedPart = string.match(s, "([\"'])(.-)%1")  -- - lazy verison of *
+        local _, quotedPart = string.match(s, "([\"'])(.-)%1") -- - lazy verison of *
         print(quotedPart)
-    end,
+    end
 
 }
 
 Ch11MostFrequentWords = {
 
-    mfw = function (filename, n)
+    mfw = function(filename, n)
         local counter = {}
         io.input(filename)
         for line in io.lines() do
@@ -644,30 +629,21 @@ Ch11MostFrequentWords = {
             end
         end
         local words = {}
-        for w in pairs(counter) do
-            words[#words + 1] = w
-        end
+        for w in pairs(counter) do words[#words + 1] = w end
         table.sort(words, function(w1, w2)
-            return counter[w1] > counter[w2]
-                   or counter[w1] == counter[w2]
-                   and w1 < w2
+            return
+                counter[w1] > counter[w2] or counter[w1] == counter[w2] and w1 <
+                    w2
         end)
-        for i=1, n do
-            io.write(words[i], "\t", counter[words[i]], "\n")
-        end
+        for i = 1, n do io.write(words[i], "\t", counter[words[i]], "\n") end
     end
 
 }
 
-
 Ch12Datetime {
-    time = function()
-        print(os.time())
-    end,
+    time = function() print(os.time()) end,
 
-    date = function()
-        print(os.date("%d/%m/%Y", os.time()))
-    end,
+    date = function() print(os.date("%d/%m/%Y", os.time())) end,
 
     datealgebra = function()
         local t = os.date("*t")
@@ -676,32 +652,33 @@ Ch12Datetime {
         print(os.date("%Y/%m/%d", os.time(t)))
     end,
 
-    datediff = function ()
-        local t1 = os.time({year=2020, month=1, day=12})
-        local t2 = os.time({year=2020, month=4, day=11})
+    datediff = function()
+        local t1 = os.time({year = 2020, month = 1, day = 12})
+        local t2 = os.time({year = 2020, month = 4, day = 11})
         local d = os.difftime(t2, t1)
         print(d // (24 * 3600))
     end
 }
 
-
 Ch13BitsandBytes {
 
-    bitwise = function ()
+    bitwise = function()
         print(string.format("%x", 0xff & 0xabcd))
         print(string.format("%x", 0xff | 0xabcd))
         print(string.format("%x", 0xaaaa ~ -1))
-        print(string.format("%x", ~2^8))
+        print(string.format("%x", ~2 ^ 8))
         print(string.format("%x", -1))
         print(string.format("%x", 0xff << 12))
-        print(string.format("%x",  0xff >> -12))
+        print(string.format("%x", 0xff >> -12))
     end,
 
-    udiv = function (n, d)
-        if d < 0 then                       -- if d > 2^63
+    udiv = function(n, d)
+        if d < 0 then -- if d > 2^63
             if math.ult(n, d) then
                 return 0
-            else return 1 end
+            else
+                return 1
+            end
         end
         local q = ((n >> 1) // d) << 1
         local r = n - q * d
@@ -718,9 +695,7 @@ Ch14Datastructure {
         for i = 1, n do
             local row = {}
             mt[i] = row
-            for j = 1, m do
-                row[j] = 0
-            end
+            for j = 1, m do row[j] = 0 end
         end
         return mt
     end,
@@ -729,9 +704,7 @@ Ch14Datastructure {
         local mt = {}
         for i = 1, n do
             local aux = (i - 1) * m
-            for j = 1, m do
-                mt[aux + j] = 0
-            end
+            for j = 1, m do mt[aux + j] = 0 end
         end
         return mt
     end,
@@ -740,7 +713,7 @@ Ch14Datastructure {
         local c = {}
         for i = 1, #a do
             local resultline = {}
-            for k, va in pairs(a[i]) do   -- nil will not be visited.
+            for k, va in pairs(a[i]) do -- nil will not be visited.
                 for j, vb in pairs(b[k]) do
                     local res = (resultline[j] or 0) + va * vb
                     resultline[j] = (res ~= 0) and res or nil
@@ -753,14 +726,12 @@ Ch14Datastructure {
 
     linkedlist = function()
         local push = function(li, val)
-            if li == nil then return {next=nil, value=val} end
+            if li == nil then return {next = nil, value = val} end
             local res = {next = li, value = val}
             return res
         end
         local list = nil
-        for i = 1, 100 do
-            list = push(list, i)
-        end
+        for i = 1, 100 do list = push(list, i) end
         local head = list
         while head ~= nil do
             print(head.value)
@@ -769,9 +740,7 @@ Ch14Datastructure {
     end,
 
     deque = function()
-        local function listNew()
-            return {first=0, last=-1}
-        end
+        local function listNew() return {first = 0, last = -1} end
         local function pushl(list, val)
             local first = list.first - 1
             list[first] = val
@@ -802,15 +771,13 @@ Ch14Datastructure {
             for _, l in ipairs(list) do set[l] = true end
             return set
         end
-        local reserved = Set{"while", "end", "function", "local",}
+        local reserved = Set {"while", "end", "function", "local"}
         print("is def a reserved word?: ", reserved["def"])
     end,
 
     stringbuffer = function()
         local buffer = {}
-        for line in io.lines() do
-            buffer[#buffer + 1] = line .. "\n"
-        end
+        for line in io.lines() do buffer[#buffer + 1] = line .. "\n" end
         local s = table.concat(buffer)
         print(s)
     end,
@@ -853,9 +820,4 @@ Ch14Datastructure {
 
 }
 
-Ch15DataFilesAndSerialization {
-
-    dof = function ()
-        do end
-    end
-}
+Ch15DataFilesAndSerialization {dof = function() do end end}

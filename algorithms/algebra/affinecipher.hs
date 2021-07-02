@@ -2,8 +2,8 @@
 
 module Affinecipher where
 
-import Data.Maybe
-import Prelude hiding (gcd)
+import           Data.Maybe
+import           Prelude    hiding (gcd)
 
 -- create a ring of integer modular n.
 zn :: Integer -> [Integer]
@@ -15,9 +15,8 @@ extendedEuclidean' :: Col -> Col -> (Integer, Integer)
 extendedEuclidean' (_, _, s, t) (_, 0, _, _) = (s, t)
 extendedEuclidean' (_, r, s, t) (q', r', s', t') =
   let c1 = (q', r', s', t')
-      c2 =
-        let r'' = r - q' * r'
-         in (r' `div` r'', r'', s - q' * s', t - q' * t')
+      c2 = let r'' = r - q' * r'
+            in (r' `div` r'', r'', s - q' * s', t - q' * t')
    in extendedEuclidean' c1 c2
 
 extendedEuclidean :: Integer -> Integer -> (Integer, Integer)
