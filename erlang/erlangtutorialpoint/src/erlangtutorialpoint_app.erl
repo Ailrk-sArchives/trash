@@ -9,8 +9,6 @@
 
 -export([start/2, stop/1]).
 
-
-
 start(_StartType, _StartArgs) ->
     io:fwrite("hello, world"),
     erlangtutorialpoint_sup:start_link().

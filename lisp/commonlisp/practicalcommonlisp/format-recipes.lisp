@@ -30,8 +30,7 @@
                       :fill-pointer 0))  ;; fill at the beginning
       (s2 (make-array 10 :element-type 'character
                       :adjustable t
-                      :fill-pointer 4))
-      )
+                      :fill-pointer 4)))
      (format s1 "Hello, ~a" 'Jimmy)
      (format s2 "Hello, ~a" 'Jimmy)
      (print s1)

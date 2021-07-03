@@ -1,5 +1,6 @@
 ;;;; CLOS
 
+
 ;;; common lisp object orientation system
 
 (defvar *account-number* 0)

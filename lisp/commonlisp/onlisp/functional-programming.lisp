@@ -1,5 +1,4 @@
-;; again, some basic stuffs.
-
+;; again, basic stuffs.
 
 ; (defun destructive-rev (lst)
 ;   (let* ((len (length lst))

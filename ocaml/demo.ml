@@ -15,7 +15,7 @@ let tuple : (int * int * string) = (1, 2, "sd");;
 
 (* named argument *)
 let f1 ~name1:arg1 ~name2:arg2 = arg1 + arg2
-let f2 ~name1 ~nam2 = name1 + name2
+let f2 ~name1 ~name2 = name1 + name2
 let f3 ~name1:(arg1:int) ~name2:(arg2:int) = arg1 + arg2
 let f4 ?name:(arg1=9) arg2 = arg1 + arg2
 
