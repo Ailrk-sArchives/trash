@@ -23,14 +23,13 @@ template <typename It> void print_iter(It first, It last) {
 
 template <typename BidirectionalIterator, typename Comparator>
 void merge(BidirectionalIterator left, BidirectionalIterator mid,
-           BidirectionalIterator right, Comparator &&comp) {
+           BidirectionalIterator right, Comparator comp) {
   const int lhs_sz = mid - left + 1;
   const int rhs_sz = right - mid;
-  const int sz = lhs_sz + rhs_sz;
 
   std::vector<int> lhs(lhs_sz + 1, 0);
   std::vector<int> rhs(rhs_sz + 1, 0);
-  *(lhs.begin() + lhs_sz) = INT32_MAX;    // guards
+  *(lhs.begin() + lhs_sz) = INT32_MAX;
   *(rhs.begin() + rhs_sz) = INT32_MAX;
 
   for (auto l = left, lhs_ptr = lhs.begin(); l < left + lhs_sz;) {
@@ -42,8 +41,8 @@ void merge(BidirectionalIterator left, BidirectionalIterator mid,
   }
 
   auto r = lhs.begin(), l = rhs.begin();
-  for (auto k = left; k != right + 1; ++k) {
-    if (comp(*r, *l)) {
+  for (auto k = left; k != right; ++k) {
+    if (*r < *l) {
       *k = *r++;
     } else {
       *k = *l++;
@@ -53,7 +52,7 @@ void merge(BidirectionalIterator left, BidirectionalIterator mid,
 
 template <typename BidirectionalIterator, typename Comparator>
 void merge_sort_impl(BidirectionalIterator first, BidirectionalIterator last,
-                     Comparator &&comp) {
+                     Comparator comp) {
   if (last - first + 1 <= 1)
     return;
 
@@ -65,7 +64,7 @@ void merge_sort_impl(BidirectionalIterator first, BidirectionalIterator last,
 
 template <typename BidirectionalIterator, typename Comparator>
 void merge_sort(BidirectionalIterator first, BidirectionalIterator last,
-                Comparator &&comp) {
+                Comparator comp) {
   merge_sort_impl(first, last - 1, comp);
 }
 
