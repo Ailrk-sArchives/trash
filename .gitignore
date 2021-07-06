@@ -417,3 +417,4 @@ myocamlbuild.ml
 setup.ml
 
 *.dump-simpl
+.gdb_history
