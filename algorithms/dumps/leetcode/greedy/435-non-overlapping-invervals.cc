@@ -49,8 +49,6 @@ public:
     }
 };
 
-
-
 int main(void)
 {
   Solution solution;

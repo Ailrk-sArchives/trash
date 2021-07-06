@@ -32,5 +32,4 @@ public:
       }
       return s;
     }
-
 };

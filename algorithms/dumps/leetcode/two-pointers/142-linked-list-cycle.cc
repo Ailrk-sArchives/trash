@@ -13,10 +13,18 @@ struct ListNode {
     ListNode(int x) : val(x), next(NULL) {}
 };
 
-// TODO proof
-
 // floyd tortoise and hare cycle detection algorithm
 // advance pointer with different speed check if they meet.
+//
+// 1. use a fast pointer that skip 2 nodes per step, and a slow pointer that
+//    skip one element per step.
+// 2. if fast reach the end, there is no loop.
+// 3. if fast and slow pointers meet, there is a loop
+// 4. the distance from where fast and slow pointer meet to the start of the
+//    loop is the distance from the starting point to the start of the loop.
+//    [lemma] leave slow pointer where it is, put fast pointer  at the
+//            beginning of the list, advance both pointers one step at a time
+//            eventually they meet at the start of the loop.
 
 class Solution {
 public:
@@ -24,18 +32,19 @@ public:
       ListNode* slow = head;
       ListNode* fast = head;
 
-      // detect the cycle
+      // detect loop
       do {
         if (!fast || !fast->next) return nullptr;
         fast = fast->next->next;
         slow = slow->next;
       } while (fast != slow);
 
-      // find the cycle
+      // find the cycle.
+
       fast = head;
       while (fast != slow) {
-        slow = slow->next;
         fast = fast->next;
+        slow = slow->next;
       }
 
       return fast;
