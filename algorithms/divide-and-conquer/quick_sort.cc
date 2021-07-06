@@ -1,7 +1,6 @@
 #include <array>
 #define BOOST_STACKTRACE_USE_ADDR2LINE
 
-#include <boost/stacktrace.hpp>
 #include <iostream>
 #include <iterator>
 #include <list>
@@ -10,6 +9,13 @@
 #include <vector>
 
 // #define TEST
+template <typename C> void print_seq(C &&container) {
+  for (auto &n : container) {
+    std::cout << n << " ";
+  }
+  std::cout << std::endl;
+}
+
 
 // quick sort takes bidirectional iterators.
 
@@ -17,16 +23,14 @@ auto hoare_partition = [](auto start, auto end, auto &comp) {
   typename std::iterator_traits<decltype(start)>::value_type pivot =
       *(start + std::distance(start, end) / 2);
 
-  decltype(start) i = start - 1;
-  decltype(start) j = end + 1;
+  decltype(start) i = start;
+  decltype(start) j = end;
 
   for (;;) {
-    do
+    while (comp(*i, pivot))
       i++;
-    while (comp(*i, pivot));
-    do
+    while (!comp(*j, pivot) && *j != pivot)
       j--;
-    while (!comp(*j, pivot) && *j != pivot);
     if (i >= j)
       break;
     std::swap(*i, *j);
@@ -48,9 +52,10 @@ auto lomuto_partition = [](auto start, auto end, auto &comp) {
 };
 
 // quick sort with custom comparator and partition scheme
-template <typename BiIter, typename Comparator, typename Partition>
-void quick_sort_impl(BiIter begin, BiIter end, const Partition &partition,
-                     const Comparator &comp) {
+template <typename BidirectionalIterator, typename Comparator,
+          typename Partition>
+void quick_sort_impl(BidirectionalIterator begin, BidirectionalIterator end,
+                     const Partition &partition, const Comparator &comp) {
   static_assert(
       std::is_convertible_v<
           typename std::iterator_traits<decltype(begin)>::iterator_category,
@@ -59,28 +64,23 @@ void quick_sort_impl(BiIter begin, BiIter end, const Partition &partition,
 
   if (begin >= end)
     return;
-  BiIter p = partition(begin, end, comp);
+  BidirectionalIterator p = partition(begin, end, comp);
   quick_sort_impl(begin, p, partition, comp);
   quick_sort_impl(p + 1, end, partition, comp);
 }
 
 // quick sort interface
-template <typename BiIter, typename Comparator, typename Partition>
-void quick_sort(BiIter begin, BiIter end, const Partition &partition,
-                const Comparator &comp) {
+template <typename BidirectionalIterator, typename Comparator,
+          typename Partition>
+void quick_sort(BidirectionalIterator begin, BidirectionalIterator end,
+                const Partition &partition, const Comparator &comp) {
   quick_sort_impl(begin, end - 1, partition, comp);
 }
 
-template <typename BiIter, typename Comparator>
-void quick_sort(BiIter begin, BiIter end, const Comparator &comp) {
+template <typename BidirectionalIterator, typename Comparator>
+void quick_sort(BidirectionalIterator begin, BidirectionalIterator end,
+                const Comparator &comp) {
   quick_sort_impl(begin, end - 1, hoare_partition, comp);
-}
-
-template <typename C> void print_seq(C &&container) {
-  for (auto &n : container) {
-    std::cout << n << " ";
-  }
-  std::cout << std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -93,8 +93,6 @@ private:
 
 public:
   String(const std::string &str) {
-    std::cout << "copy" << std::endl;
-    std::cout << boost::stacktrace::stacktrace() << std::endl;
     data_ = new char[str.size()];
     char *top = data_;
     for (auto &c : str)

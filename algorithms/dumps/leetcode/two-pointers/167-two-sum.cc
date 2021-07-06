@@ -1,8 +1,8 @@
 // https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/
 
 #include <iostream>
-#include <vector>
 #include <iterator>
+#include <vector>
 
 // two pointesr problem
 // It's ascking for a sum of two number l, r, we can move two pointers from
@@ -17,51 +17,52 @@ using namespace std;
 
 class Solution {
 public:
-    vector<int> twoSum(vector<int>& numbers, int target) {
+  vector<int> twoSum(vector<int> &numbers, int target) {
 
-      int l = 0;
-      int r = numbers.size() - 1;
+    int l = 0;
+    int r = numbers.size() - 1;
 
-      while (l < r) {
-        int sum = numbers[l] + numbers[r];
-        if (sum == target) break;
-        if (sum < target) ++l;
-        else --r;
-      }
-
-      return { l + 1, r + 1 };
+    while (l < r) {
+      int sum = numbers[l] + numbers[r];
+      if (sum == target)
+        break;
+      if (sum < target)
+        ++l;
+      else
+        --r;
     }
+
+    return {l + 1, r + 1};
+  }
 };
 
-
-int main(void)
-{
+int main(void) {
 
   Solution solution;
 
   {
-    vector<int> v {2, 7, 11, 15};
+    vector<int> v{2, 7, 11, 15};
     auto res = solution.twoSum(v, 9);
 
-    for (auto& n : res) {
+    for (auto &n : res) {
       std::cout << n << " " << std::endl;
     }
   }
 
   {
-    vector<int> v {2, 3, 4};
+    vector<int> v{2, 3, 4};
     auto res = solution.twoSum(v, 6);
 
-    for (auto& n : res) {
+    for (auto &n : res) {
       std::cout << n << " " << std::endl;
     }
   }
 
   {
-    vector<int> v {-1, 0};
+    vector<int> v{-1, 0};
     auto res = solution.twoSum(v, -1);
 
-    for (auto& n : res) {
+    for (auto &n : res) {
       std::cout << n << " " << std::endl;
     }
   }

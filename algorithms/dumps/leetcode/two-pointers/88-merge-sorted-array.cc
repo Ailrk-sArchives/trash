@@ -32,28 +32,27 @@ using namespace std;
 
 class Solution {
 public:
-    void merge(vector<int>& nums1, int m, vector<int>& nums2, int n) {
-      int pos = m + n - 1;
-      m--; n--;
-      while (m >= 0 && n >= 0) {
-        nums1[pos--] = nums1[m] > nums2[n] ? nums1[m--] : nums2[n--];
-      }
-      while (n >= 0) {
-        nums1[pos--] = nums2[n--];
-      }
+  void merge(vector<int> &nums1, int m, vector<int> &nums2, int n) {
+    int pos = m + n - 1;
+    m--;
+    n--;
+    while (m >= 0 && n >= 0) {
+      nums1[pos--] = nums1[m] > nums2[n] ? nums1[m--] : nums2[n--];
     }
+    while (n >= 0) {
+      nums1[pos--] = nums2[n--];
+    }
+  }
 };
 
-
-int main(void)
-{
+int main(void) {
   Solution solution;
 
   {
     vector<int> v1{1, 2, 3, 0, 0, 0};
     vector<int> v2{2, 5, 6};
     solution.merge(v1, 3, v2, 3);
-    for (auto& n: v1) {
+    for (auto &n : v1) {
       std::cout << n << " ";
     }
     std::cout << std::endl;
@@ -63,7 +62,7 @@ int main(void)
     vector<int> v1{1};
     vector<int> v2{};
     solution.merge(v1, 1, v2, 0);
-    for (auto& n: v1) {
+    for (auto &n : v1) {
       std::cout << n << " ";
     }
     std::cout << std::endl;
@@ -73,7 +72,7 @@ int main(void)
     vector<int> v1{0};
     vector<int> v2{1};
     solution.merge(v1, 0, v2, 1);
-    for (auto& n: v1) {
+    for (auto &n : v1) {
       std::cout << n << " ";
     }
     std::cout << std::endl;

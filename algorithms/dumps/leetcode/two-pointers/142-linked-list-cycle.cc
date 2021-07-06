@@ -8,9 +8,9 @@ using namespace std;
  * Definition for singly-linked list.
  */
 struct ListNode {
-    int val;
-    ListNode *next;
-    ListNode(int x) : val(x), next(NULL) {}
+  int val;
+  ListNode *next;
+  ListNode(int x) : val(x), next(NULL) {}
 };
 
 // floyd tortoise and hare cycle detection algorithm
@@ -28,32 +28,31 @@ struct ListNode {
 
 class Solution {
 public:
-    ListNode *detectCycle(ListNode *head) {
-      ListNode* slow = head;
-      ListNode* fast = head;
+  ListNode *detectCycle(ListNode *head) {
+    ListNode *slow = head;
+    ListNode *fast = head;
 
-      // detect loop
-      do {
-        if (!fast || !fast->next) return nullptr;
-        fast = fast->next->next;
-        slow = slow->next;
-      } while (fast != slow);
+    // detect loop
+    do {
+      if (!fast || !fast->next)
+        return nullptr;
+      fast = fast->next->next;
+      slow = slow->next;
+    } while (fast != slow);
 
-      // find the cycle.
+    // find the cycle.
 
-      fast = head;
-      while (fast != slow) {
-        fast = fast->next;
-        slow = slow->next;
-      }
-
-      return fast;
+    fast = head;
+    while (fast != slow) {
+      fast = fast->next;
+      slow = slow->next;
     }
+
+    return fast;
+  }
 };
 
-
-int main(void)
-{
+int main(void) {
   Solution solution;
 
   return 0;

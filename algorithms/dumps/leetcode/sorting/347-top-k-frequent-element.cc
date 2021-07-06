@@ -13,12 +13,10 @@ using namespace std;
 
 class Solution {
 public:
-    vector<int> topKFrequent(vector<int>& nums, int k) {
-    }
+  vector<int> topKFrequent(vector<int> &nums, int k) {}
 };
 
-int main(void)
-{
+int main(void) {
   Solution solution;
 
   {
@@ -27,7 +25,6 @@ int main(void)
     auto res = solution.topKFrequent(v, k);
     std::cout << res << std::endl;
   }
-
 
   {
     vector<int> v{1};
