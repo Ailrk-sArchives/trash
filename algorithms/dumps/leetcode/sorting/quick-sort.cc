@@ -75,15 +75,15 @@ auto hoare_partition = [](auto &nums, int left, int right) {
 // lomuto paritition makes more  swap than hoare's partition, because each
 // time nums[i] get swaped
 auto lomuto_partition = [](auto &nums, int left, int right) {
-  int pivot = nums[right - 1];
+  int pivot = nums[right]; // choose
   int i = left;
-  for (int j = left; j < right; ++j) {
+  for (int j = left; j <= right; ++j) {
     if (nums[j] < pivot) {
       swap(nums[j], nums[i]);
       ++i;
     }
   }
-  swap(nums[i], nums[right - 1]);
+  swap(nums[i], nums[right]);
   return i;
 };
 
@@ -91,8 +91,8 @@ template <typename T, typename Partition>
 void quick_sort(vector<T> &nums, int left, int right, Partition partition) {
   if (left >= right)
     return;
-  int p = partition(nums, left, right); // return the index of the partition
-  quick_sort(nums, left, p, partition);
+  int p = partition(nums, left, right);     // return the index of the partition
+  quick_sort(nums, left, p - 1, partition); // note we don't need mid
   quick_sort(nums, p + 1, right, partition);
 }
 

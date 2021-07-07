@@ -40,16 +40,18 @@ void merge(vector<T> &nums, int left, int mid, int right) {
 
   vector<int> lhs(lhs_sz + 1, 0);
   vector<int> rhs(rhs_sz + 1, 0);
+  // guard.
+  // note this doesn't work for descending order.
+  lhs[lhs_sz] = INT32_MAX;
+  rhs[rhs_sz] = INT32_MAX;
 
   for (int i = 0; i < lhs_sz; ++i) {
     lhs[i] = nums[left + i];
   }
-  lhs[lhs_sz] = INT32_MAX; // guard
 
   for (int i = 0; i < rhs_sz; ++i) {
     rhs[i] = nums[mid + 1 + i];
   }
-  rhs[rhs_sz] = INT32_MAX;
   int i = 0, j = 0, k = 0;
 
   for (k = 0; k < sz; ++k) {
@@ -70,13 +72,11 @@ template <typename T> void merge_sort(vector<T> &nums, int left, int right) {
 }
 
 int main(void) {
-
   {
     std::cout << "merge sort " << std::endl;
     vector<int> v{5, 2, 9, 1, 7, 10, 3, 4, 6};
     merge_sort(v, 0, v.size() - 1);
     print_seq(v);
   }
-
   return 0;
 }

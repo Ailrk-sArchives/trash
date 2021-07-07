@@ -55,8 +55,7 @@ begin
     outinteger(1, i);
   end;
 
-
-  begin
+ begin
     outstring(1, "\n====\n");
     i := 16;
     outstring(i, "FibonacciNaive(16) = ");

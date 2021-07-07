@@ -28,10 +28,8 @@ void merge(BidirectionalIterator left, BidirectionalIterator mid,
   const int rhs_sz = right - mid;
   const int sz = lhs_sz + rhs_sz;
 
-  std::vector<int> lhs(lhs_sz + 1, 0);
-  std::vector<int> rhs(rhs_sz + 1, 0);
-  *(lhs.begin() + lhs_sz) = INT32_MAX;    // guards
-  *(rhs.begin() + rhs_sz) = INT32_MAX;
+  std::vector<int> lhs(lhs_sz, 0);
+  std::vector<int> rhs(rhs_sz, 0);
 
   for (auto l = left, lhs_ptr = lhs.begin(); l < left + lhs_sz;) {
     *lhs_ptr++ = *l++;
@@ -41,12 +39,22 @@ void merge(BidirectionalIterator left, BidirectionalIterator mid,
     *rhs_ptr++ = *r++;
   }
 
-  auto r = lhs.begin(), l = rhs.begin();
+  auto l = lhs.begin(), r = rhs.begin();
   for (auto k = left; k != right + 1; ++k) {
-    if (comp(*r, *l)) {
+
+    assert(!(l == lhs.begin() + lhs_sz && r == rhs.begin() + rhs_sz));
+
+    // left ends
+    if (l == lhs.begin() + lhs_sz && r < rhs.begin() + rhs_sz) {
       *k = *r++;
-    } else {
+      // right ends
+    } else if (l < lhs.begin() + lhs_sz && r == rhs.begin() + rhs_sz) {
       *k = *l++;
+    } else {
+      if (comp(*l, *r))
+        *k = *l++;
+      else
+        *k = *r++;
     }
   }
 }
@@ -75,6 +83,13 @@ int main(void) {
     std::cout << "merge sort " << std::endl;
     std::vector<int> v{5, 2, 9, 1, 7, 10, 3, 4, 6};
     merge_sort(v.begin(), v.end(), [](auto a, auto b) { return a < b; });
+    print_seq(v);
+  }
+
+  {
+    std::cout << "merge sort " << std::endl;
+    std::vector<int> v{5, 2, 9, 1, 7, 10, 3, 4, 6};
+    merge_sort(v.begin(), v.end(), [](auto a, auto b) { return a > b; });
     print_seq(v);
   }
 
