@@ -419,3 +419,6 @@ setup.ml
 *.dump-simpl
 .gdb_history
 .gdb_*
+
+# exclude data files
+*data-only*
