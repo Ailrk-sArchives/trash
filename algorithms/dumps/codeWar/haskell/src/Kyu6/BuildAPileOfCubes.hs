@@ -12,6 +12,15 @@
 -- as n^3 + (n-1)^3 + ... + 1^3 = m if such a n exists or -1 if there is no such n.
 module Kyu6.BuildAPileOfCubes where
 
+import           Data.Foldable         (for_)
+import           Data.List             (permutations)
+import           System.Random
+import           Test.Hspec
+import           Test.Hspec.QuickCheck
+import           Test.QuickCheck
+import           Text.Printf           (printf)
+
+
 
 ----------------------------------------
 -- first attempt
@@ -42,3 +51,19 @@ findNb m = if m == m' then r else -1
   where fsqrt = floor . sqrt . fromIntegral
         r = fsqrt (fsqrt m * 2)
         m' = div (r * (r + 1)) 2 ^ 2
+
+-- testing --------------------------------------------------------------------
+
+
+spec :: Spec
+spec = do
+  describe "Solution" $ do
+    testFindNb 4183059834009 2022
+    testFindNb 24723578342962 ((-1))
+    testFindNb 135440716410000 4824
+    testFindNb 40539911473216 3568
+  where
+    testFindNb :: Integer -> Integer -> Spec
+    testFindNb m r =
+      it (printf "m %i " m) $
+        findNb m `shouldBe` r

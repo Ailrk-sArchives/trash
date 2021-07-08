@@ -1,4 +1,5 @@
-module Main where
+module Main ( main) where
+
 
 main :: IO ()
-main = putStrLn "Nothing here..."
+main = undefined

@@ -11,10 +11,10 @@
 // Practice the standard solution.
 // The speed and familarity is very important for these basic algorithms.
 
+#include <algorithm>
 #include <deque>
 #include <iostream>
 #include <vector>
-#include <algorithm>
 
 using graph_t = std::vector<std::vector<int>>;
 

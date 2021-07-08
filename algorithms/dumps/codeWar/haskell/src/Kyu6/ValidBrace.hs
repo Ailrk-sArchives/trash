@@ -1,5 +1,9 @@
 -- <Valid Braces>
 module Kyu6.ValidBrace where
+import           Test.Hspec
+import           Test.Hspec.QuickCheck
+import           Test.QuickCheck
+import           Text.Printf           (printf)
 
 -- 2019-11-19
 --------------------------------------
@@ -10,10 +14,10 @@ module Kyu6.ValidBrace where
 -- tail is opposite to init bc they return list
 -- very wierd
 pair :: Char -> Char -> Bool
-pair '(' ')'= True
-pair '[' ']'= True
-pair '{' '}'= True
-pair _ _ = False
+pair '(' ')'=True
+pair '[' ']'=True
+pair '{' '}'=True
+pair _ _     = False
 
 validBraces :: String -> Bool
 validBraces as = go as []
@@ -35,6 +39,14 @@ validBraces' s = "" == foldr collapse [] s
   where collapse '(' (')':xs) = xs
         collapse '[' (']':xs) = xs
         collapse '{' ('}':xs) = xs
-        collapse x xs = x:xs
+        collapse x xs         = x:xs
 
+-- testing --------------------------------------------------------------------
 
+spec :: Spec
+spec =
+  it "should work for some examples" $ do
+    validBraces "()" `shouldBe` True
+    validBraces "[([)" `shouldBe` False
+    validBraces "())({}}{()][][" `shouldBe` False
+    validBraces "({})[({})]" `shouldBe` True

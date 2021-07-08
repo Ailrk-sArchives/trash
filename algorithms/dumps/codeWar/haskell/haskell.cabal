@@ -1,0 +1,97 @@
+cabal-version:      2.4
+name:               haskell
+version:            0.1.0.0
+
+-- A short (one-line) description of the package.
+-- synopsis:
+
+-- A longer description of the package.
+-- description:
+
+-- A URL where users can report bugs.
+-- bug-reports:
+
+-- The license under which the package is released.
+-- license:
+author:             Ailrk
+maintainer:         jimmy123good@hotmail.com
+
+-- A copyright notice.
+-- copyright:
+-- category:
+extra-source-files: CHANGELOG.md
+
+library
+    hs-source-dirs:   src
+    exposed-modules:
+
+      -- Kyu 1
+      Kyu1.SimpleInteractiveInterpreter
+      Kyu1.BecomeImmortal
+      Kyu1.ScottEncoding
+      Kyu1.PeanoAndChurch
+
+      -- Kyu 2
+      Kyu2.ExpressionTranspiler
+
+      -- Kyu 3
+      Kyu3.ScreenLockingPatterns
+
+      -- Kyu 4
+      Kyu4.SquareIntoSquares
+      Kyu4.ConwaysGameOfLife
+      Kyu4.TemplateHaskellTuplemaker
+
+      -- Kyu 5
+      Kyu5.MemorizeFibonacci
+      Kyu5.Beeramid
+
+      -- Kyu 6
+      Kyu6.BuildAPileOfCubes
+      Kyu6.CamelCaseMethod
+      Kyu6.FindTheOddInt
+      Kyu6.ValidBrace
+      Kyu6.DecipherThis
+      Kyu6.HexagonBeamMaxSum
+
+      -- Kyu 7
+      Kyu7.EvenOrOdd
+      Kyu7.HighestAndLowest
+      Kyu7.MakeAFunctionThatDoesArithmetic
+      Kyu7.Maskify
+      Kyu7.OnesAndZeros
+
+      -- Kyu 8
+      Kyu8.FakeBinary
+
+    -- Modules included in this library but not exported.
+
+    other-modules:
+        Paths_haskell
+
+    -- LANGUAGE extensions used by modules in this package.
+    -- other-extensions:
+    build-depends:
+       base ^>=4.14.1.0
+     , QuickCheck
+     , containers
+     , unordered-containers
+     , hspec
+     , HUnit
+     , parsec
+     , hspec-discover
+     , random
+     , transformers
+     , template-haskell
+
+    default-language: Haskell2010
+
+executable haskell-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_haskell
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends: base >=4.7 && <5
+  default-language: Haskell2010

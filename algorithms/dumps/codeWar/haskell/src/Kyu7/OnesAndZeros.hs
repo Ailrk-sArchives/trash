@@ -1,5 +1,8 @@
 -- <Ones and Zeros>
 module Kyu7.OnesAndZeros (toNumber) where
+import Test.Hspec
+import Test.QuickCheck
+
 
 -- 2019-11-18
 -----------------------------------------------
@@ -55,3 +58,12 @@ foldl'' f z (x:xs) =
 -- foldr is better for f that is lazy on the second arg.
 -- foldl will not start to eval till reach the end of the list, create huge thunk.
 
+-- testing --------------------------------------------------------------------
+
+spec :: Spec
+spec =
+  it "example tests" $ do
+    toNumber [0, 0, 0, 1] `shouldBe` 1
+    toNumber [0, 0, 1, 0] `shouldBe` 2
+    toNumber [1, 1, 1, 1] `shouldBe` 15
+    toNumber [0, 1, 1, 0] `shouldBe` 6

@@ -23,31 +23,29 @@ template <typename C> void print_seq(C &&container) {
 class Solution {
 public:
   vector<int> topKFrequent(vector<int> &nums, int k) {
-    std::vector<int> result;
+
     std::unordered_map<int, int> counts;
-    for (const auto &n : nums) {
+    for (auto &n : nums) {
       ++counts[n];
     }
 
-    auto comp = [](const auto &a, const auto &b) {
-      return a.second > b.second;
-    };
+    auto comp = [](auto a, auto b) { return a.second < b.second; };
 
-    std::priority_queue<std::pair<int, int>,
-                        std::vector<std::pair<int, int>, decltype(comp)>>
-        q(comp);
+    std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>,
+                        decltype(comp)>
+        pq(comp);
 
-    for (const auto &t : counts) {
-      q.push(t);
+    for (auto &n : counts) {
+      pq.push(n);
     }
+
+    std::vector<int> result;
 
     while (k >= 1) {
-      auto &[n, v] = q.top();
-      q.pop();
-      result.push_back(n);
-      k--;
+      result.emplace_back(pq.top().first);
+      pq.pop();
+      --k;
     }
-
     return result;
   }
 };
@@ -64,6 +62,13 @@ int main(void) {
 
   {
     vector<int> v{1};
+    int k = 1;
+    auto res = solution.topKFrequent(v, k);
+    print_seq(res);
+  }
+
+  {
+    vector<int> v{2, 1, 1, 3, 2, 2, 2, 1};
     int k = 1;
     auto res = solution.topKFrequent(v, k);
     print_seq(res);

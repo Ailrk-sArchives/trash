@@ -15,6 +15,11 @@
 module Kyu6.CamelCaseMethod where
 
 import Data.Char
+import Test.Hspec
+import Test.Hspec.QuickCheck
+import Test.QuickCheck
+import Text.Printf (printf)
+
 
 -- 2019-11-19
 ----------------------------------------
@@ -41,3 +46,15 @@ camelCase'' str = do
   x:xs <- words str
   toUpper x:xs
 
+-- testing --------------------------------------------------------------------
+
+spec :: Spec
+spec = do
+  it "test case" $
+    camelCase "test case" `shouldBe` "TestCase"
+  it "camel case method" $
+    camelCase "camel case method" `shouldBe` "CamelCaseMethod"
+  it "say hello" $
+    camelCase "say hello " `shouldBe` "SayHello"
+  it " camel case word" $
+    camelCase " camel case word" `shouldBe` "CamelCaseWord"

@@ -1,5 +1,8 @@
 -- <Highest and Lowest>
 module Kyu7.HighestAndLowest where
+import Test.Hspec
+import Test.QuickCheck
+
 
 --------------------------------------------
 -- first attempt
@@ -24,3 +27,9 @@ highAndLow str = show (foldr max (minBound :: Int) list) ++
 highAndLow' :: String -> String
 highAndLow' str = show (maximum ns) ++ " " ++ show (minimum ns)
   where ns = (map read $ words str) :: [Int]
+
+-- testing --------------------------------------------------------------------
+spec :: Spec
+spec =
+  it "4 5 29 54 4 0 -214 542 -64 1 -3 6 -6" $
+    highAndLow "4 5 29 54 4 0 -214 542 -64 1 -3 6 -6" `shouldBe` "542 -214"

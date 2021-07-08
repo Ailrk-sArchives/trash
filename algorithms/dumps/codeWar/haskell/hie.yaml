@@ -1,8 +1,0 @@
-cradle:
-  cabal:
-    - path: "./src"
-      component: "lib:haskell"
-    - path: "./test"
-      component: "test:haskell-unit-tests"
-    - path: "./app"
-      component: "exe:haskell-exe"

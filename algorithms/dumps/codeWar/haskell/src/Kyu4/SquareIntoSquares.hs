@@ -2,6 +2,7 @@
 
 module Kyu4.SquareIntoSquares where
 
+import           Test.Hspec
 
 -------------------------------------------------
 -- primitive attempt.
@@ -31,3 +32,13 @@ strictly increasing sequence.
 This sequence can be regarded as solving a pythagorean n-tuple.
 paper for solving pythagorean n-tuple: https://arxiv.org/pdf/1201.2145.pdf
 -}
+
+
+-- testing --------------------------------------------------------------------
+spec :: Spec
+spec =
+  it "should work for some small examples" $ do
+    decompose 11 `shouldBe` Just [1, 2, 4, 10]
+    decompose 50 `shouldBe` Just [1, 3, 5, 8, 49]
+    decompose 4 `shouldBe` Nothing
+
