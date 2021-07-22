@@ -8,10 +8,12 @@
 {-# LANGUAGE TypeFamilies        #-}
 
 module Types.TypeclassMetaprogramming where
-import qualified Data.Map        as Map
-import qualified Data.Vector     as Vector
+import qualified Data.Map               as Map
+import qualified Data.Vector            as Vector
 import           Data.Void
 import           Numeric.Natural
+
+import           Control.Exception.Base (assert)
 
 -- https://lexi-lambda.github.io/blog/2021/03/25/an-introduction-to-typeclass-metaprogramming/
 
@@ -142,9 +144,6 @@ type PublicKey = String
 data Authentication = AuthBaisc Username Password
                     | AuthSSH PublicKey
 
--- equivalence of the Sum type version.
-data Auth = Either (Username, Password) PublicKey
-
 class GNumFields a where
   gnumFields :: a -> Natural
 
@@ -155,8 +154,41 @@ instance {-# OVERLAPPING #-} (GNumFields a, GNumFields b) => GNumFields (a, b) w
   gnumFields (a, b) = gnumFields a + gnumFields b
 
 instance {-# OVERLAPPING #-} (GNumFields a, GNumFields b) => GNumFields (Either a b) where
-  gnumFields (Left a) = gnumFields a
+  gnumFields (Left a)  = gnumFields a
   gnumFields (Right b) = gnumFields b
 
+authToEither :: Authentication -> Either (Username, Password) PublicKey
+authToEither (AuthBaisc u p) = Left (u, p)
+authToEither (AuthSSH p)     = Right p
+
+numFieldsAuth :: Authentication -> Natural
+numFieldsAuth = gnumFields . authToEither
+
+n4 = numFieldsAuth (AuthSSH "asd")
+n5 = numFieldsAuth (AuthBaisc "asd" "asd")
+
+-------------------------------------------------------------------------------
+-- Define a generic  NumFields that works on any types.
+
+class Generik a where
+  type Rep a
+  genericize :: a -> Rep a
+
+instance Generik Authentication where
+  type Rep Authentication = Either (Username, Password) PublicKey
+  genericize (AuthBaisc user pass) = Left (user, pass)
+  genericize (AuthSSH key)         = Right key
+
+numFields :: (Generik a, Generik (Rep a)) => a -> Natural
+numFields = gnumFields . genericize
 
 
+
+-------------------------------------------------------------------------------
+run :: IO ()
+run = do
+  assert (n1 == 5) (return ())
+  assert (n2 == [1..8]) (return ())
+  assert (n3 == [1..4]) (return ())
+  assert (n4 == 1) (return ())
+  assert (n5 == 2) (return ())
