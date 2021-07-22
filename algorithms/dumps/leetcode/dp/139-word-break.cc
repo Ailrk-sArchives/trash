@@ -15,19 +15,19 @@ namespace sol1 {
 class Solution {
 public:
   bool wordBreak(string s, vector<string> &wordDict) {
-    std::vector<bool> dp(s.size() + 1, false);
+    std::vector<int> dp(s.size() + 1, false);
+    int n = s.size();
     dp[0] = true;
 
-    for (int i = 1; i <= s.size(); ++i) {
+    for (int i = 1; i <= n; ++i) {
       for (auto &word : wordDict) {
         int len = word.size();
-        if (i >= len && s.substr(i - len, len) == word) {
+        if (i >= len && word == s.substr(i - len, len)) {
           dp[i] = dp[i] || dp[i - len];
         }
       }
     }
-
-    return dp[s.size()];
+    return dp[n];
   }
 };
 

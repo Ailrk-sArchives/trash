@@ -70,6 +70,7 @@ library
 
       Cat.Cat.C1
 
+      Types.PhantomType
       Types.DependentType
       Types.Cardinality
       Types.LiquidHs
@@ -77,7 +78,7 @@ library
       Types.Inferences
       Types.TypeableAndDatKinds
       Types.TypeFam
-      Types.TypeFamVector
+      Types.TypeFam1
       Types.TypeFamZipper
       Types.Kindness
       Types.ExSubTyping
@@ -86,6 +87,7 @@ library
       Types.DataTypeALaCarte
       Types.DataTypeGenericProgramming
       Types.ExtensionsOnTypes
+      Types.TypeclassMetaprogramming
       Types.FD
 
       PL.Lam
@@ -168,6 +170,7 @@ library
     , bytestring
     , utf8-string
     , text
+    , text-conversions
 
     -- mmap wrapper
     , mmap

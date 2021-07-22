@@ -16,7 +16,6 @@ public:
     for (int i = 2; i <= n; ++i)
       dp[i] = std::max(dp[i - 1], nums[i - 1] + dp[i - 2]);
     return dp[n];
-
   }
 };
 
@@ -26,6 +25,7 @@ int main(void) {
 
   {
     std::vector<int> v{1, 2, 3, 1};
+
     auto result = solution.rob(v);
     std::cout << result << std::endl;
     assert(result == 4);

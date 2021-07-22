@@ -1,8 +1,8 @@
-{-# LANGUAGE FlexibleInstances    #-}
-{-# LANGUAGE LambdaCase           #-}
-{-# LANGUAGE ScopedTypeVariables  #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeSynonymInstances #-}
-{-# LANGUAGE ViewPatterns         #-}
+{-# LANGUAGE ViewPatterns #-}
 
 module MiniProject.Lens2048 where
 
@@ -14,28 +14,27 @@ module MiniProject.Lens2048 where
 
 -- https://www.nmattia.com/posts/2016-08-19-lens-linear-2048.html
 
-import           Control.Lens
-import           Control.Monad
-import           Control.Monad.State
-import           Data.Default
-import           Data.Maybe
-import           Data.Monoid            (Sum (..), getSum)
-import           Linear
-import           System.Console.ANSI
+import Control.Lens
+import Control.Monad
+import Control.Monad.State
+import Data.Default
+import Data.Maybe
+import Data.Monoid (Sum (..), getSum)
+import Linear
+import System.Console.ANSI
 import qualified Text.PrettyPrint.Boxes as Boxes
-import           Text.Read              hiding (get)
-
+import Text.Read hiding (get)
 
 type Board = M44 (Maybe (Sum Integer))
-type Game = StateT Board IO ()
 
+type Game = StateT Board IO ()
 
 -- need type synonym instance and flexible context for this.
 
 instance Default Board where
   def = V4 n n n n
-    where n = V4 Nothing Nothing Nothing Nothing
-
+    where
+      n = V4 Nothing Nothing Nothing Nothing
 
 main :: IO ()
 main = evalStateT loop def
@@ -45,16 +44,16 @@ main = evalStateT loop def
       liftIO clearScreen
       get >>= liftIO . Boxes.printBox . mkBox
       liftIO getLine >>= \case
-        "h"                               -> rows %= merge
-        "j"                               -> locs %= merge
-        "k"                               -> cols %= merge
-        "l"                               -> wors %= merge
+        "h" -> rows %= merge
+        "j" -> locs %= merge
+        "k" -> cols %= merge
+        "l" -> wors %= merge
         (parseCell -> Just (lx, ly, val)) -> lx . ly .= Just (Sum val)
 
     parseCell (words -> [x, y, v]) =
       (,,) <$> parseLens x
-           <*> parseLens y
-           <*> readMaybe v
+        <*> parseLens y
+        <*> readMaybe v
     parseCell _ = Nothing
 
     parseLens "x" = Just _x
@@ -62,11 +61,9 @@ main = evalStateT loop def
     parseLens "z" = Just _z
     parseLens "w" = Just _w
 
-
 -- --------------------------------------------------------------------------
 -- Draw
 -- --------------------------------------------------------------------------
-
 
 class Box a where
   mkBox :: a -> Boxes.Box
@@ -76,20 +73,19 @@ instance Box Board where
 
 instance Box (V4 (Maybe (Sum Integer))) where
   mkBox v = Boxes.hsep 2 Boxes.center1 $ v ^.. traverse <&> Boxes.text . f
-    where f = maybe "X" (show . getSum)
-
+    where
+      f = maybe "X" (show . getSum)
 
 -- --------------------------------------------------------------------------
 -- Game
 -- --------------------------------------------------------------------------
 
-
 instance Reversing (V4 a) where
-  reversing v = V4 (v^._w) (v^._z) (v^._y) (v^._x)
+  reversing v = V4 (v ^. _w) (v ^. _z) (v ^. _y) (v ^. _x)
 
 merge :: (Eq a, Monoid a) => [a] -> [a]
-merge (x:x':xs) | x == x' = (x <> x') : merge xs
-merge (x:xs) = x : merge xs
+merge (x : x' : xs) | x == x' = (x <> x') : merge xs
+merge (x : xs) = x : merge xs
 merge [] = []
 
 -- imagine a 4x4 board, we want to access rows cols, reveresed rows, reversed
@@ -109,4 +105,4 @@ list :: Iso' (V4 (Maybe a)) [a]
 list = iso toList fromList
   where
     toList v = reverse $ catMaybes $ foldl (flip (:)) [] v
-    fromList (xs :: [a]) = V4 (xs^?ix 0) (xs^?ix 1) (xs^?ix 2) (xs^?ix 3)
+    fromList (xs :: [a]) = V4 (xs ^? ix 0) (xs ^? ix 1) (xs ^? ix 2) (xs ^? ix 3)

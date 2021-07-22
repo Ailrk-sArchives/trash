@@ -58,4 +58,3 @@ _y = _2
 
 initial :: Pong
 initial = Pong (0, 0) (0, 0) 0 0 (0, 0) (return (0, 0)) empty
-

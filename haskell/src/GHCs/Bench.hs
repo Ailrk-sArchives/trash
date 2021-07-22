@@ -52,7 +52,7 @@ main1 = defaultMain [ bench "index list maybe index 9999" $ whnf (xs1 !?) 9999 -
                     ]
 
 -- you need nf for map beacuse you also want to know the overhead of f.
-main2:: IO ()
+main2 :: IO ()
 main2 = defaultMain [ -- 12.63ns all it evals to is _:_
                       bench "map to list whnf" $ whnf (map (+1)) xs
                     , bench "map to list nf" $ nf (map (+1)) xs]      -- 1.133 ms

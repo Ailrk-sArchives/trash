@@ -31,7 +31,6 @@ def top2_iterator():
     for i in iter(li):
         print(i)
 
-
 @printname
 def top3_generator():
     line_list: List = ['  line 1\n', ' line 2 \n']

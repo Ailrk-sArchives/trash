@@ -4,6 +4,7 @@
 {-# LANGUAGE KindSignatures           #-}
 {-# LANGUAGE TypeApplications         #-}
 {-# LANGUAGE TypeFamilies             #-}
+{-# LANGUAGE ConstraintKinds #-}
 
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds                #-}
@@ -268,6 +269,7 @@ type family IsAmericanDollar (a :: Currency) where
 
 type R1 = IsAmericanDollar 'USD
 type R2 = IsAmericanDollar 'RMB
+
 
 {-@ Conclusion
 
