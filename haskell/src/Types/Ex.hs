@@ -4,6 +4,7 @@
 {-# LANGUAGE GADTs                     #-}
 {-# LANGUAGE LambdaCase                #-}
 {-# LANGUAGE RankNTypes                #-}
+{-# LANGUAGE StandaloneDeriving        #-}
 module Types.Ex where
 
 import           Control.Monad
@@ -12,6 +13,15 @@ import           Data.Foldable
 import           Data.IORef
 import           Data.STRef
 import           GHC.Generics
+
+-- Don't use existential type, just use GADT.
+-- we can just hide type behind the type
+data WrappedDynValue where
+  Wrap :: Show a => a -> WrappedDynValue
+
+deriving instance Show WrappedDynValue
+
+n1 = fmap (\(Wrap x) -> show x) [Wrap "123", Wrap 1]
 
 {-@ extential types
     some level of type erasure.
@@ -276,7 +286,6 @@ foou (U x f) = f x
 data V = forall a. V a (a -> String)
 foov :: V -> String
 foov (V x f) = f x
-
 
 -- another example
 data ExType

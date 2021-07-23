@@ -4,8 +4,8 @@
 {-# LANGUAGE KindSignatures        #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE TypeOperators         #-}
 {-# LANGUAGE UndecidableInstances  #-}
-{-# LANGUAGE TypeOperators #-}
 
 module Types.DependentType where
 

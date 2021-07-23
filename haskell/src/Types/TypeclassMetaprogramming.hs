@@ -2,13 +2,16 @@
 {-# LANGUAGE DataKinds           #-}
 {-# LANGUAGE FlexibleContexts    #-}
 {-# LANGUAGE FlexibleInstances   #-}
+{-# LANGUAGE GADTs               #-}
 {-# LANGUAGE KindSignatures      #-}
+{-# LANGUAGE PolyKinds           #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE StandaloneDeriving  #-}
 {-# LANGUAGE TypeApplications    #-}
 {-# LANGUAGE TypeFamilies        #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TypeOperators       #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 
 module Types.TypeclassMetaprogramming where
@@ -18,7 +21,8 @@ import           Data.Void
 import           Numeric.Natural
 
 import           Control.Exception.Base (assert)
-import System.IO
+import           Data.Kind
+import           System.IO
 
 -- https://lexi-lambda.github.io/blog/2021/03/25/an-introduction-to-typeclass-metaprogramming/
 
@@ -216,7 +220,7 @@ class Generik2 a where
 instance Generik2 Authentication where
   type Rep2 Authentication = Either (Leaf Username, Leaf Password) (Leaf PublicKey)
   genericize2 (AuthBaisc user pass) = Left (Leaf user, Leaf pass)
-  genericize2 (AuthSSH key) = Right (Leaf key)
+  genericize2 (AuthSSH key)         = Right (Leaf key)
 
 instance Generik2 Foo where
   type Rep2 Foo = Either (Leaf (Either Int String)) (Leaf (Char, Bool))
@@ -270,15 +274,37 @@ data WhatIsIt a where
 -- AInt => a ~ Int
 doSometing :: WhatIsIt a -> a -> a
 doSometing ABool x = not x
-doSometing AInt x = x + 1
+doSometing AInt x  = x + 1
 
 -- GADT with type level list.
 infixr 5 `HCons`
 
 -- hetergenous list
+-- we defined two propositions, a term level value is a proof of the proposition
 data HList as where
   HNil :: HList '[]
   HCons :: a -> HList as -> HList (a ': as)
+
+-- note because we specifically say the input is of type HList (a ': as), GHC
+-- knows the list will not be empty.
+headHList :: HList (a ': as) -> a
+headHList (x `HCons` _) = x
+
+type family Head as where
+  Head (HList '[]) = 'Nothing
+  Head (HList (a ': as)) = 'Just a
+
+type family FromJust (a :: Maybe b) where
+  FromJust (Just x) = x
+
+-- note HList only takes kinds with *, it doesn't accept types promoted from
+-- data constructors, because they have different kinds.
+type T1 = Head (HList '[Bool, Char])
+
+-- but for this case we need to handle the empty case
+-- headHList' :: Head as => HList as -> Maybe a
+-- headHList' (x `HCons` _) = Just x
+-- headHList' HNil = Nothing
 
 n12 = True `HCons` "hellow" `HCons` 42 `HCons` HNil
 
@@ -290,15 +316,193 @@ data OneToThree a b c as where
   Three :: OneToThree a b c '[a, b, c]
 
 sumUpToThree :: OneToThree Int Int Int as -> HList as -> Int
-sumUpToThree One (x `HCons` HNil) = x
-sumUpToThree Two (x `HCons` y `HCons` HNil) = x + y
+sumUpToThree One (x `HCons` HNil)                       = x
+sumUpToThree Two (x `HCons` y `HCons` HNil)             = x + y
 sumUpToThree Three (x `HCons` y `HCons` z `HCons` HNil) = x + y + z
 
 ------------------------------------------------------------------------------
+-- we say: Give me a Even as, I can give you a Even (a ': b ': as) which has
+-- at least two elements. the argument goes over inductively until hit the
+-- base case. So this term proofs that the list is always even.
+
 data Even as where
   EvenNil :: Even '[]
-  EvenCons :: Even as -> Even (a ': b ': as)
+  EvenCons :: Even xs -> Even (a ': b ': xs)
 
+-- grab two elements and pair them up.
+type family PairUp as where
+  PairUp '[] = '[]
+  PairUp (a ': b ': xs) = (a, b) ': PairUp xs
+
+-- pairup elements in a HList
+-- Even as proofs that as must be even
+-- note how it's passed as the first paramter
+pairUp' :: Even as -> HList as -> HList (PairUp as)
+pairUp' EvenNil HNil                             = HNil
+pairUp' (EvenCons even) (x `HCons` y `HCons` xs) = (x, y) `HCons` pairUp' even xs
+
+n14 = pairUp' (EvenCons EvenNil) (() `HCons` "foo" `HCons` HNil)
+n15 = pairUp' (EvenCons $ EvenCons EvenNil)
+             (True `HCons` 'a' `HCons` () `HCons` "foo" `HCons` HNil)
+n16 = pairUp' (EvenCons $ EvenCons $ EvenCons EvenNil)
+             (False `HCons` 1 `HCons` True `HCons` 'a' `HCons` () `HCons` "foo" `HCons` HNil)
+
+------------------------------------------------------------------------------
+-- What if we don't want to pass Even proof term all the time?
+-- remeber typeclass is type predicate + type to term funcction
+-- this is a simple application of the tmp technique.
+
+class IsEven as where
+  evenProof :: Even as
+
+instance IsEven '[] where
+  evenProof = EvenNil
+
+instance IsEven as => IsEven (a ': b ': as) where
+  evenProof = EvenCons evenProof
+
+
+-- as = '[Bool, Bool, Bool, Bool],
+-- evenProof
+-- = EvenCons (evenProof :: '[Bool, Book])
+-- = EvenCons (EvenCons (evenProof :: '[])))
+-- = EvenCons (EvenCons EvenNil)
+-- Even is used to construct proof recursively.
+-- The purpose of evenProof is to be a proof term that can recursively generate
+-- new EvenCons base on the type as.
+pairUp :: IsEven as => HList as -> HList (PairUp as)
+pairUp = go evenProof
+  where
+    go :: Even as -> HList as -> HList (PairUp as)
+    go EvenNil HNil                             = HNil
+    go (EvenCons even) (x `HCons` y `HCons` xs) = (x, y) `HCons` go even xs
+
+-- now the proof is implicit
+n17 = pairUp (() `HCons` "foo" `HCons` HNil)
+
+------------------------------------------------------------------------------
+-- GADT vs type family
+
+-- EvenPairsCons EvenPairsNil :: '[a, b] [(a, b)]
+-- EvenPairsCons (EvenPairsCons EvenPairsNil) :: '[a, b, c, d] [(a, b), (c, d)]
+data EvenPairs as bs where
+  EvenPairsNil :: EvenPairs '[] '[]
+  EvenPairsCons :: EvenPairs xs ys -> EvenPairs (a ': b ': xs) ((a, b) ': ys)
+
+-- what is a function? A function is a mapping, in a set theory pov it's an
+-- ordered pair relates input and output.
+-- If we can construct a proof that relates it's input and output, we don't
+-- really need type family anyway.
+-- Here, EvenPairs takes an input type as, and the output tupe is bs. The
+-- relation between as and bs is defined in the GADT. We can just us bs as if
+-- we have a type famliy PairUp.
+pairUp1 :: EvenPairs as bs -> HList as -> HList bs
+pairUp1 EvenPairsNil HNil = HNil
+pairUp1 (EvenPairsCons even) (x `HCons` y `HCons` xs) = (x, y) `HCons` pairUp1 even xs
+
+------------------------------------------------------------------------------
+-- Type family to achieve the smae
+-- I find type family is much easier to write...
+
+-- a type level predicate that constraint a list to be even elements.
+type family IsEvenTF as :: Constraint where
+  IsEvenTF '[] = ()
+  IsEvenTF (_ ': _ ': xs) = IsEvenTF xs
+
+type family FirstTwo as where
+  FirstTwo '[] = '[]
+  FirstTwo (a ': b ': _) = a ': b ': '[]
+
+firstTwo :: IsEvenTF as => HList as -> HList (FirstTwo as)
+firstTwo HNil = HNil
+firstTwo (x `HCons` y `HCons` _) = x `HCons` y `HCons` HNil
+
+pairUp2 :: IsEvenTF as => HList as -> HList (PairUp as)
+pairUp2 HNil = HNil
+pairUp2 (x `HCons` y `HCons` xs) = (x, y) `HCons` pairUp2 xs
+
+n18 = firstTwo (1 `HCons` "a" `HCons` 3 `HCons` 'a' `HCons` HNil)
+n19 = pairUp2 (1 `HCons` "a" `HCons` 3 `HCons` 'a' `HCons` HNil)
+
+-- GADT vs type family:
+-- GADT + proofterm can achieve similar effect as type family, but GADT more
+-- precise constraints.
+
+------------------------------------------------------------------------------
+-- Guided type inference
+
+class UnitList as where
+  unitList :: HList as
+
+instance UnitList '[] where
+  unitList = HNil
+
+-- How does GHC resolve which instance to use?
+-- First it match instance head, if it matches it will try to solve the
+-- constraint imposed from the instance context.
+-- For example
+-- instance head UnitList (() ': as) will only pick elements with first element
+-- to be a unit.
+-- while UnitList (a ': as) will be picked for all lists.
+-- this constriant the list can only be a list of units
+--
+-- If we want a finer control for type inference, we can move information in
+-- the instance head to instance context and hand write constraints.
+instance (a ~ (), UnitList as) => UnitList (a ': as) where
+  unitList = () `HCons` unitList
+
+-- create a HList with 3 units without defining it explicitly.
+-- TMP generate the term for us.
+n20 = unitList :: HList '[(), (), ()]
+
+unsingleton :: HList '[a] -> a
+unsingleton (x `HCons` HNil) = x
+
+n21 = unsingleton (unitList :: HList '[()])
+n22 = unsingleton unitList
+
+------------------------------------------------------------------------------
+-- Subtyping constraints.
+-- In haskell we don't have subtyping, beacuse it doesn't support type inferece.
+-- instead most ppl use polymorphism to get around with it.
+-- Subtyping is not a equivalence relation, so we can't simpmly run unification
+-- algorithm on different types.
+
+-- Something can be a input, or an output.  both is a subtype of both.
+data GQLKind
+  = Both
+  | Input
+  | Output
+
+-- how it may be used
+data GQLType k where
+  TScalar :: GQLType 'Both
+  TInputObject :: Int -> GQLType 'Input
+  TIObject :: Int -> GQLType 'Output
+
+-- proof subkinding relationship
+data SubKind k1 k2 where
+  KRefl :: SubKind k k
+  KBoth :: SubKind 'Both k
+
+class IsSubKind k1 k2 where
+  subKindProof :: SubKind k1 k2
+
+-- ignore k
+instance IsSubKind 'Both k where
+  subKindProof = KBoth
+
+-- only accept Input
+instance (k ~ 'Input) => IsSubKind 'Input k where
+  subKindProof = KRefl
+
+instance (k ~ 'Output) => IsSubKind 'Output k where
+  subKindProof = KRefl
+
+data GQLParser (k :: SubKind) (a :: Type) = GQLParser k a
+
+nullable :: IsSubKind k 'Input => GQLParser k a -> GQLParser k (Maybe a)
+nullable = undefined
 
 ------------------------------------------------------------------------------
 run :: IO ()
@@ -314,7 +518,3 @@ run = do
   assert (n9 == 1) (return ())
   assert (n10 == 2) (return ())
   assert (n11 == 0) (return ())
-
-xproc0 = openFile "" ReadMode
-xproc1 = openFile "" ReadMode
-xproc2 = openFile "" ReadMode
