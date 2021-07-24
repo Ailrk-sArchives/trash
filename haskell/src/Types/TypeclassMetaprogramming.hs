@@ -1,17 +1,17 @@
-{-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE DataKinds           #-}
-{-# LANGUAGE FlexibleContexts    #-}
-{-# LANGUAGE FlexibleInstances   #-}
-{-# LANGUAGE GADTs               #-}
-{-# LANGUAGE KindSignatures      #-}
-{-# LANGUAGE PolyKinds           #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE StandaloneDeriving  #-}
-{-# LANGUAGE TypeApplications    #-}
-{-# LANGUAGE TypeFamilies        #-}
-{-# LANGUAGE TypeOperators       #-}
-{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE AllowAmbiguousTypes   #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE GADTs                 #-}
+{-# LANGUAGE KindSignatures        #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE PolyKinds             #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE StandaloneDeriving    #-}
+{-# LANGUAGE TypeApplications      #-}
+{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE TypeOperators         #-}
+{-# LANGUAGE UndecidableInstances  #-}
 
 
 module Types.TypeclassMetaprogramming where
@@ -23,6 +23,8 @@ import           Numeric.Natural
 import           Control.Exception.Base (assert)
 import           Data.Kind
 import           System.IO
+
+import           Data.Type.Equality
 
 -- https://lexi-lambda.github.io/blog/2021/03/25/an-introduction-to-typeclass-metaprogramming/
 
@@ -414,11 +416,11 @@ type family FirstTwo as where
   FirstTwo (a ': b ': _) = a ': b ': '[]
 
 firstTwo :: IsEvenTF as => HList as -> HList (FirstTwo as)
-firstTwo HNil = HNil
+firstTwo HNil                    = HNil
 firstTwo (x `HCons` y `HCons` _) = x `HCons` y `HCons` HNil
 
 pairUp2 :: IsEvenTF as => HList as -> HList (PairUp as)
-pairUp2 HNil = HNil
+pairUp2 HNil                     = HNil
 pairUp2 (x `HCons` y `HCons` xs) = (x, y) `HCons` pairUp2 xs
 
 n18 = firstTwo (1 `HCons` "a" `HCons` 3 `HCons` 'a' `HCons` HNil)
@@ -481,10 +483,12 @@ data GQLType k where
   TIObject :: Int -> GQLType 'Output
 
 -- proof subkinding relationship
-data SubKind k1 k2 where
-  KRefl :: SubKind k k
-  KBoth :: SubKind 'Both k
+-- To proof the relationship we give an instance of value in the propositrion
+data SubKind (k1 :: GQLKind) (k2 :: GQLKind) where
+  KRefl :: SubKind k k    -- two k must be the same
+  KBoth :: SubKind 'Both k -- whatever k will do.
 
+-- Use typeclass to help us to generate proof.
 class IsSubKind k1 k2 where
   subKindProof :: SubKind k1 k2
 
@@ -499,10 +503,43 @@ instance (k ~ 'Input) => IsSubKind 'Input k where
 instance (k ~ 'Output) => IsSubKind 'Output k where
   subKindProof = KRefl
 
-data GQLParser (k :: SubKind) (a :: Type) = GQLParser k a
+data GQLParser (k :: GQLKind) a where
+  GQLParser :: a -> GQLParser k a
 
 nullable :: IsSubKind k 'Input => GQLParser k a -> GQLParser k (Maybe a)
 nullable = undefined
+
+n23 = nullable (GQLParser @Int @'Input 1)
+n24 = nullable (GQLParser @Int @'Both 1)
+
+-- same thing.
+n25 = (nullable psin, nullable psout)
+  where
+    psin :: GQLParser 'Input Int
+    psin = undefined
+
+    psout :: GQLParser 'Both Int
+    psout = undefined
+
+data PValue = InputValue | SelectionSet
+
+type family ParserInput k where
+  ParserInput 'Both = InputValue
+  ParserInput 'Input = InputValue
+  ParserInput 'Output = SelectionSet
+
+-- Refl gives a proof of a equals to b. w
+-- :~: itself is a type. ~ is an operator for imposing type equality constraint
+-- Use Refl to write a resuable proof.
+inputParserInput :: forall k. IsSubKind k 'Input => ParserInput k :~: InputValue
+inputParserInput = case subKindProof @k @'Input of
+                    KRefl -> Refl
+                    KBoth -> Refl
+
+-- use the reusable proof term to redefine nullable
+nullable1 :: forall k a. IsSubKind k 'Input => GQLParser k a -> GQLParser k (Maybe a)
+nullable1 parser = case inputParserInput @k of
+                     Refl -> undefined
 
 ------------------------------------------------------------------------------
 run :: IO ()

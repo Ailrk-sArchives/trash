@@ -79,6 +79,7 @@ library
       Types.TypeableAndDatKinds
       Types.TypeFam
       Types.TypeFam1
+      Types.TypeClass
       Types.TypeFamZipper
       Types.Kindness
       Types.ExSubTyping
@@ -96,6 +97,7 @@ library
       PL.Continuation
       PL.CoroutinesWithContinuation
       PL.DenotationalSem
+      PL.TypesAndAbstractInterpretation
 
       Libs.ReadFile
       Libs.Asyncs

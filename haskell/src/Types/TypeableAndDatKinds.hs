@@ -181,8 +181,8 @@ dapplied = do
 
     6. At type level kinds indicates a set of types that's acceptable.
 
-    7. Type family is the bread and butter of the type level computation. It's the function at
-       type level.
+    7. Type family is the bread and butter of the type level computation. It's the function from
+       type level to term level. (Type predicate + dictionary)
 
     8. Type family also pattern matches on type variable. As typeable, it also break the
        parametricity
