@@ -75,6 +75,7 @@ library
       Types.Cardinality
       Types.LiquidHs
       Types.Gadts
+      Types.Generic1
       Types.Inferences
       Types.TypeableAndDatKinds
       Types.TypeFam

@@ -5,13 +5,14 @@
 module Types.DataTypeGenericProgramming where
 
 
-{-@ Writing function not quite parametrically polymorphic.
-    somehow affected by the shape of the datatype.
+{-@ Map datatypes to equivalent representation
+    do some operations on the representation
+    map back.
 
-    General components of a generic programming library
-    1. Represent datatypes generically
-    2. Map between user types and their representation
-    3. Define functions based on representations.
+    e.g map a sum type to A :+: B, which can be representated as one single
+        type. Then pattern match on each branch.
+
+    advantage: works on anyshape, because the mapping is automatic.
 @-}
 
 -- the SYB (scraping your boilerplates) style datatype generic programming
