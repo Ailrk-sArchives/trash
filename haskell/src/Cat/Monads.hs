@@ -380,7 +380,6 @@ kbind (Kleisli f) (Kleisli g) = Kleisli $ join . fmap g . f
 -- bind' :: Monad m => (a -> m b) -> (b -> m c) -> (a -> m c)
 -- bind' f g = join . fmap g . f
 
-
 -- unsafePerformIO is a cokleisli arrow.
 newtype Cokleisli w a b = Cokleisli (w a -> b)
 

@@ -59,7 +59,6 @@ library
       Cat.MTLPractise
       Cat.MTLPractise1
       Cat.MyMTL
-      Cat.ReadP
       Cat.Arrows
       Cat.ArrowPractice
       Cat.FreeMonad
@@ -102,6 +101,8 @@ library
 
       Libs.ReadFile
       Libs.Asyncs
+      Libs.Read
+      Libs.ReadP
       Libs.Stm
       Libs.Ptrs
       Libs.Conduits

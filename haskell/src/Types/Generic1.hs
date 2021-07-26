@@ -64,7 +64,10 @@ class Encode a where
 -- defined generic means we have Rep
 data Tree a = Leaf
             | Node a (Tree a) (Tree a)
-            deriving (Generic, Generic1)
+
+-- Generic works over kind *, Generic1 works on polymorphic kind.
+deriving instance Generic (Tree a)
+deriving instance Generic1 Tree
 
 deriving instance Show (Tree Int)
 
@@ -85,7 +88,6 @@ instance Encode a => Encode (Tree a)
 -- it's the gist of generic programming. There is nothing more other then that.
 n1 = encode t1
 n2 = encode t2
-
 
 -- Generic1
 -- bascially the same, but a polymorphic kind version.
