@@ -11,6 +11,7 @@ import           Control.Monad.Trans.State
 import           Data.Functor.Identity
 
 import qualified Data.ByteString.Char8      as S8
+import           Data.Function              ((&))
 import           Data.Text                  (Text, pack)
 import           Data.Text.Encoding         (encodeUtf8)
 
@@ -25,7 +26,7 @@ say = S8.putStrLn . encodeUtf8
 
 -- m can be any monads.
 loop :: Monad m => ExceptT e m a -> m e
-loop = liftM (either id id) . runExceptT . forever
+loop = fmap (either id id) . runExceptT . forever
 
 quit :: Monad m => e ->  ExceptT e m a
 quit = throwE
@@ -40,8 +41,8 @@ worker chan num = loop $ do
     [ "Worker #"
     , show num
     , " received value "
-    , show i
-    ]
+    , show i ]
+
 
 run1 :: IO ()
 run1 = do
@@ -67,8 +68,5 @@ fibdp n = runIdentity $ go [0, 1] [] n
       case state of
         ([a, b], res, i) -> do
           let c = a + b
-          if i == 0
-             then quit res
-             else do
-               lift $ put ([b, c], a:res, i - 1)
+          if i == 0 then quit res else do lift $ put ([b, c], a:res, i - 1)
         _ -> quit []

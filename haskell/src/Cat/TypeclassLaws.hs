@@ -67,3 +67,4 @@ class Functor' f => Applicative' f where
 -- us to simulate simpler one.
 --
 --
+

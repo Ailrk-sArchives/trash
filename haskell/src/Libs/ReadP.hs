@@ -1,6 +1,7 @@
-{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE DeriveFunctor     #-}
+{-# LANGUAGE MagicHash         #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes        #-}
 module Libs.ReadP where
 
 -------------------------------------------------------------------------------
@@ -13,7 +14,7 @@ import           GHC.Base            hiding (many)
 import           GHC.Unicode         (isSpace)
 import           Prelude             hiding (ReadP, ReadS)
 
--- infixr 5 +++, <++
+infixr 5 +++, <++
 
 type ReadS a = String -> [(a, String)]
 
@@ -34,6 +35,7 @@ type ReadS a = String -> [(a, String)]
 -- But get and lookup are behaviors, how do we encode those into a datatype? The
 -- only thing we can do is to embed functions into each data constructor.
 
+-- Get :: (a -> P a)
 data P a
   = Get (Char -> P a)
   | Look (String -> P a)
@@ -94,7 +96,7 @@ instance Alternative P where
   Final (r :| rs) <|> Look f = Look $ \s -> Final (r :| (rs ++ run (f s) s))
   Final (r :| rs) <|> p = Look $ \s -> Final (r :| (rs ++ run p s))
   Look f <|> Final r = Look $ \s -> Final (case run (f s) s of
-                                             [] -> r
+                                             []     -> r
                                              (x:xs) -> (x :| xs) <> r)
 
   Look f <|> Look g = Look $ \s -> f s <|> g s
@@ -127,7 +129,7 @@ instance Alternative P where
 --
 -- this is the basic flow of the interpreter.
 
--- converts list of results to Final
+-- only return final if the list is non empty
 final :: [(a, String)] -> P a
 final []     = Fail
 final (r:rs) = Final (r :| rs)
@@ -137,12 +139,38 @@ run :: P a -> ReadS a
 run (Get f) (c:cs) = run (f c) cs
 run (Look f) s     = run (f s) s
 run (Result x p) s = (x, s) : run p s     -- run result appends result
-run (Final rs) _   = NonEmpty.toList rs
+run (Final rs) _   = NonEmpty.toList rs   -- parser end
 run _ _            = []
 
+-- There are really two components for ReadP. We want to compose effectful
+-- computation, so it's a monad. We want to combine two P, so it's alternative.
+--
+-- If we think typeclass as function from type to terms, we can appreciate the
+-- abstraction better:
+--    Type P is monad and applicative. -> It can compose with effectful
+--    operations; two value of type P can be combinesd.
+-- The implementation is something we worry later on.
+
+-- Note there are not only one datatype that works like P. Many others also
+-- works in a similar way:
+--
+--  1. a type T
+--  2. T is a monad
+--  3. T is an alternative
+--
+-- In the sense maybe works the same way as P, list works the same way as P,
+-- State works the same way as P, etc...
+--
+-- They're different in the sense of their specific implementations, and that's
+-- what gives a datatype concrete semantics.
+
 -------------------------------------------------------------------------------
--- ReadP is just a polymorphic wrapper on top of P.
--- think it as a little compiler compiles combinators to P.
+-- ReadP
+-- If an action takes parameters, it's (a -> P b)
+-- if it doesn't it's (\_ -> P b). Either way is captured. by the type.
+--
+-- Note here although (a -> P b) -> P b is a function, we can't just use
+-- functions instance because it has different semantics.
 
 newtype ReadP a = R (forall b. (a -> P b) -> P b)
 
@@ -154,8 +182,7 @@ instance Applicative ReadP where
   (<*>) = ap
 
 instance Monad ReadP where
-  R m >>= f = R $ \k -> m (\a -> let R m' = f a
-                                  in m' k)
+  R m >>= f = R $ \k -> m $ \a -> let R m' = f a in m' k
 
 instance MonadFail ReadP where
   fail _ = R $ \_ -> Fail
@@ -167,8 +194,137 @@ instance Alternative ReadP where
 -------------------------------------------------------------------------------
 -- ReadP Operations
 
+-- consume and return the next character Failes if there is no input left.
+get :: ReadP Char
+get = R Get
+
+-- look ahead wihtout consuming
+look :: ReadP String
+look = R Look
+
 pfail :: ReadP a
 pfail = R (\_ -> Fail)
 
+-- choice
 (+++) :: ReadP a -> ReadP a -> ReadP a
 R f1 +++ R f2 = R $ \k -> f1 k <|> f2 k
+
+-- left baised choice. the right parser is discard. as long as left parser
+-- produce any result
+(<++) :: ReadP a -> ReadP a -> ReadP a
+R f' <++ q = do
+  s <- look
+  probe (f' return) s 0#
+  where
+    probe (Get f) (c:cs) n   = probe (f c) cs (n +# 1#)
+    probe (Look f) s n       = probe (f s) s n
+    probe p@(Result _ _) _ n = discard n >> R (p >>=)
+    probe (Final r) _ _      = R (Final r >>=)
+    probe  _ _ _             = q    -- if all others failes
+
+    discard 0# = return ()
+    discard n  = get >> discard (n -# 1#)
+
+-- take a parser, return a parser that does the samething but also character
+-- read.
+gather :: ReadP a -> ReadP (String, a)
+gather (R m) = R $ \k -> gath id (m (\a -> return (\s -> k (s, a))))
+  where
+    gath :: (String -> String) -> P (String -> P b) -> P b
+    gath l (Get f)      = Get $ \c -> gath (l.(c:)) (f c)
+    gath _ Fail         = Fail
+    gath l (Look f)     = Look $ \s -> gath l (f s)
+    gath l (Result k p) = k (l mempty) <|> gath l p
+    gath _ (Final _)    = errorWithoutStackTrace "no readS_to_P"
+
+
+-------------------------------------------------------------------------------
+-- combinators
+
+satisfy :: (Char -> Bool) -> ReadP Char
+satisfy p = get >>= (\c -> if p c then return c else pfail)
+
+char :: Char -> ReadP Char
+char = undefined
+
+eof :: ReadP ()
+eof = undefined
+
+string :: String -> ReadP String
+string = undefined
+
+-- parser the first zero ore more characters satisfying the predicate
+munch :: (Char -> Bool) -> ReadP String
+munch p = undefined
+
+munch1 :: (Char -> Bool) -> ReadP String
+munch1 p = undefined
+
+choice :: [ReadP a] -> ReadP a
+choice = undefined
+
+skipSpaces :: ReadP ()
+skipSpaces = undefined
+
+count :: Int -> ReadP a -> ReadP [a]
+count = undefined
+
+between :: ReadP open -> ReadP close -> ReadP a -> ReadP a
+between = undefined
+
+option :: a -> ReadP a -> ReadP a
+option = undefined
+
+optional :: ReadP a -> ReadP ()
+optional = undefined
+
+many :: ReadP a -> ReadP [a]
+many = undefined
+
+many1 :: ReadP a -> ReadP [a]
+many1 = undefined
+
+skipMany :: ReadP a -> ReadP ()
+skipMany = undefined
+
+skipMany1 :: ReadP a -> ReadP ()
+skipMany1 = undefined
+
+sepBy :: ReadP a -> ReadP sep -> ReadP [a]
+sepBy = undefined
+
+sepBy1 :: ReadP a -> ReadP sep -> ReadP [a]
+sepBy1 = undefined
+
+endBy :: ReadP a -> ReadP sep -> ReadP [a]
+endBy = undefined
+
+endBy1 :: ReadP a -> ReadP sep -> ReadP [a]
+endBy1 = undefined
+
+chainr :: ReadP a -> ReadP (a -> a -> a) -> a -> ReadP a
+chainr = undefined
+
+chainl :: ReadP a -> ReadP (a -> a -> a) -> a -> ReadP a
+chainl = undefined
+
+chainr1 :: ReadP a -> ReadP (a -> a -> a) -> ReadP a
+chainr1 = undefined
+
+chainl1 :: ReadP a -> ReadP (a -> a -> a) -> ReadP a
+chainl1 = undefined
+
+manyTill :: ReadP a -> ReadP end -> ReadP [a]
+manyTill p end = undefined
+
+
+-------------------------------------------------------------------------------
+-- conversion
+
+readPtoS :: ReadP a -> ReadS a
+readPtoS (R f) = run (f return)
+
+readStoP :: ReadS a -> ReadP a
+readStoP r = R $ \k -> Look (\s -> final [bs'' | (a, s') <- r s, bs'' <- run (k a) s'])
+
+
