@@ -13,6 +13,7 @@ class Functor' f where
   (<$) :: a -> f b -> f a
   (<$) = fmap' . const
 
+
 -- 1. identity:
 --      fmap id = id
 -- 2. homomorphic:

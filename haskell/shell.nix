@@ -4,12 +4,12 @@ let
 
   inherit (nixpkgs) pkgs;
 
-  f = { mkDerivation, accelerate, ansi-terminal, array, async, base
-      , boxes, bytestring, comonad, conduit, conduit-extra, containers
+  f = { mkDerivation, ansi-terminal, array, async, base, boxes
+      , bytestring, comonad, conduit, conduit-extra, containers
       , criterion, data-default, deepseq, gloss, hspec, http-conduit
       , lens, lib, linear, mmap, monad-control, mtl, parallel, parsec
       , pretty, process, QuickCheck, random, reflection, repa, singletons
-      , stm, template-haskell, text, time, transformers
+      , stm, template-haskell, text, text-conversions, time, transformers
       , unordered-containers, utf8-string, vector, void, zlib
       }:
       mkDerivation {
@@ -19,11 +19,11 @@ let
         isLibrary = true;
         isExecutable = true;
         libraryHaskellDepends = [
-          accelerate ansi-terminal array async base boxes bytestring comonad
-          conduit conduit-extra containers criterion data-default deepseq
-          gloss hspec http-conduit lens linear mmap monad-control mtl
-          parallel parsec pretty process QuickCheck random reflection repa
-          singletons stm template-haskell text time transformers
+          ansi-terminal array async base boxes bytestring comonad conduit
+          conduit-extra containers criterion data-default deepseq gloss hspec
+          http-conduit lens linear mmap monad-control mtl parallel parsec
+          pretty process QuickCheck random reflection repa singletons stm
+          template-haskell text text-conversions time transformers
           unordered-containers utf8-string vector void zlib
         ];
         executableHaskellDepends = [ base mtl ];
