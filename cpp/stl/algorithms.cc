@@ -14,6 +14,7 @@ std::vector<Entry<6>> phone_book1{
     {"Giles", {1, 2, 3, 4, 5, 6}}, {"Bob", {5, 6, 7, 1, 2, 3}},
 };
 
+
 std::vector<Entry<6>> phone_book2{
     {"Bob", {5, 6, 7, 1, 2, 3}},
     {"Rick", {5, 6, 7, 1, 2, 3}},

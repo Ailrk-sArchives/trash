@@ -2,7 +2,6 @@
 (require (for-syntax racket/match))
 (require (for-syntax racket/syntax))
 
-
 ;----------------------------------------
 ; Report on A quick overview of racket
 ; This report is not based on one particular paper, but rather a conclusion of
@@ -48,7 +47,6 @@
            [list2 '(x y)]  ; make datum with quote
            [listss '((1 2 3) (a b c))]) ; naming convention. s for nested level
        (append listss list2 list1)))))
-
 
 ;----------------------------------------
 ; quasiquote

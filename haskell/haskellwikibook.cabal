@@ -144,6 +144,7 @@ library
       Other.RecursionScheme1
       Other.Lens1
       Other.FAlgebra
+      Other.DSL1
 
       Notes.All.Dice
       Notes.All.Files

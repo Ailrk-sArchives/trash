@@ -245,17 +245,26 @@ satisfy :: (Char -> Bool) -> ReadP Char
 satisfy p = get >>= (\c -> if p c then return c else pfail)
 
 char :: Char -> ReadP Char
-char = undefined
+char c = satisfy (== c)
 
 eof :: ReadP ()
-eof = undefined
+eof = look >>= \s -> if null s then pfail else return ()
 
 string :: String -> ReadP String
-string = undefined
+string this = do
+  s <- look
+  scan this s
+  where
+    scan [] _ = return this
+    scan (x:xs) (y:ys) | x == y = get >> scan xs ys
+    scan _ _ = pfail
 
 -- parser the first zero ore more characters satisfying the predicate
 munch :: (Char -> Bool) -> ReadP String
-munch p = undefined
+munch p = look >>= scan
+  where
+    scan (c:cs) | p c = get >> scan cs >>= \s -> return (c:cs)
+    scan _ = return ""
 
 munch1 :: (Char -> Bool) -> ReadP String
 munch1 p = undefined
@@ -326,5 +335,3 @@ readPtoS (R f) = run (f return)
 
 readStoP :: ReadS a -> ReadP a
 readStoP r = R $ \k -> Look (\s -> final [bs'' | (a, s') <- r s, bs'' <- run (k a) s'])
-
-
