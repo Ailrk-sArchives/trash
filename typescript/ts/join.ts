@@ -18,6 +18,7 @@ const nest = async <T>(t: T): Promise<T> => {
   });
 }
 
+
 const foo = async (): Promise<number> => {
   return new Promise((resolve, _) => {
     setTimeout(() => {
@@ -25,6 +26,7 @@ const foo = async (): Promise<number> => {
     }, 300);
   });
 }
+
 
 const main = async () => {
 

@@ -18,6 +18,7 @@ module Other.DSL1 where
 import           Control.Monad (ap)
 import           Prelude       hiding (succ, exp)
 
+-------------------------------------------------------------------------------
 -- untyped typed lambda calculus with dsl
 -- basically it's partial evalution with defuntionalization.
 
@@ -38,12 +39,22 @@ import           Prelude       hiding (succ, exp)
 -- and handle the construction of the program as normal datat type.
 -- Not like macro, we need to manually convert the program back to haskell to
 -- run it.
+--
+-- Here we try to implement a simplyed typed lambda calculus with HOAS.
+-- (higher order abstract syntax) which reuse the meta languages' binder for
+-- the object language. Here haskell is the meta language, and LCExpr is the
+-- object language. Of course, it's important only when the object langauge
+-- has the conecpt of a binder (lambda binds a name as parameter).
+-- HOAS is simply to write, but the idea of define a small language and
+-- "compile" to it works the same for all embeded dsl.
+
 
 data LCExpr a where
   Const :: a -> LCExpr a
   Abst :: (LCExpr a -> LCExpr b) -> LCExpr (a -> b)
   App :: LCExpr (a -> b) -> LCExpr a -> LCExpr b
 
+-- Base line interpreter:
 -- A eval functions that restores the original semantic of the program.
 eval :: LCExpr a -> a
 eval (Const a) = a
@@ -97,11 +108,10 @@ instance LC LCExpr where
 
 -- note the LCExpr type essentially defunctionalized lambda application so
 -- we have a data type that represents lambdas to work with.
--- All other operations are based on partial evaluates to the data type and
--- do some analysis.
+-- All other operations are based on partial evaluates to the data type.
 
 z :: LCExpr ((a -> b) -> a -> a)
-z = lambda $ \_ -> lambda id
+z = lambda . const . lambda $ id
 
 succ :: LCExpr (((a -> c) -> b -> a) -> (a -> c) -> b -> c)
 succ = lambda $ \n -> lambda $ \f -> lambda $ \x -> f <*> (n <*> f <*> x)
@@ -138,6 +148,9 @@ pred =
       <*> (lambda $ \u -> x)
       <*> (lambda $ \u -> u)
 
+toInt n = eval $ n <*> lambda ((+1) <$>) <*> (val 0)
+-- >>> toInt n4
+-- 4
 
 -- >>> let x = n5 <*> lambda ((+1) <$>) <*> (val 0)
 -- >>> let n16 = (exp <*> n2 <*> n4)
@@ -149,14 +162,48 @@ pred =
 
 
 -------------------------------------------------------------------------------
+-- scott encoding
+
+
+-------------------------------------------------------------------------------
+-- HOAS to target, so called correct by construction compiler.
+-- How to compile HOAS representation?
+-- Reuse binder of the host language.
+-- Two transformations:
+--  1. closure conversion.
+--  2. hoisting.
+--  3. do cps transform.
+-- More on this:
+-- https://www.iro.umontreal.ca/~monnier/tp-compile.pdf
+compileToJs :: Show a => LCExpr a -> String
+compileToJs c@(Const _) = showConst c
+compileToJs (Abst f) = undefined
+compileToJs (App f e) = undefined
+
+jsLambda :: (Show p, Show body) => LCExpr p -> LCExpr body -> String
+jsLambda p body = "(" <> compileToJs p  <> ") => (" <> compileToJs body <> ")"
+-- >>> jsLambda (val "a") (val "a")
+-- "(\"a\") => (\"a\")"
+
+
+-- BTW the abstract syntax doesn't use HOAS is called
+-- FOAS (first order abstact syntax), and it's basically the ast you first think
+-- of.
+
+
+-------------------------------------------------------------------------------
+-- In FOAS how do we encode binder informations? We uses de bruijn indices to
+-- indicate the scope (which layer the paramter is at).
+-- What is De brujin indice?
+-- well:
+-- \x.\y.x => \ \2
+-- \x.\y.\z.x z (y z) => \ \ \ 3 1 (2 1)
+-- \z.(\y.y(\x.x))(\x.z x) => \ (\ 1 (\ 1)) (\ 2 1)
 --
- scott encoding
-
-
-
-z' = \f -> id
-succ' = \n -> \f -> \x -> f (n f x)
-exp' = \m -> \n -> n m
-pred' = \n -> \f -> \x -> n (\g -> \h -> h (g f)) (\u -> x) (\u -> u)
-
-
+-- number represenest the index of lambda head it's referring to. Note the
+-- free variale z in the thrid example.
+--
+-- FOAS + de brujin indices is hard to implement. You need to deal with
+-- 1. renaming
+-- 2. unique new name generator
+-- 3. capture avoiding substitutino (alpha conversion)

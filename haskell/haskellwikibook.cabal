@@ -51,6 +51,8 @@ library
       GHCs.Profiling
 
       Cat.AlternativeandMonadPlus
+      Cat.MonadWithoutTypeclass
+      Cat.ContMonad
       Cat.Monads
       Cat.Monads1
       Cat.CoMonads
@@ -62,10 +64,7 @@ library
       Cat.Arrows
       Cat.ArrowPractice
       Cat.FreeMonad
-      Cat.MonadsCPS.CPSInterp
-      Cat.MonadsCPS.MonadInterp
-      Cat.MonadsCPS.Monads
-      Cat.MonadsCPS.MonadsCPS
+      Cat.FAlgebra
 
       Cat.Cat.C1
 
@@ -90,6 +89,7 @@ library
       Types.ExtensionsOnTypes
       Types.TypeclassMetaprogramming
       Types.FD
+      Types.NoTypeclass
 
       PL.Lam
       PL.ScottEncoding
