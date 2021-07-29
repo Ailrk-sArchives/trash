@@ -3,8 +3,62 @@ module Cat.ContMonad where
 -- So called mother of all monads.
 -- http://blog.sigfpe.com/2008/12/mother-of-all-monads.html
 
+-- CPS transform:
+-- We have value x :: a, in direct passing style to use it we just use it.
+-- e.g (foo :: a -> b) (x)
+-- To cps transform the program, we need to make x a suspend operation
+-- x' :: ((a -> r) -> r). The value x is passed (or think it as returned) to
+-- the continuation passed in.
+--
+-- 1. all program can be cps transformed
+-- 2. some implicit properties are exposed explicitly in cps
+--    - intermediate values are all named
+--    - procedure return is explicit
+--    - tail call becomes calling the continuation
 
+
+import Data.Char
 import Control.Monad.Cont
+
+------------------------------------------------------------------
+-- cps basics
+
+---------------------
+-- direct style
+-- NOTE:
+--   1. the return is implicit. we return when the entire expression is evaluated
+--   2. the order of evaluation of arguments is implicit. It depends on
+--      implementation
+--   3. the intermediate value x * x, y * y, (x * x) + (y * y) is implicit,
+--      they don't have a name and we can't refer to them.
+pyth1 x y = sqrt ((x * x) + (y * y))
+
+-- cps transformed
+-- NOTE:
+--  1. the return is explicit. It returns we call k.
+--     k is the continuation of the entire program, and once it's called the
+--     current call stack can be elimiated.
+--  2. the order of evaluation is explicit. x is evaluated before y due to
+--     the order of nesting
+--  3. intermediate values are explicit. Note now we have control to x2, y2,
+--     x2y2, which are all implicit in direct passing style.
+pythcps x y k =
+  multcps x x $ \x2 ->
+  multcps y y $ \y2 ->
+  addcps x2 y2 $ \x2y2 ->
+  sqrtcps x2y2 k
+  where
+    multcps x y k = k (x * y)
+    addcps x y k = k (x + y)
+    sqrtcps x k = k (sqrt x)
+
+-- compositions
+type Suspend a r = ((a -> r) -> r)
+type Continuation a r = a -> r
+type MonadicOperatio m a b = m a -> (a -> m b)
+type Pipeline a b = a -> b
+-- it's very similar with monad, the control is passed to the next function
+-- (actually monad)
 
 ------------------------------------------------------------------
 -- A polymorphic monad.
@@ -144,13 +198,6 @@ v2 = run $ do
 --   2. CPS can be used to simulate monad
 --   3. Langauges doesn explicitly support monad can support monad with cps.
 
--- >>> runContT (foo 2) id
--- >>> runContT (foo 20) id
--- "3"
--- "over twenty"
-
--- or you don't need callCC
-
 pythagoras :: Int -> Int -> ContT m r String
 pythagoras a b = do
   a' <- square a
@@ -174,9 +221,44 @@ foo x = callCC $ \k -> do
   when (y > 20) $ k "over twenty"
   return (show $ y - 4)
 
+-- >>> runContT (foo 2) id
+-- >>> runContT (foo 20) id
+-- "3"
+-- "over twenty"
+
 -- 1. the whole expression is (Int -> ContT m r Int)
 -- 2. yet k is also (Int -> ContT m r Int)
 -- 3. we wrapped the actually implementation as the paramter to k
 -- 4. k is the current continuation
 square' :: Int -> ContT m r Int
 square' n = callCC $ \k -> k (n * 2)
+
+-- Complex control flow
+-- callCC really is just a convinent way to say (ConT k)
+
+fun :: Int -> String
+fun n = (`runCont` id) $ do
+  str <- callCC $ \exit1 -> do
+    when (n < 10) $ exit1 (show n)
+    let ns = fmap digitToInt (show (n `div` 2))
+    n' <- callCC $ \exit2 -> do
+      when ((length ns) < 3) (exit2 (length ns))
+      when ((length ns) < 5) (exit2 n)
+      when ((length ns) < 7) $ do
+        let ns' = map intToDigit (reverse ns)
+        exit1 (dropWhile (=='0') ns')
+      return $ sum ns
+    return $ "ns = " ++ (show ns) ++ ") " ++ (show n')
+  return $ "Answer: " ++ str
+
+-- We no longer in monad with ConT alone.
+-- callCC gives us nested continuation
+fun' :: Int -> String
+fun' n = (`runContT` id) $ do
+  str <- ContT $ \k1 ->
+    if (n < 10)
+       then k1 "end"
+       else "not end"
+  return str
+
+
