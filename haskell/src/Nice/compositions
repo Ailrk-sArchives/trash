@@ -1,0 +1,5 @@
+-- compositions
+type Suspend a r = ((a -> r) -> r)
+type Continuation a r = a -> r
+type MonadicOperatio m a b = m a -> (a -> m b)
+type Pipeline a b = a -> b

@@ -1,29 +1,19 @@
 module Cat.ContMonad where
 
--- So called mother of all monads.
--- http://blog.sigfpe.com/2008/12/mother-of-all-monads.html
-
--- CPS transform:
--- We have value x :: a, in direct passing style to use it we just use it.
--- e.g (foo :: a -> b) (x)
--- To cps transform the program, we need to make x a suspend operation
--- x' :: ((a -> r) -> r). The value x is passed (or think it as returned) to
--- the continuation passed in.
---
--- 1. all program can be cps transformed
--- 2. some implicit properties are exposed explicitly in cps
---    - intermediate values are all named
---    - procedure return is explicit
---    - tail call becomes calling the continuation
+------------------------------------------------------------------
+-- Think ConT as a monadic interface of CPS tranformation, which transform
+-- direct call into cps form.
+-- then runContT is really an interpreter that does a full program transform
+-- first then evaluate the transformed code.
 
 
 import Data.Char
 import Control.Monad.Cont
+import Debug.Trace
 
 ------------------------------------------------------------------
 -- cps basics
 
----------------------
 -- direct style
 -- NOTE:
 --   1. the return is implicit. we return when the entire expression is evaluated
@@ -52,15 +42,23 @@ pythcps x y k =
     addcps x y k = k (x + y)
     sqrtcps x k = k (sqrt x)
 
--- compositions
-type Suspend a r = ((a -> r) -> r)
-type Continuation a r = a -> r
-type MonadicOperatio m a b = m a -> (a -> m b)
-type Pipeline a b = a -> b
--- it's very similar with monad, the control is passed to the next function
--- (actually monad)
-
 ------------------------------------------------------------------
+-- So called mother of all monads.
+-- http://blog.sigfpe.com/2008/12/mother-of-all-monads.html
+
+-- CPS transform:
+-- We have value x :: a, in direct passing style to use it we just use it.
+-- e.g (foo :: a -> b) (x)
+-- To cps transform the program, we need to make x a suspend operation
+-- x' :: ((a -> r) -> r). The value x is passed (or think it as returned) to
+-- the continuation passed in.
+--
+-- 1. all program can be cps transformed
+-- 2. some implicit properties are exposed explicitly in cps
+--    - intermediate values are all named
+--    - procedure return is explicit
+--    - tail call becomes calling the continuation
+
 -- A polymorphic monad.
 prog1 :: Monad m => m Int
 prog1 = do
@@ -261,4 +259,65 @@ fun' n = (`runContT` id) $ do
        else "not end"
   return str
 
+------------------------------------------------------------------
+-- Monad bind is actually cps transformed
 
+-- here m is computed a value in m is pulled out, then f is feed with that value.
+-- this process chain up.
+pipeline1 m f g h = m >>= f >>= g >>= h
+
+-- it's clearer if we pull value in m out. the continuation really becomes a
+-- function takes x.
+pipeline2 m f g h = do
+  a <- m
+  (\x -> f x >>= g >>= h) a
+
+pipeline3 f g h = callCC (\k -> k 1) >>= f >>= g >>= h
+foo3 a = (+a) <$> return 1
+
+-- >>> :set -XScopedTypeVariables
+-- >>> let (n1 :: Cont Int Int) = pipeline3 foo3 foo3 foo3
+-- >>> runCont n1 id
+
+prod :: Eq a => Num a => [a] -> Cont r a
+prod l = callCC $ \k -> loop k l
+  where
+    loop _ [] = return 1
+    loop k (0:_) = k 0  -- if hit an 0 just return 0
+    loop k (x:xs) = do
+      n <- loop k xs  -- other wise product
+      return (x * n)
+
+-- >>> runCont (prod [1, 2, 3, 0, 1]) id
+-- >>> runCont (prod [1, 2, 3, 1]) id
+-- 0
+-- 6
+
+-- well this is not an example
+fibonacci :: Eq a => Num a => Int -> a
+fibonacci n = loop n (1, 1)
+  where
+    loop 0 _ = 1
+    loop 1 _ = 1
+    loop n (f1, f2) = (loop (n - 1) (f2, f1 + f2)) + f1 + f2
+
+-- >>> fibonacci 1
+-- >>> fibonacci 2
+-- >>> fibonacci 3
+-- 1
+-- 3
+-- 6
+
+-- with contination you can try to do some really imperative looking programmig
+binarySearch :: Show a => Eq a => Ord a => Num a => [a] -> a -> Bool
+binarySearch xs v = (`runCont` id) . callCC $ \k -> loop k 0 (length xs - 1)
+  where
+    loop k left right
+      | xs !! mid == v = k True
+      | left == right = k False
+      | otherwise = if xs !! mid > v
+                       then (loop k left mid)
+                       else (loop k (mid + 1) right)
+      where mid = (left + right) `div` 2
+
+-- >>> binarySearch [1..10] 4
