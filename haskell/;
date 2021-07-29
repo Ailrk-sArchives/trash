@@ -16,7 +16,7 @@
 module Other.DSL1 where
 
 import           Control.Monad (ap)
-import           Prelude       hiding (succ, exp)
+import           Prelude       hiding (succ)
 
 -- untyped typed lambda calculus with dsl
 -- basically it's partial evalution with defuntionalization.
@@ -88,9 +88,16 @@ instance LC LCExpr where
   lambda = Abst
   val = Const
 
--- >>> let f = (lambda (\x -> return $ eval x + 1))
+-- >>> let f = (lambda (\x -> val $ eval x + 1))
 -- prop> (eval $ apply f (val 3)) == 4
 -- +++ OK, passed 1 test.
+
+-- -- helper functions
+-- class LC m => LCExtension m where
+--   o :: (m b -> m c) -> (m a -> m b) -> m (a -> c)
+
+-- instance LCExtension LCExpr where
+--   f `o` g = \ma -> f (g ma)
 
 -------------------------------------------------------------------------------
 -- church encoding
@@ -124,39 +131,11 @@ plus = lambda $ \m -> lambda $ \n -> lambda $ \f -> lambda $ \x ->
 mult n = lambda $ \m -> lambda $ \n -> lambda $ \f -> lambda $ \x ->
   m <*> (n <*> (f <*> x))
 
-exp :: LCExpr (a -> (a -> b) -> b)
-exp = lambda $ \m -> lambda $ \n -> n <*> m
-
-pred :: LCExpr ((((c -> a) -> (a -> b) -> b) -> (x -> z) -> (y -> y) -> d) -> c -> z -> d)
-pred =
-  lambda $ \n ->
-  lambda $ \f ->
-  lambda $ \x ->
-    n <*> (lambda $ \g ->
-           lambda $ \h ->
-             h <*> (g <*> f))
-      <*> (lambda $ \u -> x)
-      <*> (lambda $ \u -> u)
-
-
 -- >>> let x = n5 <*> lambda ((+1) <$>) <*> (val 0)
--- >>> let n16 = (exp <*> n2 <*> n4)
--- >>> let y = n16 <*> lambda ((+1) <$>) <*> (val 0)
--- prop> eval x == 5
--- +++ OK, passed 1 test.
--- prop> eval y == 16
--- +++ OK, passed 1 test.
-
-
+-- >>> eval x
+-- >>> :type x
+-- 5
+-- x :: LCExpr Integer
 -------------------------------------------------------------------------------
---
- scott encoding
 
-
-
-z' = \f -> id
-succ' = \n -> \f -> \x -> f (n f x)
-exp' = \m -> \n -> n m
-pred' = \n -> \f -> \x -> n (\g -> \h -> h (g f)) (\u -> x) (\u -> u)
-
-
+-- scott encoding

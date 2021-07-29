@@ -3,6 +3,7 @@
 {-# LANGUAGE GADTs                     #-}
 {-# LANGUAGE KindSignatures            #-}
 {-# LANGUAGE OverloadedStrings         #-}
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 
 module Other.FinalTagless where
 import           Data.Text.Lazy.Builder (Builder)

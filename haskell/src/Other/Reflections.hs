@@ -73,7 +73,6 @@ sortBy ord xs =
   reify (fromCompare ord) $ \p ->
     map unreflectOrd . sort . map (reflectOrd p) $ xs
 
-
 fromCompare :: (a -> a -> Ordering) -> ReifiedOrd a
 fromCompare ord = ReifiedOrd
   { reifiedEq = \x y -> ord x y == EQ
