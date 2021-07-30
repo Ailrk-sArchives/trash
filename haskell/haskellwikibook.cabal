@@ -124,6 +124,7 @@ library
       MiniProject.Lens2048
       MiniProject.TicTacToe
       MiniProject.PythagoreanNTuple
+      MiniProject.CoroutinesCPS
 
       Other.Defunctionalization
       Other.EDSL

@@ -207,7 +207,6 @@ n6 = numFields (AuthBaisc "asd" "asd")
 n7 = numFields (AuthSSH "asd")
 
 -------------------------------------------------------------------------------
--- improve generic
 -- 1. this type will give wrong numfields because Rep a will be two nested
 --    either, one is only a representation for the sum type.
 --    To solve this, we can wrap each leaf with a new type Leaf.
@@ -415,6 +414,8 @@ type family FirstTwo as where
   FirstTwo '[] = '[]
   FirstTwo (a ': b ': _) = a ': b ': '[]
 
+-- this pattern is incomplete intensionally, can I turn the warnning off for
+-- just this type family?
 firstTwo :: IsEvenTF as => HList as -> HList (FirstTwo as)
 firstTwo HNil                    = HNil
 firstTwo (x `HCons` y `HCons` _) = x `HCons` y `HCons` HNil

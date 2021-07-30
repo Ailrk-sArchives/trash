@@ -15,3 +15,5 @@ type family Fibonacci (n :: Nat) :: Nat
 type instance Fibonacci Z = Z
 type instance Fibonacci (S Z) = (S Z)
 type instance Fibonacci (S (S n)) = Add (Fibonacci n) (Fibonacci (S n))
+
+-- Eh... this is very primitive...

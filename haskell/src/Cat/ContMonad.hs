@@ -1,5 +1,18 @@
 module Cat.ContMonad where
 
+-- What's good
+-- 1. `runCont k id` to unwrap a continuation
+-- 2. callCC $ \k -> do
+--      ...
+--      k (..)
+--      ...
+--    get current continuation. cont can be nested in this way.
+-- 3. do n <- (ContT $ \k -> k ...) use continuation without effect.
+-- 4. ((a -> r) -> r) -> (a -> r) -> r for suspend computation.
+-- 5. cps as ir gives explicit control flow, named intermediate values, and
+--    explicit evaluation order.
+-- 6. ContT IO r a really feels like an imperative language.
+
 ------------------------------------------------------------------
 -- Think ConT as a monadic interface of CPS tranformation, which transform
 -- direct call into cps form.
@@ -7,9 +20,9 @@ module Cat.ContMonad where
 -- first then evaluate the transformed code.
 
 
-import Data.Char
-import Control.Monad.Cont
-import Debug.Trace
+import           Control.Monad.Cont
+import           Data.Char
+import           Debug.Trace
 
 ------------------------------------------------------------------
 -- cps basics
@@ -88,7 +101,6 @@ prog2 :: Monad m => Int -> m Int
 prog2 b = do
   a <- return 1
   return (a + b)
-
 
 -- now replace return with it's implementation in ConT monad:
 -- the Continuation k gives us control of the surrounding computation.
@@ -231,6 +243,31 @@ foo x = callCC $ \k -> do
 square' :: Int -> ContT m r Int
 square' n = callCC $ \k -> k (n * 2)
 
+------------------------------------------------------------------
+-- Monad bind is actually cps transformed
+
+-- here m is computed a value in m is pulled out, then f is feed with that value.
+-- this process chain up.
+pipeline1 m f g h = m >>= f >>= g >>= h
+
+-- it's clearer if we pull value in m out. the continuation really becomes a
+-- function takes x.
+pipeline2 m f g h = do
+  a <- m
+  (\x -> f x >>= g >>= h) a
+
+pipeline3 f g h = callCC (\k -> k 1) >>= f >>= g >>= h
+foo3 a = (+a) <$> return 1
+
+-- >>> :set -XScopedTypeVariables
+-- >>> let (n1 :: Cont Int Int) = pipeline3 foo3 foo3 foo3
+-- >>> runCont n1 id
+
+
+------------------------------------------------------------------
+-- Cont monad for control flow
+-- NOTE: Cont being a Monad means effect can't escape it.
+
 -- Complex control flow
 -- callCC really is just a convinent way to say (ConT k)
 
@@ -259,26 +296,6 @@ fun' n = (`runContT` id) $ do
        else "not end"
   return str
 
-------------------------------------------------------------------
--- Monad bind is actually cps transformed
-
--- here m is computed a value in m is pulled out, then f is feed with that value.
--- this process chain up.
-pipeline1 m f g h = m >>= f >>= g >>= h
-
--- it's clearer if we pull value in m out. the continuation really becomes a
--- function takes x.
-pipeline2 m f g h = do
-  a <- m
-  (\x -> f x >>= g >>= h) a
-
-pipeline3 f g h = callCC (\k -> k 1) >>= f >>= g >>= h
-foo3 a = (+a) <$> return 1
-
--- >>> :set -XScopedTypeVariables
--- >>> let (n1 :: Cont Int Int) = pipeline3 foo3 foo3 foo3
--- >>> runCont n1 id
-
 prod :: Eq a => Num a => [a] -> Cont r a
 prod l = callCC $ \k -> loop k l
   where
@@ -297,8 +314,8 @@ prod l = callCC $ \k -> loop k l
 fibonacci :: Eq a => Num a => Int -> a
 fibonacci n = loop n (1, 1)
   where
-    loop 0 _ = 1
-    loop 1 _ = 1
+    loop 0 _        = 1
+    loop 1 _        = 1
     loop n (f1, f2) = (loop (n - 1) (f2, f1 + f2)) + f1 + f2
 
 -- >>> fibonacci 1
@@ -321,3 +338,53 @@ binarySearch xs v = (`runCont` id) . callCC $ \k -> loop k 0 (length xs - 1)
       where mid = (left + right) `div` 2
 
 -- >>> binarySearch [1..10] 4
+
+-- simulate exception with con
+divExcept :: Int -> Int -> (String -> Cont r Int) -> Cont r Int
+divExcept x y handler = callCC $ \ok -> do
+  err <- callCC $ \notOk -> do
+    when (y == 0) $ notOk "Denominator 0"
+    ok $ x `div` y
+  handler err
+
+-- General exception handling
+-- recall monad error
+-- class Monad m => MonadError e m | m -> e where
+--   throwError :: e -> m a
+--   catchError :: m a -> (e -> m a) -> m a
+-- tryit is the cps transformed version of it.
+
+tryit :: MonadCont m => ((err -> m a) -> m a) -> (err -> m a) -> m a
+tryit c h = callCC $ \ok -> do
+  err <- callCC $ \notOk -> do
+    x <- c notOk
+    ok x
+  h err
+
+-- >>> runCont (divExcept 10 2 error) id
+-- >>> runCont (divExcept 10 0 error) id
+-- 5
+-- Denominator 0
+
+------------------------------------------------------------------
+-- delimited continuation
+-- in haskell callCC caputure the rest of the ContT becaues the effect is
+-- scoped. In scheme call/cc capture the rest of the program because call/cc
+-- is builtin and global.
+--
+-- Delimited continuation lets us tag a point in the program so callcc can
+-- only capture a portion of the program up to the tag.
+--
+-- With delimited continuation we can capture arbitrary portions of the program
+-- instead of the entire program.
+
+
+------------------------------------------------------------------
+-- cps transformation
+-- with callCC we can easily get expose of the current continuation. If
+-- we want to use cps as ir, we don't really care about getting the cc,
+-- instead we care more about extra information cps provides us. namely
+--  explicit control flow
+--  explicit evaluaion order
+--  named intermediate values.
+

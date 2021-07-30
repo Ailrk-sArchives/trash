@@ -21,6 +21,8 @@ import           Control.Monad.Writer
 import           Data.Char                      as Char
 import           Data.List
 
+import Control.Monad.Cont
+
 -- helper name. This is how it's defined in mtl.
 -- How to catch an exception?
 -- catch an exception means takes a monad that may throws an exception, and a
@@ -216,3 +218,26 @@ validateBandedWords input
   where
     input' = words input
     banned = ["peepee", "poopoo", "woowoo"]
+
+
+-------------------------------------------------------------------------------
+-- We can also use cps to simulate exceptions
+
+-- c takes an error handling funcion and only call it when exception happen.
+tryit :: MonadCont m => ((err -> m a) -> m a) -> (err -> m a) -> m a
+tryit c h = callCC $ \ok -> do
+  err <- callCC $ \notOk -> do
+    x <- c notOk
+    ok x
+  h err
+
+data SqrtException = LessThenZero deriving (Show, Eq)
+
+sqrtIO :: (SqrtException -> ContT r IO ()) -> ContT r IO ()
+sqrtIO throw = do
+  ln <- lift (putStr "Enter a number to sqrt: " >> readLn)
+  when (ln < 0) (throw LessThenZero)
+  lift $ print (sqrt ln)
+
+-- this is very interesting
+runSqrtIO = runContT (tryit sqrtIO (lift . print)) return
