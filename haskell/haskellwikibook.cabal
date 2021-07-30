@@ -68,6 +68,13 @@ library
 
       Cat.Cat.C1
 
+      DataStructure.Lazy
+      DataStructure.BankerQueue
+      DataStructure.BootStrappedQueue
+      DataStructure.ImplicitQueue
+      DataStructure.PhysicistQueue
+      DataStructure.RealTimeQueue
+
       Types.PhantomType
       Types.DependentType
       Types.Cardinality

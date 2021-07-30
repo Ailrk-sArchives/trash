@@ -1,5 +1,7 @@
 module Cat.TypeclassLaws where
 
+import Test.Hspec
+
 -- laws on typeclass specifies the property certain operation should have. It
 -- cannot be enforced by haskell's type system, but it's important because it
 -- affect the semantics of typeclasses.
