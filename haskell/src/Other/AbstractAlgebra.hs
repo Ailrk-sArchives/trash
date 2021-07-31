@@ -140,5 +140,3 @@ class (Group a, Group b) => Homomorphism a b where
 -- inverse to it.
 -- Notice the homomorphism we define is only one way, a to b. In
 -- general, homomorphism doesn't guarantee has an inverse.
---
---

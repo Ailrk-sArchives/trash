@@ -50,7 +50,6 @@ data Term f = In (f (Term f))
 -- out is a helper function to evaluate the Term f
 out :: Term f -> f (Term f)
 out (In t) = t
-
 -- see in action how our new recursive type accomonate all nested combinations of
 -- Expr:
 

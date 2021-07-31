@@ -106,11 +106,11 @@ fred_name' = fred
 
 
 -- lens is already modifyIO, we can just give it a type here.
-modifyIO :: Lens' s a -> (a -> IO a) -> s -> IO s
-modifyIO = id
+-- modifyIO :: Lens' s a -> (a -> IO a) -> s -> IO s
+-- modifyIO = id
 
-modifyMaybe :: Lens' s a -> (a -> Maybe a) -> s -> Maybe s
-modifyMaybe = id
+-- modifyMaybe :: Lens' s a -> (a -> Maybe a) -> s -> Maybe s
+-- modifyMaybe = id
 
 {-@ virtual field with lens @-}
 data Temp = T { _fahrenheit :: Float } deriving Show

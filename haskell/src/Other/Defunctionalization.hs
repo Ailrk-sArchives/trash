@@ -27,7 +27,7 @@
 --     (if (< i j (h 30) (f h))))
 --  To build a CFG for flow analysis, you need to analyse all possible lambda for f and h.
 --  but itself is a flow analysis problem.
---
+
 --  Goal:
 --    1. eliminate higher order function.
 --    2. make direct toplevel call, which are easy to optemize.
@@ -51,11 +51,12 @@ module Other.Defunctionalization where
 -- datatypes we defined.
 -- This is good for serialization.
 
-data Filter = Tat
-            | IsOdd
-            | IsEven
-            | LessThan Int
-            | And Filter Filter
+data Filter
+  = Tat
+  | IsOdd
+  | IsEven
+  | LessThan Int
+  | And Filter Filter
 
 apply :: Filter -> (Int -> Bool)
 apply Tat          = const True
@@ -70,7 +71,6 @@ filterDefun f (x:xs) =
   if apply f x
      then x : filterDefun f xs
      else filterDefun f xs
-
 
 -- 2. tree
 

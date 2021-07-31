@@ -51,7 +51,6 @@ run1 = do
     mapM_ (writeChan chan) ([1..20] ++ [(-1)])
   return ()
 
-
 -- use ExceptT loop to calculate fib with dp
 -- see there are three layers here. But we can still work with
 -- it quit easily.

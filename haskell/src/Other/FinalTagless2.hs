@@ -33,7 +33,6 @@ instance Expr ExprInterp where
 expr1 = unExpr $ and' (or' (bool True) (leq (int 2) (int 3))) (bool True)
 
 
-
 -- another implementation
 
 data PersistValue

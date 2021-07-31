@@ -39,7 +39,6 @@ import Data.List
 import qualified Prelude (readFile, writeFile)
 import Prelude hiding (readFile, writeFile)
 
-
 -- Identity --
 -- This is probably the best example to play around with mtl facilities
 

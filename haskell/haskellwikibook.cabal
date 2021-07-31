@@ -68,6 +68,7 @@ library
 
       Cat.Cat.C1
 
+      DataStructure.Amortization
       DataStructure.Lazy
       DataStructure.BankerQueue
       DataStructure.BootStrappedQueue
@@ -133,6 +134,7 @@ library
       MiniProject.PythagoreanNTuple
       MiniProject.CoroutinesCPS
 
+      Other.TraversableContainerToContainerOfContext
       Other.Defunctionalization
       Other.EDSL
       Other.AbstractAlgebra
@@ -153,6 +155,7 @@ library
       Other.Lens1
       Other.FAlgebra
       Other.DSL1
+      Other.PartialEvaluation
 
       Notes.All.Dice
       Notes.All.Files

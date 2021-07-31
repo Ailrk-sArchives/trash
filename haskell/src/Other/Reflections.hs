@@ -43,7 +43,6 @@ fromList xs = mergeList left right
     right = fromList right'
     (left', right') = splitAt (length xs `div` 2) xs
 
-
 sort :: Ord a => [a] -> [a]
 sort l = forget (fromList l)
 
