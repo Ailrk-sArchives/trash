@@ -1,3 +1,4 @@
+#include <cstring>
 #include <iostream>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -50,13 +51,78 @@ void finalize(Instrubuf *buf) {
 
 void ifree(Instrubuf *buf) { munmap(buf, PAGE_SIZE); }
 
-// insert instruction into the current buffer
-void insert(Instrubuf *buf, int size, uint64_t ins) {}
+// insert instruction into the current buffer directly
+// number of bytes to insert depends on size we pass in.
+//
+// uint64_t is merely a type that long enough to contain instructions.
+//
+// what does (i * 8) & 0xff do?
+//  0xff just takes the least significant byte.
+//  as buf->code[n] = will only takes a byte.
+//  for instruction `add rax rdi`
+//  we load add, rax, rdi respectively, where each operator takes 1 byte.
+//    PS: actually the order is add rdi rax, since intel syntax reverse the
+//        order of the src and dest.
+void insert(Instrubuf *buf, int size, uint64_t ins) {
+  for (int i = size - 1; i >= 0; --i) {
+    buf->code[buf->count++] = (ins >> (i * 8)) & 0xff;
+  }
+}
 
 // insert immediate value into the current buffer.
-void immediate(Instrubuf *buf, int size, const void *value) {}
+void immediate(Instrubuf *buf, int size, const void *value) {
+  memcpy(buf->code + buf->count, value, size);
+  buf->count += size;
+}
+
+// so what would we insert into the memory as program? We can insert bunch of
+// assembly code, and follow the normal c calling convention. In this way, we
+// can cast the pointer to the memory as a function pointer, and call the
+// memory direclty.
+//
+// for c calling convention, the return value will be in rax.
 
 } // namespace instrbuf
+
+// here we assume all operands are in rdi already. This simplify stuffs a bit.
+
+void compile_jit_op(instrbuf::Instrubuf *buf, char op) {
+  switch (op) {
+  case '+':
+    instrbuf::insert(buf, 3, 0x4801f8); // add rax rdi
+    break;
+  case '-':
+    instrbuf::insert(buf, 3, 0x4829f8); // sub rax rdi
+    break;
+  case '*':
+    instrbuf::insert(buf, 3, 0x480fafc7); // imul rax rdi
+    break;
+  case '/':
+    instrbuf::insert(buf, 3, 0x4801f8); // xor rdx rdx
+    instrbuf::insert(buf, 3, 0x48f7ff); // idiv rdi
+    break;
+  }
+}
+
+void compile_jit(instrbuf::Instrubuf *buf) {
+  instrbuf::insert(buf, 3, 0x4889F8); // mov rax rdi
+
+  int c;
+
+  while ((c = fgetc(stdin) != '\n' && c != EOF)) {
+    if (c == ' ')
+      continue;
+    char op = c;
+    long operand;
+    scanf("%ld", &operand);
+    instrbuf::insert(buf, 2, 0x48bf);      // mov operand %rdi
+    instrbuf::immediate(buf, 8, &operand); // still the same instruction
+    compile_jit_op(buf, op);
+  }
+
+  instrbuf::insert(buf, 1, 0xC3); // ret
+  instrbuf::finalize(buf);
+}
 
 // ideally we might want something like runtime assembler, so we can assemble
 // assembly code from string and dump it into the mmap memory direclty.
@@ -66,14 +132,16 @@ void immediate(Instrubuf *buf, int size, const void *value) {}
 //
 int main(void) {
   instrbuf::Instrubuf *buf{};
-  instrbuf::finalize(buf);
 
   // cast the memory into a function pointer so we can call it directly..
-  auto recurrence = reinterpret_cast<auto (*)(long)->long>(buf->code);
 
-  int sol[10];
-  for (int n = 0; n < 10; n++) {
-    sol[n + 1] = recurrence(sol[n]);
-  }
+  long init;
+  unsigned long term;
+  scanf("%ld %lu", &init, &term);
+  auto recurence = reinterpret_cast<auto (*)(long)->long>(buf->code);
+  for (unsigned long i = 0, x = init; i <= term; i++, x = recurence(x))
+    fprintf(stderr, "Term %lu: %ld\n", i, x);
+
+  instrbuf::ifree(buf);
   return 0;
 }

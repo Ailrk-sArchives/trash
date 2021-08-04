@@ -12,7 +12,7 @@
 
 // let's connstrain this function.
 // left fold of addition.
-template <typename... Args> auto add_(Args &&... args) { return (... + args); }
+template <typename... Args> auto add_(Args &&...args) { return (... + args); }
 
 // what do we want to constrain here?
 // 1. + is defined
@@ -37,24 +37,26 @@ concept same_as_first_type =
     std::is_same_v<std::remove_cvref_t<T>,
                    std::remove_cvref_t<first_type_t<Args...>>>;
 
-template <typename... Args> requires requires(Args... args) {
+template <typename... Args>
+requires requires(Args... args) {
   (... + args);                 // 1. simple requirement
   requires are_same_v<Args...>; // 2. nested requirement
   requires sizeof...(Args) > 1; // 3. nested requirement with boolean assertion.
   { (... + args) }
   noexcept->same_as_first_type<Args...>; // 4. compound requirements
 }
-auto add(Args &&... args) { return (... + args); }
+auto add(Args &&...args) { return (... + args); }
 
 // exercise
-template <typename... Args> requires requires(Args... args) {
+template <typename... Args>
+requires requires(Args... args) {
   (... * args);
   requires are_same_v<Args...>;
   requires sizeof...(args) > 1;
   { (... * args) }
   noexcept->same_as_first_type<Args>;
 }
-auto mul(Args &&... args) { return (... * args); }
+auto mul(Args &&...args) { return (... * args); }
 
 // now you have these constrained functions, but how do you know if they
 // are correct constrains or not?
@@ -82,16 +84,12 @@ using ValidClass = ObjectMock<true, true, true>;
 using NoNoexcept = ObjectMock<false, true, true>;
 using DifferentReturnType = ObjectMock<false, true, false>;
 
-template <typename... Args> concept TestAdd = requires(Args... args) {
+template <typename... Args>
+concept TestAdd = requires(Args... args) {
   add(args...);
 };
 
 static_assert(TestAdd<int, int, int>);
-//static_assert(TestAdd<NoAdd, NoAdd>);
+// static_assert(TestAdd<NoAdd, NoAdd>);
 
-
-int main(void)
-{
-
-  return 0;
-}
+int main(void) { return 0; }
