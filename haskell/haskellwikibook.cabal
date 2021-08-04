@@ -70,6 +70,7 @@ library
 
       DataStructure.Amortization
       DataStructure.Lazy
+      DataStructure.Tree23
       DataStructure.BankerQueue
       DataStructure.BootStrappedQueue
       DataStructure.ImplicitQueue
@@ -86,6 +87,7 @@ library
       Types.TypeableAndDatKinds
       Types.TypeFam
       Types.TypeFam1
+      Types.TypeFam2
       Types.TypeClass
       Types.TypeFamZipper
       Types.Kindness

@@ -3,9 +3,12 @@
 {-# LANGUAGE GADTs                 #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes            #-}
+{-# LANGUAGE StandaloneDeriving    #-}
 
+{-# LANGUAGE KindSignatures        #-}
 module Types.Gadts where
 
+import           Cat.Arrows   ((>>>))
 import           GHC.TypeLits
 
 {-@ what's the point?
@@ -109,7 +112,7 @@ infixl 6 :@
 eval' (K' :@ x :@ _)      = x
 eval' (S' :@ x :@ y :@ z) = x :@ z :@ (y :@ z)
 eval' x                   = x
-eval' (K' :@ x)           = x
+-- eval' (K' :@ x)           = x
 
 
 {-@ GADT based small step evaluator
@@ -180,3 +183,33 @@ data Stack n where
 
 theStack = SPush . SPush . SPush $ SEmpty
 theStack' = SPop . SPop $ theStack
+
+-------------------------------------------------------------------------------
+-- tie shoe example to use gadt to make illegal state unrepresentative.
+-- https://morrowm.github.io/posts/2021-08-02-shoes.html
+
+data ShoeState = Off | Untied | On deriving Show
+
+data Shoe l r where
+  OffLR :: Shoe Off Off
+  PutOnL :: Shoe Off r -> Shoe Untied r
+  PutOnR :: Shoe l Off -> Shoe l Untied
+  TieL :: Shoe Untied r -> Shoe On r
+  TieR :: Shoe l Untied  -> Shoe l On
+
+deriving instance forall (l :: ShoeState) (r :: ShoeState) . Show (Shoe l r)
+
+type TieShoeMethod = Shoe Off Off -> Shoe On On
+
+rllr :: TieShoeMethod
+rllr = PutOnR >>> PutOnL >>> TieL >>> TieR
+
+rrll :: TieShoeMethod
+rrll = PutOnR >>> TieR >>> PutOnL >>> TieL
+
+-- >>> rllr OffLR
+-- TieR (TieL (PutOnL (PutOnR OffLR)))
+
+-- this doesn't work
+-- don't :: TieShoeMethod
+-- don't = TieL >>> TieR >>> PutOnL >>> PutOnL

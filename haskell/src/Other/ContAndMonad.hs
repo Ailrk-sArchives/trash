@@ -28,4 +28,3 @@ bar =
 --   How do you keep sequence of evaluation in LC?
 --   there is nothing you can do to directly express it, but what
 --   you can do is nest on function in another.
-

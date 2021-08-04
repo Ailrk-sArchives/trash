@@ -4,6 +4,7 @@
 {-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE OverlappingInstances   #-}
 {-# LANGUAGE TypeFamilies           #-}
+{-# LANGUAGE StandaloneDeriving #-}
 
 -- Fun with typeclass
 -- https://www.microsoft.com/en-us/research/wp-content/uploads/2016/07/typefun.pdf?from=http%3A%2F%2Fresearch.microsoft.com%2F%7Esimonpj%2Fpapers%2Fassoc-types%2Ffun-with-type-funs%2Ftypefun.pdf
@@ -67,7 +68,7 @@ instance Mutation' (ST s) (STRef s) where
   readRef' = readSTRef
   writeRef' = writeSTRef
 
------------------------------------------------------- ------------------------
+------------------------------------------------------------------------------
 -- Multi paramter type class + type family for implicit conversion
 -- say we want add works for int and double. We need int to double essentially.
 
@@ -113,7 +114,7 @@ instance {-# OVERLAPPING #-} (Add Integer a) => Add Integer [a] where
 -- 3.5
 -- 3.8
 
------------------------------------------------------- ------------------------
+------------------------------------------------------------------------------
 -- Graph with data family
 -- data family allows you to define data type associate to Graph.
 
@@ -145,8 +146,106 @@ instance Graph G1 where
   target = undefined
   outEdges = undefined
 
+------------------------------------------------------------------------------
+-- Type directed optimization
+
+----------
+-- type directed memoization
+--
+-- very interesting implementation for memoization
+-- The idea is to define a table value for each data type, and recursively
+-- build up table base on data family result.
+--
+-- Note GHC doesn't memoize functions, it just reuse forced values.
+
+class Memo a where
+  data Table a :: * -> *
+  toTable :: (a -> w) -> Table a w
+  fromTable :: Table a w -> (a -> w)
+
+-- memoize boolean
+instance Memo Bool where
+  data Table Bool w = TBool w w deriving Show
+  toTable f = TBool (f True) (f False)
+  fromTable (TBool x y) b = if b then x else y
+
+-- the function will not memoize by itself.
+fb :: Bool -> Integer
+fb True = fromIntegral . length $ [gcd a b | a <- [1..100], b <- [1..100]]
+fb False = fromIntegral ((length [lcm a b | a <- [1..100], b <- [1..100]]) `div` 2)
+
+gb :: Bool -> Integer
+gb = fromTable (toTable fb)
+
+-- toTable for Bool will evaluate f for all values in the domain.
+-- >>> toTable not
+-- TBool False True
+-- >>> toTable fb
+-- TBool 10000 5000
+
+-- Then we can memoize by exploiting GHC's value reuse feature
+
+-- >>> fb True + fb True
+-- 20000
+-- >>> gb True + gb True
+-- 20000
+-- >>> gb True + gb False
+-- 15000
+
+-- This technique can be generalized of course.
+
+-- memoize sum types.
+-- memoize both left  and right branches
+instance (Memo a, Memo b) => Memo (Either a b) where
+  data Table (Either a b) w = TSum (Table a w) (Table b w)
+  toTable f = TSum (toTable (f . Left)) (toTable (f. Right))
+  fromTable (TSum t _) (Left v) = fromTable t v
+  fromTable (TSum _ t) (Right v) = fromTable t v
+
+-- we also uses the same stragety apply for all arguments for the first
+-- call.
+-- >>> let f' x = case x of { True -> Left True; False -> Right False }
+-- >>> toTable f'
+-- TBool (Left True) (Right False)
+
+-- >>> let f' = (\x -> case x of { Left True -> True; Right False -> False })
+-- >>> (fromTable . toTable)  f' (Left True)
+-- True
+
+-- memoize tuple.
+instance  (Memo a, Memo b) => Memo (a, b) where
+  data Table (a, b) w = TProduct (Table a (Table b w))
+  toTable f = TProduct (toTable $ \x -> toTable $ \y -> f (x, y))
+  fromTable (TProduct t) (x, y) = fromTable (fromTable t x) y
+
+-- >>> toTable (\x -> case x of { True -> (True, True); False -> (False, False) })
+-- TBool (True,True) (False,False)
+
+-- >>> (\(TProduct x) -> x) $ toTable (\(x, y) -> (y :: Bool, x :: Bool))
+-- TBool (TBool (True,True) (False,True)) (TBool (True,False) (False,False))
+
+-- memoize for recursive types
+instance (Memo a) => Memo [a] where
+  data Table [a] w = TList w (Table a (Table [a] w))
+  toTable f = TList (f []) (toTable $ \x -> toTable $ \xs -> f (x:xs))
+  fromTable (TList t _) [] = t
+  fromTable (TList _ t) (x:xs) = fromTable (fromTable t x) xs
+
+-- Table is generated lazily so it works for infinite list.
+
+f' xs = case (xs :: [Bool]) of
+         [] -> []
+         (a:as) -> True : f' as
+
+
+-- >>> toTable f' (repeat True)
+-- Couldn't match expected type ‘[Bool] -> t’
+--             with actual type ‘Table [Bool] [Bool]’
+
+
+-- With basic inductive types, sum and product type, we can create an
+-- isomorphism between real data types and memoized version.
 
 ------------------------------------------------------ ------------------------
--- Type directed optimization
--- this is more like
+--
 

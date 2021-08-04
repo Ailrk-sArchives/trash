@@ -7,6 +7,7 @@ import           Control.Arrow
 
 {-@ First let's check the arrow properties @-}
 -- TODO
+--
 
 {-@ For each arrow you can draw a digram
               y

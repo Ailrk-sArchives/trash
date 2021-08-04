@@ -136,4 +136,3 @@ amortizedCostPhycist cost after before = cost + phi(after) - phi(before)
 --  Worst case # of splits: O(logn)
 --  Amortized case # of splits: O(1)
 --
---
