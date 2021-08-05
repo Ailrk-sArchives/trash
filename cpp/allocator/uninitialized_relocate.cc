@@ -2,6 +2,7 @@
 #include <iostream>
 #include <type_traits>
 
+// https://www.youtube.com/watch?v=MWBfmmg8-Yo
 // moving elements from one location to another and destory the old instances is
 // callled relocate.
 
@@ -52,11 +53,11 @@ template <typename It, typename FwdIt>
 FwdIt uninitialized_relocate(It first, It last, FwdIt dest) {
   using T = typename std::iterator_traits<FwdIt>::value_type;
   std::allocator<T> alloc;
-  return __unitalized_relocate_a(first, last, dest, alloc);
+  return __uninitialized_relocate_a(first, last, dest, alloc);
 }
 
 template <typename It, typename FwdIt, typename Alloc>
-FwdIt __unitalized_relocate_a(It first, It last, FwdIt dest, Alloc &a) {
+FwdIt __uninitailized_relocate_a(It first, It last, FwdIt dest, Alloc &a) {
   using T = typename std::iterator_traits<FwdIt>::value_type;
   static_assert(std::is_same_v<T, typename std::allocator<Alloc>::value_type>);
 
