@@ -1,4 +1,16 @@
 #include <iostream>
+// https://www.researchgate.net/publication/221241323_A_comparison_of_C_concepts_and_Haskell_type_classes
+// property based generic programming.
+
+// Eight features of generic programming
+// 1. Multi type concepts
+// 2. multiple constraints
+// 3. associated type access
+// 4. retroactive modeling
+// 5. type aliases
+// 6. separate compilation
+// 7. implicit instantiation
+// 8. concise syntax
 
 //////////////////////////////////////
 // concepts help compiler to select appropriate overload.
@@ -15,6 +27,8 @@ concept Decremental = requires(T t) {
   --t;
 };
 
+// The concept Decremental `refines` RevIterator.
+// Retoractive modeling
 template <typename T>
 concept RevIterator = Decremental<T> && requires(T t) {
   *t;
