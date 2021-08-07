@@ -13,6 +13,8 @@ struct Node {
 };
 
 // value semantics wrapper wrap Nodes into value semantic.
+// value semantics means we want to be able to copy stuffs. To copy a node
+// we copy the content of the node and create a new unique ptr to manage it.
 struct NodeValue {
   std::unique_ptr<Node> ptr_;
 
