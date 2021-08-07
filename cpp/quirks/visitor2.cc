@@ -17,7 +17,7 @@ struct NodeValue {
   std::unique_ptr<Node> ptr_;
 
   template <std::derived_from<Node> T>
-  NodeValue(T &&obj) : ptr_(std::make_unique<T>(std::move(obj))) {}
+  NodeValue(T obj) : ptr_(std::make_unique<T>(std::move(obj))) {}
 
   NodeValue(const NodeValue &other) : ptr_(other->clone()) {}
 
