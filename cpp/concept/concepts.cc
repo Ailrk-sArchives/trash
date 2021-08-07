@@ -197,7 +197,7 @@ template <HasIterator T> T gaw(T t) { return t; }
 template <Hashtable T> T hashit(T t) { return std::hash<T>{}(t) + 1; }
 
 // need top provide Base
-template <typename Base, Derived<Base> T>  std::string issubtype(T t) {
+template <typename Base, Derived<Base> T> std::string issubtype(T t) {
   return "Yeah";
 }
 
