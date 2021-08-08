@@ -1,0 +1,2 @@
+template <typename T, T v> struct integral_const_ {
+template <size_t S> using nat_const_ = integral_const_<size_t, S>;

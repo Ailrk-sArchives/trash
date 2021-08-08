@@ -9,7 +9,6 @@ template <typename... Args,
 std::string print(Args... args) {
   std::string v;
   (v.append(args), ...);
-
   return v;
 }
 

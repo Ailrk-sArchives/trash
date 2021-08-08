@@ -4,6 +4,8 @@
 struct K {
   enum { int_t, float_t } type;
 
+  // if std::is_integral<Integer>::value is true, this specialization pass,
+  // thus the default template paramter will be specialize to true.
   template <typename Integer,
             typename std::enable_if<std::is_integral<Integer>::value,
                                     bool>::type = true>
@@ -26,7 +28,6 @@ struct A<T, typename std::enable_if<std::is_floating_point_v<T>>::type> {};
 // Two overloads that only differ on the default template parameter.
 // This cause a problem because the compiler treat them as the same
 // specialization, so you end up with redefinition.
-
 
 int main(void) {
   K n1(1);
