@@ -3,62 +3,48 @@
 #include <vector>
 
 // fully erase the type. not even the node.
-
 struct Node {
-
-  struct Base {
-    virtual ~Base() = default;
-    virtual std::string render_html() const = 0;
-    virtual std::unique_ptr<Base> clone() const = 0;
-  };
-
-  // a generic wrapper for concrete implementation.
-  template <typename T> struct Wrapper final : public Base {
-    T obj_;
-    Wrapper(T obj) : obj_(std::move(obj)) {}
-    std::unique_ptr<Base> clone() const override {
-      return std::make_unique<Wrapper<T>>(obj_);
-    }
-    std::string render_html() const override { return obj_.render_html(); }
-  };
-
-  std::unique_ptr<Base> ptr_;
-
-  template <typename T>
-  Node(T obj) : ptr_(std::make_unique<Wrapper<T>>(std::move(obj))) {}
-  Node(const Node &other) : ptr_(other.ptr_->clone()) {}
-
-  Node &operator=(const Node &other) {
-    ptr_ = other.ptr_->clone();
-    return *this;
-  }
-
-  std::string render_html() const { return ptr_->render_html(); }
+  virtual ~Node() = default;
+  virtual std::string render_html() const = 0;
+  virtual std::unique_ptr<Node> clone() const = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// a node like wrapper that wraps anything has render_html function.
-template <typename T> struct NodeLike final : public Node::Base {
+// duck typing
+// we erase the type T and turn it into NodeLike.
+template <typename T> struct NodeLike final : public Node {
   T obj_;
-  NodeLike(T obj) : obj_(std::move(obj)) {}
+  NodeLike(T obj) : obj_(std::move(obj)) {
+    static_assert(std::is_copy_constructible_v<T>,
+                  "Node is not copy constructable");
+  }
 
-  std::unique_ptr<Node::Base> clone() const override {
+  std::unique_ptr<Node> clone() const override {
     return std::make_unique<NodeLike<T>>(obj_);
   }
 
-  std::string render_html() const override { return obj_.render_html; }
+  std::string render_html() const override { return obj_.render_html(); }
 };
 
+// Get value semantics wrapper
 // again a exitential type to erase node type.
 struct NodeValue {
   std::unique_ptr<Node> ptr_;
 
+  // convert T to NodeLike to duck type it.
   template <typename T>
   NodeValue(T obj) : ptr_(std::make_unique<NodeLike<T>>(std::move(obj))) {}
+  NodeValue(const NodeValue &other) : ptr_(other.ptr_->clone()) {}
+  NodeValue &operator=(const NodeValue &other) {
+    ptr_ = other.ptr_->clone();
+    return *this;
+  }
+
+  Node *operator->() const { return ptr_.get(); }
+  Node &operator*() const { return *ptr_; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// Duck types.
 struct Text {
   std::string content_;
   Text(std::string content) : content_(content) {}
@@ -67,19 +53,43 @@ struct Text {
 };
 
 struct Doc {
-  std::vector<Node> children_;
+  std::vector<NodeValue> children_;
+  Doc(std::vector<NodeValue> &&children) : children_(std::move(children)) {}
   std::string render_html() const {
     std::string result = "<head>...</head><body>";
     for (auto &n : children_) {
-      result += n.render_html();
+      result += n->render_html();
     }
     result += "</body>";
     return result;
   }
 };
 
-int main(void)
-{
+static_assert(!std::is_default_constructible_v<NodeValue>);
+static_assert(std::is_copy_constructible_v<NodeValue>);
+static_assert(std::is_move_constructible_v<std::vector<NodeValue>>);
+static_assert(!std::is_trivially_move_constructible_v<std::vector<NodeValue>>);
+
+template <typename T> NodeValue make_nodevalue(T obj) {
+  return NodeValue(std::move(obj));
+}
+
+// ducktying + value semantics
+int main(void) {
+  {
+    auto t1 = make_nodevalue(Text("Good"));
+    std::cout << t1->render_html() << std::endl;
+  }
+
+  {
+
+    std::vector<NodeValue> v{};
+    v.emplace_back(make_nodevalue(Text("<p>")));
+    v.emplace_back(make_nodevalue(Text("Some other things")));
+    v.emplace_back(make_nodevalue(Text("</p>")));
+    auto tree = make_nodevalue(Doc(std::move(v)));
+    std::cout << tree->render_html() << std::endl;
+  }
 
   return 0;
 }
