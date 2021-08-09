@@ -2,9 +2,29 @@
 #include <memory>
 #include <vector>
 
-// from visitor 1 we can make a new version with value semantics.
-// ditch unique_ptr.
-// vector, string are all this type of value.
+// Visitor1 pass unique_ptr explicitly, it's
+//  1. ugly and error prone.
+//  2. can't copy. Our goal for copy semantic can be just copying the undeling
+//     value and create a new unique_ptr to it. It's noisy to do that with
+//     unique_ptr
+
+// Value semantic allow you to copy, or better you can choose to provide a move
+// constructor.
+
+// It's easy to turn something from pointer semantic to value semantic, just
+// create new wrapper wraps the pointer. Like NodeValue.
+// Pros:
+//  1. std::unique_ptr<Node> is wrapped, we are dealing with type NodeValue
+//     instead which can have it's own copy constructor etc.
+//  2. It's an exitential type that hides the parameter type for the
+//     constructor. The constructor takes any T that conforms Node interface,
+//     no matter how complicated the type is.
+//     Once the value is constructed our type system only see NodeValue
+//  3. Still polymorphic
+
+// PS: wrapping and reorgnize interface is a common technique almost everywhere.
+// In haskell you also want to use newtype to modify the nested value and
+// provide some slightly different interfaces.
 
 struct Node {
   virtual ~Node() = default;

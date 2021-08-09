@@ -2,13 +2,18 @@
 #include <memory>
 #include <vector>
 
-// ok let's make it simple. what 's the goal eventually?
-// 1. something like this, but different visitors give you different way to
-// traverse. (render_html/codegen/... whatever)
-// 2. A node is a product type
-// 3. visit funcition can return different types
-// 4. if we want a tree accept different visitors the accept function need to
-//    be somehow polymorphic
+// Want a visitor, but really simpler way is to write differnet visit function
+// direclty in the class.
+
+// Ideally you want a type Visitor,
+// which is accepted by Visitable::accept(Visitor&). Visitor can be polymorphic
+// and Visitable can be polymorphic.
+//
+// Well that's kind hard to achieve with monomorphization and dynamic dispatch
+// alone.
+//
+// Better way is just add function to each node and conform everything to the
+// same abstract class.
 
 // Concrete tree with no polymorphic visitor what so ever.
 struct Node {
