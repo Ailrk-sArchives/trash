@@ -15,8 +15,8 @@
 ;; repace occurrence of free variables.
 
 ;; Two types of closure conversion algorithms,
-;; 1. Flat closures
-;; 2. Shared closures
+;; 1. Flat closures / bottom up
+;; 2. Shared closures / top down
 
 ;; a closure is a struct with code and the environment
 ;; {lambda env, ...->...,  {a: x, b: y}}
@@ -28,21 +28,21 @@
 ;;          ; for closure conversion
 ;;          | (lambda* (<var> <var> ...) <exp>)   ;; already converted lambda
 ;;          | (make-closure <exp> <exp>)
-;;          | (make-env (<var> <exp>))
+;;          | (make-env (<var> <exp>) ...)
 ;;          | (env-ref <exp> <var>)
 ;;          | (apply-closure <exp> <exp> ...)   ;; invoking clousre instead of a procedure
 
-;; computing free variables
+;; compute free variables of the current term
 ; free : exp => set[var]
 (define (free exp)
   (match exp
     (`(lambda ,params ,body)
-     (set-subtract (free body) (apply set params)))
+     (set-subtract (free body) (apply set params)))                 ;; free body contains params already
     (`(lambda* ,params ,body)
-     (set-subtract (free body) (apply set params)))
+     (set-subtract (free body) (apply set params)))                 ;; same as normal lambda
     ((? symbol?) (set exp))
-    (`(make-closure ,proc ,env) (set-union (free proc) (free env)))
-    (`(make-env (,vs ,es) ...) (apply set-union (map free es)))
+    (`(make-closure ,proc ,env) (set-union (free proc) (free env))) ;; combine environmnets.
+    (`(make-env (,vs ,es) ...) (apply set-union (map free es)))     ;; combine env of expressions
     (`(env-ref ,env ,v) (free env))
     (`(apply-closure ,f ,args ...)
      (apply set-union (map free `(,f . ,args))))
@@ -97,5 +97,34 @@
     (`(,f ,args ...) `(apply-closure ,f . ,args))))   ;; apply a closure
 
 (pretty-write closure-convert '(lambda (x) (+ x a b)))
+
+;; bottom up tree transformation / bottom up
+(define (tranform/bottom-up f exp)
+  (define (t e) (tranform/bottom-up f e))
+  (let ((exp* (match exp
+                (`(lambda ,params ,body) `(lambda ,params ,(t body)))
+                (`(lambda* ,params ,body) `(lambda* ,params ,(t body)))
+                ((? symbol?) exp)
+                (`(make-closure ,lam ,env) `(make-closure ,(t lam) ,(t env)))
+                (`(make-env (,vs ,es) ...) `(make-env ,@(map list vs (map t es))))
+                (`(env-ref ,env ,v) `(env-ref ,(t env) ,v))
+                (`(apply-closure ,f ,args ...) `(apply-closure ,(t f) ,(map t args)))
+                (`(,f ,args ...) `(,(t f) ,@(map t args))))))
+    (f exp*)))
+
+;; top down tree transformation
+(define (transform/topdown f exp)
+  (define (t e) (transform/topdown f e))
+  (match (f exp)
+    (`(lambda ,params ,body) `(lambda ,params ,(t body)))
+    (`(lambda* ,params ,body) `(lambda* ,params ,(t body)))
+    ((? symbol?) exp)
+    (`(make-closure ,lam ,env) `(make-closure ,(t lam) ,(t env)))
+    (`(make-env (,vs ,es) ...) `(make-env ,@(map list vs (map t es))))
+    (`(env-ref ,env ,v) `(env-ref ,(t env) ,v))
+    (`(apply-closure ,f ,args ...) `(apply-closure ,(t f) ,(map t args)))
+    (`(,f ,args ...) `(,(t f) ,@(map t args)))))
+
+(define (flat-closure-convert exp) (tranform/bottom-up closure-convert exp))
 
 (test)
