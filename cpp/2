@@ -66,9 +66,7 @@ struct Combined {
   Child chld;
 };
 
-// force it t allocate in the stack, and place the move from mmebers into it
-// it 's not quite right because we still have move from object available
-// if t is passed by lvalue reference.
+// force it t allocate in the stack
 template <typename T> std::remove_cvref_t<T> memberwise_move(T &&t) noexcept {
   using T_ = std::remove_cvref_t<T>;
   T_ *ptr = (T_ *)alloca(sizeof(T_));
@@ -76,48 +74,9 @@ template <typename T> std::remove_cvref_t<T> memberwise_move(T &&t) noexcept {
   return *ptr;
 }
 
-// what happend here?
-// - initially parent and child have there own address, child referer to
-//   parent's address
-//
-// - combined has a new location that might be far away from both child
-//   and parent
-// - parent is moved to a offset start from combined,
-// - child also moved to a offset start from combined.
-// - child still holds a reference to the old parent, which now is gone.
-// => we get a dangling reference.
-//
-// To fix this, we need to adjust the reference in child. But to do that
-// the move is no longer trivial, we need to have access to the old parent
-// reference in child.
-void lifetime_and_self_reference() {
-
-  // lifetime
-  {                                                                     // 0
-    Parent parent{24};                                                  // 1
-    Child child{parent};                                                // 2
-    Combined combined{memberwise_move(parent), memberwise_move(child)}; // 3
-  }                                                                     // 4
-
-  // parent has lifetime [1-3)
-  // child has lifetime [2-3)
-  // combined has lifetime [3-4)
-  // meaning:
-  //  at [3], child is invalid, and parent is also invalid.
-  //  but child still holds a reference to the invalid parent, bad.
-  //
-  // we need to either adjust pointer or forbid this case.
-
-  // or maybe
-  {
-    Combined combined {
-      Parent{12},
-      Child{combined.parent}
-    };
-
-    Combined combinded1 = memberwise_move(combined);  // NO!
-  }
-}
+Parent parent{24};
+Child child{parent};
+Combined combined{memberwise_move(parent), memberwise_move(child)};
 
 ////////////////////
 // PS: After move the move from object will still be a valid state, and when
