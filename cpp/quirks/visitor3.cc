@@ -2,6 +2,19 @@
 #include <memory>
 #include <vector>
 
+// visitor2 hides Node ptr and you can have value semantics, which is almost
+// necesary to deal wit nodes.
+
+// Visitor3 is not a must, but very handy. It introduces structual typing
+// with type erease. So now we don't need to have Text inherit from Node and
+// still allow it work as a tree node.
+
+// We still have NodeValue that provides the value semantic, but the value
+// is wrapped in NodeLike which erase the value type, and provide a uniform
+// interface conforms Node. It essentailly converts anything into Node
+// interface. In approriata type will throw a type error after two phase look
+// up.
+
 // fully erase the type. not even the node.
 struct Node {
   virtual ~Node() = default;

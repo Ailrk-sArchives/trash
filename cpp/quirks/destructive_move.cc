@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <array>
+#include <assert.h>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -110,12 +111,9 @@ void lifetime_and_self_reference() {
 
   // or maybe
   {
-    Combined combined {
-      Parent{12},
-      Child{combined.parent}
-    };
+    Combined combined{Parent{12}, Child{combined.parent}};
 
-    Combined combinded1 = memberwise_move(combined);  // NO!
+    Combined combinded1 = memberwise_move(combined); // NO!
   }
 }
 
@@ -301,3 +299,5 @@ template <typename T> struct List {
     // TODO
   }
 };
+
+

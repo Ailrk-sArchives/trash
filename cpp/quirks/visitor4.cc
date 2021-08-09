@@ -2,6 +2,8 @@
 #include <memory>
 #include <vector>
 
+// compact NodeLike and NodeValue together.
+
 struct Node {
 
   struct Base {

@@ -1,0 +1,101 @@
+#lang racket
+(require test-engine/racket-tests)
+
+;;;; Closure conversion
+;; To compile nested lambda, we can hoist nested definitions to the top level
+;; and compile them separately.
+;; but a lamdba is not just a procedure alone, it also can have free variables:
+;; closure conversion is an open lambda term + an environment dictionary.
+
+;; When compile lambda, before hoist the function alone, we convert them
+;; into a closure: a pair of lambda and it's environment.
+;; the lambda is modified so it takes env as the first parameter.
+
+;; When applying the function, the current environment will be passed, and
+;; repace occurrence of free variables.
+
+;; Two types of closure conversion algorithms,
+;; 1. Flat closures
+;; 2. Shared closures
+
+;; a closure is a struct with code and the environment
+;; {lambda env, ...->...,  {a: x, b: y}}
+
+;; <expr> ::= (lambda (<var> ...) <expr>)
+;;          | (<exp> <exp> ...)
+;;          | <var>
+
+;;          ; for closure conversion
+;;          | (lambda* (<var> <var> ...) <exp>)   ;; already converted lambda
+;;          | (make-closure <exp> <exp>)
+;;          | (make-env (<var> <exp>))
+;;          | (env-ref <exp> <var>)
+;;          | (apply-closure <exp> <exp> ...)   ;; invoking clousre instead of a procedure
+
+;; computing free variables
+; free : exp => set[var]
+(define (free exp)
+  (match exp
+    (`(lambda ,params ,body)
+     (set-subtract (free body) (apply set params)))
+    (`(lambda* ,params ,body)
+     (set-subtract (free body) (apply set params)))
+    ((? symbol?) (set exp))
+    (`(make-closure ,proc ,env) (set-union (free proc) (free env)))
+    (`(make-env (,vs ,es) ...) (apply set-union (map free es)))
+    (`(env-ref ,env ,v) (free env))
+    (`(apply-closure ,f ,args ...)
+     (apply set-union (map free `(,f . ,args))))
+    (`(,f ,args ...)
+     (apply set-union (map free `(,f . ,args))))))
+
+;; beta substitution.
+; substitute : hash[var, exp] exp => exp
+(define (substitute sub exp)
+  (match exp
+    (`(lambda ,params ,body)
+     (define params* (apply set params))
+     (define sub* (for/hash
+                      (((k v) sub)
+                       #:when (not (set-member? params* k))) (values k v)))
+     `(lambda ,params (substitute sub* body)))
+    (`(lambda* ,params ,body)
+     (define params* (apply set params))
+     (define sub* (for/hash
+                      (((k v) sub)
+                       #:when (not (set-member? params* k))) (values k v)))
+     `(lambda* ,params ,(substitute sub* body)))
+    ((? symbol?) (if (hash-has-key? sub exp)
+                     (hash-ref sub exp)
+                     exp))
+    (`(make-closure ,lam ,env) `(make-closure ,(substitute sub lam)
+                                              ,(substitute sub env)))
+    (`(make-env (,vs ,es) ...) `(make-env ,@(map list vs (map (substitute-with sub) es))))
+    (`(env-ref ,env ,v) `(env-ref ,(substitute sub env) ,v))
+    (`(apply-closure ,f ,args ...) `(apply-closure ,@(map (substitute-with sub) `(,f . ,args))))
+    (`(,f ,args ...) `(map (substitute-with sub) `(,f . ,args)))))
+
+(define (substitute-with sub) (lambda (exp) (substitute sub exp)))
+
+;; perform the closure conversion
+(define (closure-convert exp)
+  (match exp
+    (`(lambda ,params ,body)              ;; start perform closure conversion here.
+     (define $env (gensym 'env))          ;; create a fresh symbol
+     (define params* (cons $env params))  ;; pass env as extra parameter
+     (define fv (free exp))               ;; get set of free variables
+     (define env (for/list ((v fv)) (list v v)))
+     (define sub (for/hash ((v fv)) (values v `(env-ref ,$env ,v))))
+     (define body* (substitute sub body))   ;; beta reduction
+     `(make-closure (lambda* ,params* ,body*) (make-env @env)))
+    (`(lambda* ,params ,body) exp)    ;; other cases just propagates
+    (`(? symbol?) exp)
+    (`(make-closure ,lam ,env) exp)
+    (`(make-env (,vs ,es) ...) exp)
+    (`(env-ref ,env ,v) exp)
+    (`(apply-closure ,f ,args ...) exp)
+    (`(,f ,args ...) `(apply-closure ,f . ,args))))   ;; apply a closure
+
+(pretty-write closure-convert '(lambda (x) (+ x a b)))
+
+(test)

@@ -20,7 +20,8 @@
 //     constructor. The constructor takes any T that conforms Node interface,
 //     no matter how complicated the type is.
 //     Once the value is constructed our type system only see NodeValue
-//  3. Still polymorphic
+//  3. Still polymorphic under neath. a NodeValue can be a NodeValue of
+//     Text or Doc, but they are now the same type.
 
 // PS: wrapping and reorgnize interface is a common technique almost everywhere.
 // In haskell you also want to use newtype to modify the nested value and
