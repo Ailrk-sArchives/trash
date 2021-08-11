@@ -9,8 +9,9 @@ import           Control.Monad.Trans.State    as State
 import           Data.Char                    (isDigit, isLetter, isSpace)
 import qualified Data.HashMap.Lazy            as HM
 import qualified Data.HashSet                 as HS
+import           Data.Maybe                   (fromJust)
+import           Data.Typeable
 import           Text.ParserCombinators.ReadP as P
-
 
 type Var = String
 
@@ -26,7 +27,15 @@ data Expr r where
   EnvRef :: Expr env -> Expr ref -> Expr k
   ApplyClosure :: Expr expr0 -> [Expr expr1] -> Expr k
 
+data SomeExpr where
+  SomeExpr :: forall r. (Expr r) -> SomeExpr
+
+unwrapSomeExpr :: SomeExpr -> forall r. (forall a. Expr a -> r) -> r
+unwrapSomeExpr (SomeExpr expr) k = k expr
+
 deriving instance Show (Expr r)
+deriving instance Typeable (Expr r)
+
 fromVar :: Expr Var -> Var
 fromVar (Var n) = n
 fromVar _       = error "no way"
@@ -124,12 +133,14 @@ free (ApplyClosure f vs) = HS.unions (free f : fmap free vs)
 free (Apply f vs) = HS.unions (free f : fmap free vs)
 
 -- | substitute free variables with dictionary
-substitue :: HM.HashMap Var (Expr r) -> Expr c -> Expr k
+substitue :: HM.HashMap Var (Expr r) -> Expr c -> Expr r
 substitue dict (Lambda params body) = undefined
 substitue dict (LambdaConverted params body) = undefined
-substitue dict (Var v)
-  | v `HM.member` dict = undefined --  dict HM.! v
-  | otherwise = undefined -- TOOD @ two branches return different types.
+substitue dict expr@(Var v)
+  | v `HM.member` dict = dict HM.! v
+  | otherwise = undefined
+
+-- undefined -- TOOD @ two branches return different types.
 substitue dict (Apply lam params) =
   Apply (substitue dict lam) (fmap (substitue dict) params)
 substitue dict (MkClosure lam env) =
@@ -160,9 +171,20 @@ closureConvert expr = evalState (convert expr) 0
     convert (Apply f args) = return $ ApplyClosure f args
     convert expr = return expr
 
+-- transformBottomUp :: (Expr r -> Expr r) -> Expr r -> Expr r
+-- transformBottomUp f expr = f (transform expr)
+--   where
+--     t e = transformBottomUp f e
+--     transform :: Expr r -> Expr k
+--     transform (Lambda params body) = Lambda params (t body)
+--     transform expr@(Var _) = expr
+--     -- transform (Apply eexpr0 l_eexpr1) = _
+--     -- transform (LambdaConverted l_el_c ebody) = _
+--     -- transform (MkClosure elam eenv) = _
+--     -- transform (MkEnv l_p_evareexpr) = _
+--     -- transform (EnvRef eenv eref) = _
+--     -- transform (ApplyClosure eexpr0 l_eexpr1) = _
 
-transformBottomUp :: (Expr r -> Expr r) -> Expr r -> Expr r
-transformBottomUp = undefined
 
 transformTopdown :: (Expr r -> Expr r) -> Expr r -> Expr r
 transformTopdown = undefined
