@@ -11,7 +11,7 @@ public:
       int r = x;
 
       while (l <= r) {
-        int mid = l + (r - 1) / 2;
+        int mid = (l + (r - 1)) / 2;
         int sqrt = x / mid;
         if (sqrt == mid) {
           return mid;

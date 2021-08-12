@@ -140,6 +140,8 @@ substitue dict expr@(Var v)
   | v `HM.member` dict = dict HM.! v
   | otherwise = undefined
 
+-- TODO
+
 -- undefined -- TOOD @ two branches return different types.
 substitue dict (Apply lam params) =
   Apply (substitue dict lam) (fmap (substitue dict) params)
@@ -189,8 +191,8 @@ closureConvert expr = evalState (convert expr) 0
 transformTopdown :: (Expr r -> Expr r) -> Expr r -> Expr r
 transformTopdown = undefined
 
-flatClosureConvert :: Expr r -> Expr r
-flatClosureConvert = transformBottomUp closureConvert
+-- flatClosureConvert :: Expr r -> Expr r
+-- flatClosureConvert = transformBottomUp closureConvert
 
-sharedClosureConvert :: Expr r -> Expr r
-sharedClosureConvert = transformTopdown closureConvert
+-- sharedClosureConvert :: Expr r -> Expr r
+-- sharedClosureConvert = transformTopdown closureConvert
