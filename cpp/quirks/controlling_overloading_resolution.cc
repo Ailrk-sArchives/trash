@@ -165,6 +165,7 @@ static_assert(
 
 void test_construct_sfinae() {
   {
+
     // use the nothrow default constructible overload.
     int *begin = (int *)malloc(1024 * sizeof(int));
     int *end = begin + 1024;
@@ -189,4 +190,3 @@ void test_construct_sfinae() {
 // 3. we can use type traits to choose the right overload for the right type.
 // 4. we can use tag disptach to choose overload explicitly.
 // 5. deleting overload to prevent unwanted implicit conversion.
-//
