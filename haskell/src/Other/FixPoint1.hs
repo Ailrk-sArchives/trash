@@ -85,7 +85,7 @@ n = let term = In (Binary (In (Paren (In (Literal (IntLit 3)))))
           -> lambda calculus is unsound.
 
     4. the equivalence of fix point operator is on paper, what's the operational
-       semantics we we execute it?
+       semantics when we execute it?
           it's just beta reduction. Each time you make a new substitution, a new
           expression with the same form emerge.
 
@@ -110,5 +110,4 @@ n = let term = In (Binary (In (Paren (In (Literal (IntLit 3)))))
           It's the key idea of using fixed point at the type level. It doesn't matter
           how deep the data type is nested, as long as it's a instance of the fixed point
           of the type it will tye check.
-
 @-}

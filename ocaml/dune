@@ -1,0 +1,13 @@
+; (library
+;   (name ocaml_demo_lib)
+;   (modules "dfs" "gadt" "gdemo" "modules" "oop")
+;   )
+
+; (library
+;   (name ocaml_demolib)
+;   (modules ("dfs" "gadt" "oop" "gdemo" "modules")))
+
+
+(executable
+ (name ocaml_demo)
+ (modules "ocaml_demo"))

@@ -119,5 +119,4 @@ let integer_part r =
 type number = Int of int | Float of float | Error
 type sign = Positive | Negative
 
-
 type 'a btree = Empty | Node of 'a * 'a btree * 'a

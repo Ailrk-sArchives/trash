@@ -14,7 +14,8 @@ import           Data.Maybe                   (fromJust)
 import qualified Data.Set                     as S
 import           Data.Typeable
 import           Debug.Trace
-import           Text.ParserCombinators.ReadP as P
+import           Text.ParserCombinators.ReadP ((<++))
+import qualified Text.ParserCombinators.ReadP as P
 import           Text.Pretty.Simple           (pPrint, pShowNoColor, pString)
 
 type Var = String
@@ -52,20 +53,20 @@ fromVar e       = error "expect a variable name, get " <> show e
 -------------------------------------------------------------------------------
 -- parser
 
-identifierp = idp <* skipSpaces
+identifierp = idp <* P.skipSpaces
   where
     idp = do
-      first <- satisfy isLetter
-      rest <- munch (\c -> isDigit c || isLetter c)
+      first <- P.satisfy isLetter
+      rest <- P.munch (\c -> isDigit c || isLetter c)
       return $ first : rest
 
 -- >>> P.readP_to_S reservedp "lambda"
 
-tokenp :: Char -> ReadP Char
-tokenp c = char c <* skipSpaces
+tokenp :: Char -> P.ReadP Char
+tokenp c = P.char c <* P.skipSpaces
 
-reserved :: String -> ReadP String
-reserved s = string s <* skipSpaces
+reserved :: String -> P.ReadP String
+reserved s = P.string s <* P.skipSpaces
 
 varp :: P.ReadP Expr
 varp = Var <$> identifierp
@@ -74,11 +75,11 @@ varp = Var <$> identifierp
 applyp :: P.ReadP Expr
 applyp = do
   tokenp ('(')
-  Apply <$> parse <*> manyTill parse (tokenp ')')
+  Apply <$> parse <*> P.manyTill parse (tokenp ')')
 
-lambbdaBodyp :: ([Expr] -> Expr -> Expr) -> ReadP b -> ReadP Expr
+lambbdaBodyp :: ([Expr] -> Expr -> Expr) -> P.ReadP b -> P.ReadP Expr
 lambbdaBodyp con prefix = prefix *> (tokenp '(') *> do
-  ts <- manyTill identifierp (tokenp ')')
+  ts <- P.manyTill identifierp (tokenp ')')
   expr <- parse
   return $ con (fmap Var ts) expr
 
@@ -95,7 +96,7 @@ mkEnvp :: P.ReadP Expr
 mkEnvp = MkEnv <$> (reserved "mkenv" *> pairsp)
   where
     pairp = (,) <$> (tokenp '(' *> varp) <*> (parse <* tokenp ')')
-    pairsp = tokenp '(' *> (manyTill pairp (tokenp ')'))
+    pairsp = tokenp '(' *> (P.manyTill pairp (tokenp ')'))
 
 envRefp :: P.ReadP Expr
 envRefp = EnvRef <$> (reserved "envref" *> varp) <*> varp
@@ -103,7 +104,7 @@ envRefp = EnvRef <$> (reserved "envref" *> varp) <*> varp
 applyClosurep :: P.ReadP Expr
 applyClosurep = ApplyClosure
             <$> (reserved "apply-closure" *> parse)
-            <*> (manyTill parse (tokenp ')'))
+            <*> (P.manyTill parse (tokenp ')'))
 
 parse :: P.ReadP Expr
 parse = parse1 <++ applyp
@@ -115,7 +116,7 @@ parse = parse1 <++ applyp
          <++ envRefp
          <++ varp
          <++ applyClosurep
-         <++ between (tokenp '(') (tokenp ')') parse
+         <++ P.between (tokenp '(') (tokenp ')') parse
 
 -- >>> let c1 = "(mkclosure (lambda (env x) (envref env a)) (mkenv ((f f))))"
 -- >>> readP_to_S parse c1
@@ -125,10 +126,7 @@ type UniqueId = Int
 type LC a = State UniqueId a
 
 getUniqueId :: LC Int
-getUniqueId = do
-  i <- State.get
-  modify $ \i -> i + 1
-  return i
+getUniqueId = State.get >>= \i -> modify (\n -> n + 1) >> return i
 
 free :: Expr  -> HS.HashSet Var
 free (Lambda params body) =
@@ -186,20 +184,22 @@ closureConvert expr = (show "closureConvert " <> show expr) `trace` convert expr
     convert (Apply f args) = return $ ApplyClosure f args
     convert expr = return expr
 
+-- (a -> m b)  (m b)
+
 -- transform each node
 transform :: (Expr -> LC Expr) ->  Expr -> LC Expr
 transform t (Lambda params body) = (Lambda params) <$> (t body)
 transform t (LambdaConverted params body) = (LambdaConverted params) <$> (t body)
 transform t (MkClosure lam env) = MkClosure <$> (t lam) <*> (t env)
 transform t expr@(Var _)         = return expr
-transform t (MkEnv env) = MkEnv <$> (traverse (\(a, b) -> do b' <- t b
-                                                             return (a, b')) env)
+transform t (MkEnv env) =
+  MkEnv <$> (traverse (\(a, b) -> t b >>= \b' -> return (a, b')) env)
 transform t (EnvRef env v) = EnvRef <$> (t env) <*> pure v
 transform t (Apply f args) = Apply <$> (t f) <*> (traverse t args)
 transform t (ApplyClosure f args) = ApplyClosure <$> (t f) <*> (traverse t args)
 
 transformBottomUp :: (Expr -> LC Expr) -> Expr -> LC Expr
-transformBottomUp f expr = f =<< (transform t expr)
+transformBottomUp f expr = f =<< transform t expr
   where
     t e = transformBottomUp f e
 
@@ -220,13 +220,13 @@ run1 :: IO ()
 run1 = pPrint
      . fst
      . head
-     $ readP_to_S (flatClosureConvert <$> parse) example1
+     $ P.readP_to_S (flatClosureConvert <$> parse) example1
 
 run2 :: IO ()
 run2 = pPrint
      . fst
      . head
-     $ readP_to_S (sharedClosureConvert <$> parse) example1
+     $ P.readP_to_S (sharedClosureConvert <$> parse) example1
 
 
 -- readP_to_S (flatClosureConvert <$> parse) example1
