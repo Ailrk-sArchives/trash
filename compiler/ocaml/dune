@@ -1,6 +1,6 @@
 (library
   (name interpreterlib)
-  (modules ("reduction")))
+  (modules ("_reduction")))
 
 (executable
  (name interpreter)

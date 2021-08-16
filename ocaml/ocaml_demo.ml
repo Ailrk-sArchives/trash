@@ -39,5 +39,3 @@ module Mutation1 : MutationSig = struct
       a.(!j) <- val_i
     done
 end
-
-

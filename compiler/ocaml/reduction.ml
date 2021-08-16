@@ -42,18 +42,6 @@
       - Divergence: a -> a1 -> ... -> ...
       - Error: a -> a1 -> ... -/->
 
-    - e.g
-      Termination:
-         (\x.\y.y x)((\x.x) 1)(\x.x)
-      -> (\x.\y.y x) 1 (\x.x)   -- App-l, App-r, Betav
-      -> (\y.y 1) (\x.x)        -- App-l, App-r, Betav
-      -> (\x.x) 1               -- Betav
-      -> 1                      -- Betav
-      Error:
-         (\x. x x) 2 -> 2 2 -/->
-      Divergence (omega):
-         (\x.x x)(\x. x x) -> (\x. x x)(\x. x x) -> ...
-
     - PS: also there is `Reduction context` which bascially doing the same thing
 
    # Call by name in SOS style
@@ -79,44 +67,70 @@
      3. We can encode CBN in CBV languages with thunks, but the reverse requires
         CPS transformation.
 
+  # PS: Normal order reduction
+  The original evaluation order is normal ordedr reduction, which always
+  evaluate the outer most redexes outside in.
+
+  - For lambda expression, if it has a normal form, it has unique normal form
+  - Normal order evaluation always find the unique normal form (if exists).
+  - For non halting reduction there is no normal form what so ever.
+
+  https://www.cs.cornell.edu/~kozen/Papers/ChurchRosser.pdf
+  http://www.cs.columbia.edu/~aho/cs3261/Lectures/L24-Lambda_Calculus_II.html
+  # PS: Church Rosser Theorems (Confluence under beta reduction)
+  If there are two reduction path for a expression e to take such that
+  e ->* f and e ->* g, then there exists a h that f -> * h and g ->* h
  *)
 
-type term = Const of int
-          | Var of string
-          | Lam of string * term
-          | App of term * term
+module SmallStepReduction = struct
+  type term = Const of int
+            | Var of string
+            | Lam of string * term
+            | App of term * term
 
-let isvalue = function
-  | Const _ -> true
-  | Lam _ -> true
-  | _ -> false
+  let isvalue = function
+    | Const _ -> true
+    | Lam _ -> true
+    | _ -> false
 
-let rec subst x v = function
-  | Const n -> Const n
-  | Var y -> if x = y then v else Var y
-  | Lam(y, b) -> if x = y then Lam(y, b) else Lam(y, subst x v b)
-  | App(b, c) -> App(subst x v b, subst x v c)
+  (* subst x with v in y
+     Assume v has no free variable. Otherwise there will be name capturing.
+   *)
+  let rec subst x v = function
+    | Const n -> Const n
+    | Var y -> if x = y then v else Var y
+    | Lam(arg, body) -> if x = arg then Lam(arg, body)
+                                   else Lam(arg, subst x v body)
+    | App(lam, arg) -> App(subst x v lam, subst x v arg)
 
+  (* One step reduction in SOS style.
+     apply only when a is a value, eval arguments first.
+         (\x.a) v -> a[x <- v]  (Betav)
+
+          a -> a'                     b -> b'
+       -------------(App-l)         -----------(App-r)
+        a b -> a' b                  v b -> v b'
+   *)
+  let rec reduce = function
+    | App(Lam(args, body), v) when isvalue v -> Some(subst args v body)
+    | App(lam, arg) ->
+        if isvalue lam then begin
+          match reduce arg with
+          | None -> None
+          | Some arg' -> Some(App(lam, arg'))
+        end else begin
+          match reduce lam with
+          | None -> None
+          | Some lam' -> Some(App(lam', arg))
+        end
+    | _ -> None
+
+  let rec evaluateSOS a =
+    match reduce a with
+      None -> a
+    | Some a' -> evaluateSOS a'
+end
 
 (* Natural semanticse (Big step semantics)
  *)
 
-(* record types *)
-type ratio = {
-  num: int;
-  demon: int;
-};;
-
-let add_ratio r1 r2 = {
-  num = r1.num * r2.demon + r2.num * r1.demon;
-  demon = r1.demon * r2.demon;
-};;
-
-let integer_part r =
-  match r with
-    { num=num; demon=demon} -> num / demon;;
-
-type number = Int of int | Float of float | Error
-type sign = Positive | Negative
-
-type 'a btree = Empty | Node of 'a * 'a btree * 'a

@@ -22,7 +22,12 @@ maintainer:         jimmy123good@hotmail.com
 extra-source-files: CHANGELOG.md
 
 library
-    exposed-modules:  ClosureConversion
+    exposed-modules:
+      ClosureConversion
+      NaiveCPS
+      HigherOrderCPS
+      HybridCPS
+      PartitionedCPS
 
     -- Modules included in this library but not exported.
     -- other-modules:

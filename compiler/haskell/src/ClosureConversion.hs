@@ -198,21 +198,21 @@ transform t (EnvRef env v) = EnvRef <$> (t env) <*> pure v
 transform t (Apply f args) = Apply <$> (t f) <*> (traverse t args)
 transform t (ApplyClosure f args) = ApplyClosure <$> (t f) <*> (traverse t args)
 
-transformBottomUp :: (Expr -> LC Expr) -> Expr -> LC Expr
-transformBottomUp f expr = f =<< transform t expr
-  where
-    t e = transformBottomUp f e
 
+-- envs are linked
 flatClosureConvert :: Expr -> Expr
 flatClosureConvert expr = evalState (transformBottomUp closureConvert expr) 0
-
-transformTopdown :: (Expr -> LC Expr) -> Expr  -> LC Expr
-transformTopdown f expr = f expr >>= transform t
   where
-    t e = transformTopdown f e
+    transformBottomUp f expr = f expr >>= transform t
+      where t e = transformBottomUp f e
 
+-- envs are copied
 sharedClosureConvert :: Expr -> Expr
 sharedClosureConvert expr = evalState (transformTopdown closureConvert expr) 0
+  where
+    transformTopdown f expr = transform t expr >>= f
+      where t e = transformTopdown f e
+
 
 example1 = "(lambda (g) (lambda (z) (lambda (x) (g x z a))))"
 
@@ -227,7 +227,6 @@ run2 = pPrint
      . fst
      . head
      $ P.readP_to_S (sharedClosureConvert <$> parse) example1
-
 
 -- readP_to_S (flatClosureConvert <$> parse) example1
 
