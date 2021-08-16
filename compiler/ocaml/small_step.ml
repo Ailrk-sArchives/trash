@@ -2,15 +2,10 @@
    Asuming there is no free variables.
 
    # Call by value in structural operational style (SOS)
-
-   Term a, b := N
-              | x
-              | \x.a
-              | a b
+   Term a, b := N | x | \x.a | a b
    Values v ::= N | \x.a
 
    - one step reduction relation a -> a': -------------------------------------
-
       (\x.a) v -> a[x <- v]  (Betav)
 
         a -> a'                     b -> b'
@@ -45,7 +40,6 @@
     - PS: also there is `Reduction context` which bascially doing the same thing
 
    # Call by name in SOS style
-
       (\x.a) b -> a[x <- b] (Betan)
 
         a -> a'
@@ -67,19 +61,6 @@
      3. We can encode CBN in CBV languages with thunks, but the reverse requires
         CPS transformation.
 
-  # PS: Normal order reduction
-  The original evaluation order is normal ordedr reduction, which always
-  evaluate the outer most redexes outside in.
-
-  - For lambda expression, if it has a normal form, it has unique normal form
-  - Normal order evaluation always find the unique normal form (if exists).
-  - For non halting reduction there is no normal form what so ever.
-
-  https://www.cs.cornell.edu/~kozen/Papers/ChurchRosser.pdf
-  http://www.cs.columbia.edu/~aho/cs3261/Lectures/L24-Lambda_Calculus_II.html
-  # PS: Church Rosser Theorems (Confluence under beta reduction)
-  If there are two reduction path for a expression e to take such that
-  e ->* f and e ->* g, then there exists a h that f -> * h and g ->* h
  *)
 
 module SmallStepReduction = struct
@@ -96,12 +77,12 @@ module SmallStepReduction = struct
   (* subst x with v in y
      Assume v has no free variable. Otherwise there will be name capturing.
    *)
-  let rec subst x v = function
+  let rec subst x value = function
     | Const n -> Const n
-    | Var y -> if x = y then v else Var y
+    | Var y -> if x = y then value else Var y
     | Lam(arg, body) -> if x = arg then Lam(arg, body)
-                                   else Lam(arg, subst x v body)
-    | App(lam, arg) -> App(subst x v lam, subst x v arg)
+                                   else Lam(arg, subst x value body)
+    | App(lam, arg) -> App(subst x value lam, subst x value arg)
 
   (* One step reduction in SOS style.
      apply only when a is a value, eval arguments first.
@@ -125,12 +106,9 @@ module SmallStepReduction = struct
         end
     | _ -> None
 
-  let rec evaluateSOS a =
+  (* eval takes on reduction at a time *)
+  let rec eval a =
     match reduce a with
       None -> a
-    | Some a' -> evaluateSOS a'
+    | Some a' -> eval a'
 end
-
-(* Natural semanticse (Big step semantics)
- *)
-

@@ -1,6 +1,7 @@
 (library
   (name interpreterlib)
-  (modules ("_reduction")))
+  (modules ("small_step"
+            "big_step")))
 
 (executable
  (name interpreter)
