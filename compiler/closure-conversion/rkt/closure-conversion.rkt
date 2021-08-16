@@ -153,12 +153,19 @@
 (define (shared-closure-convert exp) (transform/topdown closure-convert exp))
 
 (define example1 '(lambda (g) (lambda (z) (lambda (x) (g x z a)))))
+(define example2 '(lambda (x) x))
 
 (block
  (displayln "[flat closure] ===")
  (pretty-write (flat-closure-convert example1))
  (displayln "")
+
  (displayln "[shared closure] ===")
- ( pretty-write (shared-closure-convert example1)))
+ (pretty-write (shared-closure-convert example1))
+ (displayln "")
+
+ (displayln "[flat closure 1] ===")
+ (pretty-write (flat-closure-convert example2))
+ (displayln ""))
 
 (test)

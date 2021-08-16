@@ -1,0 +1,8 @@
+(library
+  (name interpreterlib)
+  (modules ("reduction")))
+
+(executable
+ (name interpreter)
+ (modules ("interpreter")))
+
