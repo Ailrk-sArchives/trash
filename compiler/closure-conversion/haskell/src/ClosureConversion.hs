@@ -1,12 +1,10 @@
 {-# LANGUAGE GADTs              #-}
 {-# LANGUAGE RankNTypes         #-}
 {-# LANGUAGE StandaloneDeriving #-}
-{-# OPTIONS_GHC -fwarn-incomplete-patterns #-}
 
 
 module ClosureConversion () where
 
-import Text.Pretty.Simple (pPrint)
 import           Control.Applicative          (liftA2)
 import           Control.Monad.Trans.State    as State
 import           Data.Char                    (isDigit, isLetter, isSpace)
@@ -15,7 +13,9 @@ import qualified Data.HashSet                 as HS
 import           Data.Maybe                   (fromJust)
 import qualified Data.Set                     as S
 import           Data.Typeable
+import           Debug.Trace
 import           Text.ParserCombinators.ReadP as P
+import           Text.Pretty.Simple           (pPrint, pShowNoColor, pString)
 
 type Var = String
 
@@ -32,7 +32,18 @@ data Expr where
   EnvRef :: { env :: Expr, var :: Expr } -> Expr
   ApplyClosure :: { f :: Expr, args :: [Expr] } -> Expr
 
-deriving instance Show Expr
+instance Show Expr where
+  show (Var v) = show v
+  show (Lambda args body) =
+    "(lambda (" <> mconcat (fmap show args) <> ")" <> show body <> ")"
+  show (Apply f args) = "(" <> show f <> " " <> mconcat (fmap show args) <> ")"
+  show (LambdaConverted args body) =
+    "(lambda* (" <> mconcat (fmap show args) <> ")" <> show body <> ")"
+  show (MkClosure lam env) = "(make-closure " <> show lam <> " " <> show env <> ")"
+  show (MkEnv envlist) = "(make-env " <> mconcat (fmap showPair envlist) <> ")"
+    where showPair = (\(v, e) -> "(" <> show v <> " " <> show e <> ")")
+  show (EnvRef env var) = "(env-ref " <> show env <>  "" <> show var <>")"
+  show (ApplyClosure f args) = "(apply-closure " <> show f <> " " <> mconcat (fmap show args) <> ")"
 
 fromVar :: Expr -> Var
 fromVar (Var n) = n
@@ -133,7 +144,7 @@ free (ApplyClosure f vs) = HS.unions (free f : fmap free vs)
 free (Apply f vs) = HS.unions (free f : fmap free vs)
 
 -- | substitute free variables with dictionary
-substitue :: HM.HashMap Var (Expr ) -> Expr  -> Expr
+substitue :: HM.HashMap Var (Expr ) -> Expr -> Expr
 substitue dict expr@(Var v)
   | v `HM.member` dict = dict HM.! v
   | otherwise = expr
@@ -154,8 +165,9 @@ substitue dict l
     MkClosure (substitue dict lam) (substitue dict env)
   | (MkEnv env) <- l= MkEnv (fmap (\(v,e) -> (v, substitue dict e)) env)
   | (EnvRef env ref) <- l = EnvRef (substitue dict env) ref
-closureConvert :: Expr  -> Expr
-closureConvert expr = evalState (convert expr) 0
+
+closureConvert :: Expr -> LC Expr
+closureConvert expr = (show "closureConvert " <> show expr) `trace` convert expr
   where
     convert :: Expr  -> LC Expr
     convert expr@(Lambda params body) = do
@@ -163,41 +175,59 @@ closureConvert expr = evalState (convert expr) 0
           env = fmap (\v -> (Var v, Var v)) (HS.toList fv)
       envSym <- genEnvSym
       sub <- do
-          envSym <- genEnvSym
           let mkref k = EnvRef (Var envSym) (Var k)
-          return $ HM.mapWithKey (\k _  -> mkref k) (HS.toMap fv)
+          return $ HM.mapWithKey (\k _ -> mkref k) (HS.toMap fv)
       let body' = substitue sub body
       params' <- return ((Var envSym) : params)
-      return $ MkClosure (LambdaConverted params body') (MkEnv env)
+      return $ MkClosure (LambdaConverted params' body') (MkEnv env)
       where
-        genEnvSym = (\i -> "env" ++ show i) <$> getUniqueId
+        genEnvSym = fmap (\i -> "env" ++ show i) getUniqueId
 
     convert (Apply f args) = return $ ApplyClosure f args
     convert expr = return expr
 
 -- transform each node
-transform :: (Expr -> Expr) ->  Expr -> Expr
-transform t (Lambda params body) = Lambda params (t body)
-transform t (LambdaConverted params body) = LambdaConverted params (t body)
-transform t (MkClosure lam env) = MkClosure (t lam) (t env)
-transform t expr@(Var _)         = expr
-transform t (MkEnv env) = MkEnv (fmap (\(a, b) -> (a, t b)) env)
-transform t (EnvRef env v) = EnvRef (t env) v
-transform t (Apply f args) = Apply (t f) (fmap t args)
-transform t (ApplyClosure f args) = ApplyClosure (t f) (fmap t args)
+transform :: (Expr -> LC Expr) ->  Expr -> LC Expr
+transform t (Lambda params body) = (Lambda params) <$> (t body)
+transform t (LambdaConverted params body) = (LambdaConverted params) <$> (t body)
+transform t (MkClosure lam env) = MkClosure <$> (t lam) <*> (t env)
+transform t expr@(Var _)         = return expr
+transform t (MkEnv env) = MkEnv <$> (traverse (\(a, b) -> do b' <- t b
+                                                             return (a, b')) env)
+transform t (EnvRef env v) = EnvRef <$> (t env) <*> pure v
+transform t (Apply f args) = Apply <$> (t f) <*> (traverse t args)
+transform t (ApplyClosure f args) = ApplyClosure <$> (t f) <*> (traverse t args)
 
-transformBottomUp :: (Expr -> Expr) -> Expr -> Expr
-transformBottomUp f expr = f (transform t expr)
+transformBottomUp :: (Expr -> LC Expr) -> Expr -> LC Expr
+transformBottomUp f expr = f =<< (transform t expr)
   where
     t e = transformBottomUp f e
 
-transformTopdown :: (Expr  -> Expr) -> Expr  -> Expr
-transformTopdown f expr = transform t expr
+flatClosureConvert :: Expr -> Expr
+flatClosureConvert expr = evalState (transformBottomUp closureConvert expr) 0
+
+transformTopdown :: (Expr -> LC Expr) -> Expr  -> LC Expr
+transformTopdown f expr = f expr >>= transform t
   where
     t e = transformTopdown f e
 
-flatClosureConvert :: Expr -> Expr
-flatClosureConvert = transformBottomUp closureConvert
-
 sharedClosureConvert :: Expr -> Expr
-sharedClosureConvert = transformTopdown closureConvert
+sharedClosureConvert expr = evalState (transformTopdown closureConvert expr) 0
+
+example1 = "(lambda (g) (lambda (z) (lambda (x) (g x z a))))"
+
+run1 :: IO ()
+run1 = pPrint
+     . fst
+     . head
+     $ readP_to_S (flatClosureConvert <$> parse) example1
+
+run2 :: IO ()
+run2 = pPrint
+     . fst
+     . head
+     $ readP_to_S (sharedClosureConvert <$> parse) example1
+
+
+-- readP_to_S (flatClosureConvert <$> parse) example1
+
