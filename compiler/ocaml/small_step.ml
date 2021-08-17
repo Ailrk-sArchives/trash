@@ -91,6 +91,9 @@ module SmallStepReduction = struct
           a -> a'                     b -> b'
        -------------(App-l)         -----------(App-r)
         a b -> a' b                  v b -> v b'
+
+      reduce perform reduction rule once at a time, return a partially recuded
+      expression.
    *)
   let rec reduce = function
     | App(Lam(args, body), v) when isvalue v -> Some(subst args v body)
@@ -106,7 +109,7 @@ module SmallStepReduction = struct
         end
     | _ -> None
 
-  (* eval takes on reduction at a time *)
+  (* eval recursively reduce until nothing more to reduce *)
   let rec eval a =
     match reduce a with
       None -> a

@@ -100,6 +100,7 @@ library
       Types.TypeclassMetaprogramming
       Types.FD
       Types.NoTypeclass
+      Types.Variance
 
       PL.Lam
       PL.ScottEncoding
@@ -155,6 +156,7 @@ library
       Other.FinalTagless2
       Other.RecursionScheme1
       Other.Lens1
+      Other.IndexedMonad
       Other.FAlgebra
       Other.DSL1
       Other.PartialEvaluation
@@ -189,6 +191,8 @@ library
     , utf8-string
     , text
     , text-conversions
+    , indexed
+    , first-class-families
 
     -- mmap wrapper
     , mmap

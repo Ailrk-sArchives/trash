@@ -280,4 +280,3 @@ print_ints'intensional = do
 -- NOTE: it's not always possible to do runtime type checking. Sometimes you
 -- need to add type information for all values for them to be able to be type
 -- checked.
-

@@ -3,18 +3,113 @@
 {-# LANGUAGE GADTs                 #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes            #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE StandaloneDeriving    #-}
 
+{-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE KindSignatures        #-}
+{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE TypeOperators         #-}
+{-# LANGUAGE UndecidableInstances  #-}
 module Types.Gadts where
 
 import           Cat.Arrows   ((>>>))
+import           Data.Kind
 import           GHC.TypeLits
 
-{-@ what's the point?
- @-}
+-- GADT bascially equivalent to shove a type equiality constraint in each
+-- data consntructor.
+-- When doing pattern maching type a can be inferred by constructor used.
+data Expr a
+  = (a ~ Int) => LitInt Int
+  | (a ~ Bool) => LitBool Bool
+  | (a ~ Int) => Add (Expr Int) (Expr Int)
+  | (a ~ Bool) => Not (Expr Bool)
+  | If (Expr Bool) (Expr a) (Expr a)
 
--- Look at this:
+evalExpr :: Expr a -> a
+evalExpr (LitInt a) = a
+evalExpr (LitBool a) = a
+evalExpr (Add a b) = evalExpr a + evalExpr b
+evalExpr (Not n) =  not (evalExpr n)
+evalExpr (If n then' else') =
+  if evalExpr n then evalExpr then' else evalExpr else'
+
+-- >>> evalExpr (If (LitBool True) (LitInt 1) (LitInt 2))
+-- 1
+
+-- Another way to think about it is that the type Expr a is indexed by term
+-- level values.
+-- At runtime we have (LitInt 10), so a for Expr a becomes Int.
+
+-------------------------------------------------------------------------------
+-- one motivation for GADT is to build inductive type level structural with
+-- term levle data.
+
+
+-- type level list with gadt
+-- note:
+-- 1. ts has kind '[Type]. a HList can contain type of whatever.
+-- 2. base case HNil infer the list to '[]
+-- 3. cons operation :# introduce a new type paramter t, and at the
+--    type level it will be consed on top of the type list ts
+-- 4. end result is that the type level list mirror operation at term level.
+-- 5. Not all HLists can be compaired, cause their ts can be entirely different
+--    types. e.g '[Int] is not the same as '[Int, Double].
+data HList (ts :: [Type]) where
+  HNil :: HList '[]
+  (:#) :: t -> HList ts -> HList (t ': ts)
+
+infixr 5 :#
+
+hLength :: HList ts -> Int
+hLength (_ :# as) = 1 + hLength as
+
+-- note this head is type safe, HList '[] is not allowed here.
+hHead :: HList (t ': ts) -> t
+hHead (a :# _) = a
+
+showBoolAtSecondPosition :: HList '[_1, Bool, _2] -> String
+showBoolAtSecondPosition (_ :# n :# _) = show n
+
+-- >>> showBoolAtSecondPosition (1 :# True :# 3 :# HNil)
+-- >>> showBoolAtSecondPosition (1 :# False :# (LitBool True) :# HNil)
+-- "True"
+-- "False"
+
+--------------------------------------
+-- A problem with GADT is that normal typeclass facility doesn't work every
+-- well. We need two typeclass to define Eq for HList.
+
+instance Eq (HList '[]) where
+  HNil == HNil = True
+
+instance (Eq t, Eq (HList ts)) => Eq (HList (t ': ts)) where
+  (a :# as) == (b :# bs) = a == b && as == bs
+
+-- with type family
+
+type family All (c :: Type -> Constraint) (ts :: [Type]) :: Constraint where
+  All c '[] = ()
+  All c (t ': ts) = (c t, All c ts)
+
+instance (All Show ts) => Show (HList ts) where
+  show HNil      = "()"
+  show (a :# as) =  "(" <> show a <> ", " <> show as <> ")"
+
+-- >>> :kind! All Eq '[Int, Bool]
+-- All Eq '[Int, Bool] :: Constraint
+-- = (Eq Int, (Eq Bool, () :: Constraint))
+
+-- it's tricker to implement typeclass has upper constraints like Ord to Eq.
+-- e.g Ord (HList ts)
+-- Because you need to prove
+--  All Ord ts, (Eq (HList ts))
+-- when patten maching and recurs you also need to prove:
+--  (Eq (HList (t ': ts)))
+
+
+-----------------------------------------------------------Look at this:
 type X a = Either a a
 -- This is just a type alias, and it's also a type function.
 -- X can only be used at the type level, which takes
@@ -23,36 +118,8 @@ type X a = Either a a
 -- in c++ it might look like this:
 -- template<tyename T> using X = Either<T, T>;
 
-{-@ Now we want the type function to be more powerful
-    We want it to actually act like a function.
-
-    like this:
-        type T [a] = Set a
-    Or this:
-        type F Bool = Char
-        type F String = Int
-    Or even recursive and using other type functions.
-        data TrueType
-        data FalseType
-
-        type F [a] = F a
-        type F (Map a b) = F b
-        type F a | IsSimple a = a
-
-        -- if a type is defined then it's true ...
-        -- (figuratively)
-        type IsSimple Bool
-             IsSimple Int
-             IsSimple Double
-    Or maybe multi value fucntion? (What's that?)
-        type Colelction a = [a]
-             Colelction a = (Set a)
-             Colelction a = (Map a b)
-
- @-}
-
--- Now let's write stuffs above as typeclasses.
--- these are really just predicates at type level.
+-- type predicates return constraint.
+-- typeclass is just type predicate + term level definitions.
 class IsSimple a
 instance IsSimple Bool
 instance IsSimple Int
@@ -75,33 +142,6 @@ instance Replace t a a t  -- need flexible instance
 instance Replace t a b res => Replace [t] a b [res]
 instance Replace t a b res => Replace (Maybe t) a b (Maybe res)
 instance Replace t a b t
-
-
-{-@ Syntax for typeclasses looks more like a constraint rather
-    then function.
-
-    To interpret type class as type function the function body seems to be reversed.
-      instance (HasInt a) => HasInt [a]
-    is
-      type HasInt [a] = HasInt a
-@-}
-
-
-{-@ Generalized Abstract data type
-
-    Say you want to do this:
-      data T String = D1 Int
-           T Bool   = D2
-           T [a]    = D3 (a, a)
-    you need to use GADT and write this:
-
-      data T a where
-        D1 :: Int -> T String     -- match when return T String
-        D2 :: T Bool              -- match when return T Bool
-        D3 :: (a, a) -> T [a]     -- match when return T [a]
-
-    Pattern mathcing on the data constructor can help you determine what a should be.
-@-}
 
 -- to implement an evaluator for sk combinator
 
@@ -212,4 +252,5 @@ rrll = PutOnR >>> TieR >>> PutOnL >>> TieL
 
 -- this doesn't work
 -- don't :: TieShoeMethod
+-- don't = TieL >>> TieR >>> PutOnL >>> PutOnL
 -- don't = TieL >>> TieR >>> PutOnL >>> PutOnL

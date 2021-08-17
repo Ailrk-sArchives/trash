@@ -64,5 +64,3 @@ testToText = [toText nblog, toText npost, toText nuser]
 
 data RegStatusd = Registered | Anon
 newtype UserId (s :: RegStatusd) = UserId Text
-
-
