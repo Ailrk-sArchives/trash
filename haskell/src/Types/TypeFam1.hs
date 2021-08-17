@@ -131,3 +131,6 @@ runStack = do
   throwError "Error"
   x <- ask
   return ()
+
+------------------------------------------------------ ------------------------
+-- type family implement printf

@@ -229,4 +229,3 @@ run2 = pPrint
      $ P.readP_to_S (sharedClosureConvert <$> parse) example1
 
 -- readP_to_S (flatClosureConvert <$> parse) example1
-

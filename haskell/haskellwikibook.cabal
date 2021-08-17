@@ -103,6 +103,7 @@ library
       Types.Variance
       Types.Dynamics
       Types.ExScoping
+      Types.TypeRole
 
       PL.Lam
       PL.ScottEncoding

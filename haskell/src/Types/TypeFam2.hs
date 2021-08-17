@@ -247,5 +247,4 @@ f' xs = case (xs :: [Bool]) of
 -- isomorphism between real data types and memoized version.
 
 ------------------------------------------------------ ------------------------
---
 

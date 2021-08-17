@@ -29,6 +29,8 @@ library
       HybridCPS
       PartitionedCPS
 
+      ProofRefinement.Refinement1
+
     -- Modules included in this library but not exported.
     -- other-modules:
 
