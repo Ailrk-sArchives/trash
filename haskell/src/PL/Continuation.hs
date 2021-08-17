@@ -236,3 +236,6 @@ sqrtIO throw = do
 
 runSqrtIO :: IO ()
 runSqrtIO = runContT (tryCont sqrtIO (liftIO . print)) return
+
+------------------------------------------------------------------------------
+-- a and forall r. (a -> r) -> r are isomorphic

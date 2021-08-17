@@ -101,6 +101,8 @@ library
       Types.FD
       Types.NoTypeclass
       Types.Variance
+      Types.Dynamics
+      Types.ExScoping
 
       PL.Lam
       PL.ScottEncoding

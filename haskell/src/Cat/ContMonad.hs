@@ -1,3 +1,7 @@
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE GADTs                 #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE RankNTypes            #-}
 module Cat.ContMonad where
 
 -- What's good
@@ -367,8 +371,32 @@ tryit c h = callCC $ \ok -> do
 -- Denominator 0
 
 ------------------------------------------------------------------
--- delimited continuation
--- in haskell callCC caputure the rest of the ContT becaues the effect is
+-- a and (forall r. (a -> r) -> r)) are isomorpihc
+class Iso a b where
+  from :: a ->  b
+  to :: b -> a
+
+newtype Conti a r = Conti { runConti :: forall r. (a -> r) -> r }
+
+instance Iso a (Conti a r) where
+  from a = Conti $ \k -> k a
+  to (Conti k) = k id
+
+
+-- exitential types are elimimated via continuation passing
+data Any where
+  Any :: a -> Any
+
+-- there exists an a in Any that we know will give us r.
+elimAny :: (forall a. a -> r) -> Any -> r
+elimAny f (Any a) = f a
+
+-- >>> elimAny (\a -> 1) (Any 1)
+-- 1
+
+
+------------------------------------------------------------------is a rigid type variable bound by
+-- the ContT becaues the effect is
 -- scoped. In scheme call/cc capture the rest of the program because call/cc
 -- is builtin and global.
 --
@@ -387,4 +415,4 @@ tryit c h = callCC $ \ok -> do
 --  explicit control flow
 --  explicit evaluaion order
 --  named intermediate values.
-
+--  named intermediate values.
