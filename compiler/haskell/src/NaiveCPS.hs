@@ -10,6 +10,11 @@ import           Data.Functor.Identity        (Identity (Identity))
 import qualified Text.ParserCombinators.ReadP as P
 
 -- CPS transformation:
+-- before:
+--  (g a) halt
+--
+-- after
+--  ((\k1. \k2. k1 k2 halt) a) g
 
 type Var = String
 data Expr = Lam { param :: String,  body :: Expr }
@@ -21,9 +26,9 @@ data Expr = Lam { param :: String,  body :: Expr }
 -- cps has two kinds of experssions: atomic and complex.
 -- atomic expr always pure and reduce to a value
 -- complex expr may not terminate, or may have side effects.
-data AExpr = ALam [Var] CExpr
-           | AVar Var
-data CExpr = CExpr AExpr [AExpr]
+-- data AExpr = ALam (Var, Var) CExpr
+--            | AVar Var
+-- data CExpr = CExpr AExpr AExpr
 
 -------------------------------------------------------------------------------
 type LC a = StateT Int Identity a
@@ -37,18 +42,12 @@ uniqueSym = uniqueId >>= \s -> pure $ "k" ++ show s
 -- Naive cps transformation
 
 -- | convert an atomic value into CPS value
-transformM :: Expr -> LC AExpr
-transformM (Lam param body) = do
-  k' <- uniqueSym
-  body' <- transformT body k'
-  return $ ALam [param, k'] body'
-transformM (Var n) = return $ AVar n
-transformM _ = error "M tranform only work for lambda and variable"
+--  a  => \k. k a
+transformM :: Expr -> LC Expr
+transformM  = undefined
 
 -- | take an expression and a continuation,
 --   apply the continuation  cps converted version of the expression
-transformT :: Expr -> Var -> LC CExpr
-transformT (Lam l_c e3) k = _
-transformT expr@(Var n) k = (ALam [k]) <$> transformM expr
-transformT (App e2 e3) k = _
+transformT :: Expr -> Expr -> LC Expr
+transformT = undefined
 

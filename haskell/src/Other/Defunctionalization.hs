@@ -114,5 +114,51 @@ walkDef :: Tree t -> Lam t
 walkDef (Leaf x)     = consDef x
 walkDef (Node t1 t2) = oDef (walkDef t1) (walkDef t2)
 
+-- ps: cps
+
+data Wood a = Foliage | Branch (Wood a) (Wood a)
+
+depth1 :: Wood a -> Int
+depth1 = loop
+  where
+    loop tree =
+      case tree of
+        Foliage    -> 1
+        Branch l r -> succ (max (loop l) (loop r))
+
+-- cps transformed
+-- we know loop on right tree finish before loop on first tree for sure.
+depth2 :: Wood a -> Int
+depth2 = flip loop id where
+  loop cons k = case cons of
+                  Foliage -> k 1
+                  Branch l r ->
+                    loop l $ \kl ->
+                    loop r  $ \kr -> succ (max kl kr)
+
+-- one way to thin about cps.
+-- loop l k
+-- loop l will return something. This something need to be obtained somehow.
+-- by passing a k that takes the argument we are able to use the result of
+-- loop l.
+
 -- 3. defunctionaliza the continuation
 -- related topic: Closure conversion
+
+-- Represent continuations as data types.
+
+data DCont a
+  = DContL (Tree a) (DCont a)   -- first eval left child.
+  | DContR Int (DCont a)        -- when DContR works left child should be evaled
+  | DContID                     -- end case.
+
+depth3 :: Wood a -> Int
+depth3 tree = loop tree DContID where
+  loop cons k = case cons of
+                  Foliage    -> eval k 1
+                  Branch l r -> loop l (DContL r k)
+
+  eval cons d = case cons of
+                  DContL r k  -> loop r (DContR d k)
+                  DContR dl k -> eval k (succ (max dl d))
+                  DContID     -> d
