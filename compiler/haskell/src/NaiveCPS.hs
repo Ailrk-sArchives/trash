@@ -4,9 +4,14 @@
 module NaiveCPS where
 
 -- Naive cps converter
-import           Control.Monad.Trans.State
+import           Control.Monad.IO.Class
+import           Control.Monad.Trans          (lift)
+import           Control.Monad.Trans.Maybe
 import           Data.Char                    (isDigit, isLetter, isSpace)
 import           Data.Functor.Identity        (Identity (Identity))
+import           Data.Monoid
+import           Data.Text                    as T
+import           Data.Unique
 import qualified Text.ParserCombinators.ReadP as P
 
 -- CPS transformation:
@@ -16,38 +21,48 @@ import qualified Text.ParserCombinators.ReadP as P
 -- after
 --  ((\k1. \k2. k1 k2 halt) a) g
 
-type Var = String
-data Expr = Lam { param :: String,  body :: Expr }
-          | Var Var
-          | App { lam :: Expr, arg :: Expr }
-          deriving (Show)
+-- src. just unyped lambda calculus.
+data Expr = Lam Text Expr
+          | Var Text
+          | App Expr Expr
+          deriving Show
 
 -- target cps
 -- cps has two kinds of experssions: atomic and complex.
 -- atomic expr always pure and reduce to a value
 -- complex expr may not terminate, or may have side effects.
--- data AExpr = ALam (Var, Var) CExpr
---            | AVar Var
--- data CExpr = CExpr AExpr AExpr
+
+data AExpr
+  = AVar Text
+  | ALam [Text] CExpr
+
+data CExpr = CApp AExpr [AExpr]
 
 -------------------------------------------------------------------------------
-type LC a = StateT Int Identity a
-uniqueId :: LC Int
-uniqueId = get >>= \s -> modify (\s -> s + 1) >> get
-
-uniqueSym :: LC String
-uniqueSym = uniqueId >>= \s -> pure $ "k" ++ show s
+gensym :: IO Text
+gensym = fmap (\u -> T.pack ("#" <> show (hashUnique u))) newUnique
 
 -------------------------------------------------------------------------------
 -- Naive cps transformation
 
--- | convert an atomic value into CPS value
---  a  => \k. k a
-transformM :: Expr -> LC Expr
-transformM  = undefined
+transfromM :: Expr -> MaybeT IO AExpr
+transfromM expr@(Lam var cexpr) = do
+  k' <- liftIO gensym
+  cexpr' <- transfromT cexpr (AVar k')
+  return $ ALam [var, k'] cexpr'
+transfromM expr@(Var var) = return $ AVar var
+transfromM _ = MaybeT (return Nothing)  -- you can't lift Nothing...
 
--- | take an expression and a continuation,
---   apply the continuation  cps converted version of the expression
-transformT :: Expr -> Expr -> LC Expr
-transformT = undefined
+transfromT :: Expr -> AExpr -> MaybeT IO CExpr
+transfromT expr k =
+  case expr of
+    Lam _ _ -> (CApp k) <$> (fmap (:[]) $ transfromM expr)
+    Var _ ->(CApp k) <$> (fmap (:[]) $ transfromM expr)
+    App f e -> do
+      f' <- liftIO gensym
+      e' <- liftIO gensym
+      let aexpr = ALam [e'] (CApp (AVar f') [AVar e', k])
+      cexpr <- transfromT e aexpr
+      let aexpr' = ALam [f'] cexpr
+      transfromT f aexpr'
 
