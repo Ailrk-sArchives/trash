@@ -394,7 +394,6 @@ elimAny f (Any a) = f a
 -- >>> elimAny (\a -> 1) (Any 1)
 -- 1
 
-
 ------------------------------------------------------------------is a rigid type variable bound by
 -- the ContT becaues the effect is
 -- scoped. In scheme call/cc capture the rest of the program because call/cc
@@ -405,7 +404,6 @@ elimAny f (Any a) = f a
 --
 -- With delimited continuation we can capture arbitrary portions of the program
 -- instead of the entire program.
-
 
 ------------------------------------------------------------------
 -- cps transformation
