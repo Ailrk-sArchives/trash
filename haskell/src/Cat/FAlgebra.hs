@@ -1,3 +1,2 @@
 module Cat.FAlgebra where
 
-

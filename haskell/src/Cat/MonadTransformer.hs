@@ -32,6 +32,9 @@ instance Monad m => Monad (MaybeT m) where
       Just value' -> runMaybeT $ f value'
       Nothing     -> return Nothing
 
+instance MonadTrans MaybeT where
+  lift = MaybeT . (fmap Just)
+
 instance Monad m => Applicative (MaybeT m) where
   pure = return
   (<*>) = ap
@@ -108,6 +111,21 @@ newtype ExceptT e m a = ExceptT { runExceptT :: m (Either e a) }
 -- runExceptT exists only for newtype. If we don't have newtype wrapper
 -- we don't need this.
 -- It's not the core of the semantic of a monad transformer.
+
+type EMIO a = ExceptT Bool (MaybeT IO) a
+-- a value looks like: ExceptT (MaybeT (IO (Maybe (Either a))))
+-- see how constructor and the actual moand is in reverse
+
+-- See, lifting order follows the order of the transformers' constructors.
+-- but actual moand follows the opposite order
+workONEMIO :: EMIO Int
+workONEMIO = do
+  i1 <- catchE (throwE False) (\_ -> return 1)
+  n <- lift $ return 10
+  lift . lift $ putStrLn "asd"
+  return 1
+
+unwrapEMIO = runMaybeT . runExceptT
 
 instance (Monad m) => Functor (ExceptT e m) where
   fmap f (ExceptT m) = ExceptT ((fmap . fmap) f m)

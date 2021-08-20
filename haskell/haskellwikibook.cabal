@@ -158,6 +158,7 @@ library
       Other.FinalTagless1
       Other.FinalTagless2
       Other.RecursionScheme1
+      Other.RecursionScheme2
       Other.Lens1
       Other.IndexedMonad
       Other.FAlgebra
@@ -181,6 +182,7 @@ library
 
       Nice.LoopBreak
       Nice.Pause
+      Nice.Compositions
 
   other-modules:
       Paths_haskellwikibook
@@ -203,6 +205,9 @@ library
 
     , monad-control
     , comonad
+    , recursion-schemes
+    , data-ordlist
+    , data-fix
 
     , repa
 

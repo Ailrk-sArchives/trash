@@ -148,7 +148,7 @@ depth2 = flip loop id where
 -- Represent continuations as data types.
 
 data DCont a
-  = DContL (Tree a) (DCont a)   -- first eval left child.
+  = DContL (Wood a) (DCont a)   -- first eval left child.
   | DContR Int (DCont a)        -- when DContR works left child should be evaled
   | DContID                     -- end case.
 

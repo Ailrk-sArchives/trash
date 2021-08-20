@@ -31,6 +31,8 @@ library
 
       ProofRefinement.Refinement1
 
+      DSL.Sharing
+
     -- Modules included in this library but not exported.
     -- other-modules:
 
