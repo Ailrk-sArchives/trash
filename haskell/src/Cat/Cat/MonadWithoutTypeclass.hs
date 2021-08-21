@@ -1,4 +1,4 @@
-module Cat.MonadWithoutTypeclass where
+module Cat.Cat.MonadWithoutTypeclass where
 
 import           Data.Function
 

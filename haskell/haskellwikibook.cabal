@@ -50,22 +50,27 @@ library
       GHCs.Bench
       GHCs.Profiling
 
-      Cat.AlternativeandMonadPlus
-      Cat.MonadWithoutTypeclass
-      Cat.ContMonad
-      Cat.Monads
-      Cat.Monads1
+--    theory
+      Cat.Functor
       Cat.CoMonads
-      Cat.MonadTransformer
-      Cat.ErrorHandling
-      Cat.MTLPractise
-      Cat.MTLPractise1
-      Cat.MyMTL
-      Cat.Arrows
-      Cat.ArrowPractice
       Cat.FreeMonad
       Cat.FAlgebra
+      Cat.Cat0
+      Cat.Cat1
 
+--    use
+      Cat.Cat.AlternativeandMonadPlus
+      Cat.Cat.MonadWithoutTypeclass
+      Cat.Cat.ContMonad
+      Cat.Cat.Monads
+      Cat.Cat.Monads1
+      Cat.Cat.MonadTransformer
+      Cat.Cat.ErrorHandling
+      Cat.Cat.MTLPractise
+      Cat.Cat.MTLPractise1
+      Cat.Cat.MyMTL
+      Cat.Cat.Arrows
+      Cat.Cat.ArrowPractice
       Cat.Cat.C1
 
       DataStructure.Amortization

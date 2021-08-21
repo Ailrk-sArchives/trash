@@ -51,15 +51,24 @@
 module SimpleArithmMachine = struct
   exception Error
 
-  type inst = CONST of int | Add of inst * inst | SUB of inst * inst
+  type inst = CONST | ADD | SUB | V of int
   type 'a stack = 'a list
 
   (* notion of the machine *)
   let push v s = v :: s
 
   let pop = function
-    | (x::_) -> x
+    | (x::xs) -> (x, xs)
     | _ -> raise Error
 
-
+  let interpreter code =
+    let stk = [] in
+    let rec loop stk code = match stk, code with
+      | stk', (CONST::V n::code') -> loop (V n::stk') code'
+      | (V n1::V n2::stk'), (ADD::code') -> loop (V (n1 + n2)::stk') code'
+      | (V n1::V n2::stk'), (SUB::code') -> loop (V (n1 - n2)::stk') code'
+      | [], [v] -> v
+      | _ -> raise Error
+    in loop stk code
 end
+

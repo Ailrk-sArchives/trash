@@ -9,7 +9,7 @@
 {-# LANGUAGE StandaloneDeriving         #-}
 {-# LANGUAGE UndecidableInstances       #-}
 
-module Cat.ErrorHandling where
+module Cat.Cat.ErrorHandling where
 
 import           Control.Exception
 import           Control.Monad

@@ -1,6 +1,6 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 
-module Cat.AlternativeandMonadPlus where
+module Cat.Cat.AlternativeandMonadPlus where
 
 
 import           Control.Applicative

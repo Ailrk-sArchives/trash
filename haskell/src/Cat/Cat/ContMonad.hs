@@ -2,7 +2,7 @@
 {-# LANGUAGE GADTs                 #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes            #-}
-module Cat.ContMonad where
+module Cat.Cat.ContMonad where
 
 -- What's good
 -- 1. `runCont k id` to unwrap a continuation

@@ -100,4 +100,3 @@ getHOAS =  [d|
   eval (Lam f)     = \x -> eval . f . Con
   eval (App e1 e2) = eval e1 (eval e2)
   |]
-

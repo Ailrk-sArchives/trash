@@ -13,6 +13,7 @@ import           Network.Mail.Mime
 import           System.Exit                 (die)
 import           System.IO
 
+
 server       = "smtp.gmail.com"
 port         = 465
 authType     = LOGIN

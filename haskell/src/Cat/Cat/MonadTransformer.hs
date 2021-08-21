@@ -11,7 +11,7 @@
 {-# LANGUAGE DeriveFunctor              #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE ScopedTypeVariables        #-}
-module Cat.MonadTransformer where
+module Cat.Cat.MonadTransformer where
 
 import           Control.Applicative
 import qualified Control.Exception      as E

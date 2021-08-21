@@ -18,7 +18,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE GADTs #-}
 
-module Cat.MyMTL where
+module Cat.Cat.MyMTL where
 import           Control.Monad.IO.Class     (MonadIO (liftIO))
 import           Control.Monad.Trans.Class  (MonadTrans (lift))
 import           Data.Functor.Classes       (Eq1 (..), Ord1 (..), Read1 (..),

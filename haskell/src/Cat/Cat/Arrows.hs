@@ -5,7 +5,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -fenable-rewrite-rules #-}
 {-# OPTIONS_GHC -Wno-inline-rule-shadowing #-}
-module Cat.Arrows where
+module Cat.Cat.Arrows where
 
 {-@ Arrow, new abstracation
     Arrow represents composition and data flow.

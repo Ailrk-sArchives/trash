@@ -1,5 +1,5 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-module Cat.MTLPractise1 where
+module Cat.Cat.MTLPractise1 where
 
 import Control.Monad.Reader
 import Control.Monad.Writer

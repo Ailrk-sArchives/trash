@@ -4,7 +4,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE KindSignatures             #-}
 {-# LANGUAGE RankNTypes                 #-}
-module Cat.Monads where
+module Cat.Cat.Monads where
 
 {-@ 2020-04-30
     Functor: morphism between categories

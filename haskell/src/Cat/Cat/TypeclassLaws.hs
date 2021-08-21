@@ -1,4 +1,4 @@
-module Cat.TypeclassLaws where
+module Cat.Cat.TypeclassLaws where
 
 import Test.Hspec
 

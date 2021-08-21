@@ -13,7 +13,7 @@
 {-# LANGUAGE UndecidableInstances  #-}
 module Types.Gadts where
 
-import           Cat.Arrows   ((>>>))
+import           Cat.Cat.Arrows   ((>>>))
 import           Data.Kind
 import           GHC.TypeLits
 
