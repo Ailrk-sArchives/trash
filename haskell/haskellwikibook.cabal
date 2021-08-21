@@ -131,6 +131,7 @@ library
       Libs.TH.TemplateH
       Libs.TH.QQHtml
       Libs.TH.QQHtmlRunner
+      Libs.SMTPMail
 
       MiniProject.EchoServer
       MiniProject.Haskell99
@@ -232,6 +233,10 @@ library
     , stm
 
     , linear
+
+    , HaskellNet-SSL
+    , HaskellNet
+    , mime-mail
 
     -- 2d pretty printing lib
     , boxes
