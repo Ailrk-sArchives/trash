@@ -1,0 +1,4 @@
+(library
+  (name abstractmachinelib)
+  (modules ("simple_arithm"
+            "secd")))

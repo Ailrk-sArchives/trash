@@ -1,9 +1,0 @@
-(library
-  (name interpreterlib)
-  (modules ("small_step"
-            "big_step")))
-
-(executable
- (name interpreter)
- (modules ("interpreter")))
-
