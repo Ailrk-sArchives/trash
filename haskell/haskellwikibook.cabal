@@ -110,6 +110,8 @@ library
       Types.ExScoping
       Types.TypeRole
 
+      Proof.Nat
+
       PL.Lam
       PL.ScottEncoding
       PL.HOAS

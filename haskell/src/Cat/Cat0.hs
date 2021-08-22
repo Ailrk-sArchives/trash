@@ -1,4 +1,17 @@
+{-# LANGUAGE GADTs                    #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE KindSignatures           #-}
+{-# LANGUAGE MultiParamTypeClasses    #-}
+{-# LANGUAGE StandaloneKindSignatures #-}
+{-# LANGUAGE TypeOperators            #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE PolyKinds #-}
 module Cat.Cat0 where
+
+import           Data.Kind                (Type)
+import           Data.Type.Equality
+import           GHC.Base                 (Constraint)
+import           Test.QuickCheck.Property
 
 -- being a unifying descrptional tool, category needs to be simple enough to
 -- encompass different situions. The core concept of a category is very simple:
@@ -17,7 +30,6 @@ module Cat.Cat0 where
 
 -- from simple arithmetics on real number to groups rings fields moduels to
 -- category theory, learning algebra means study the rules and examples.
---
 -- Some exmaple categories:
 --   1. Set, Ob(Set) is a set of all set, morpihsms are function between sets.
 --        e.g sin and cos are two morphisms from R to [1, -1], they
@@ -32,4 +44,13 @@ module Cat.Cat0 where
 -- category. The power of category is the relationship between cats with
 -- functor and natural transformations.
 
+-- Category has idenity morphism and composition.
 
+type Cat :: (Type -> Type -> Type) -> Constraint
+class Cat morph where
+  identity :: morph a a
+  compose :: morph b c -> morph a b -> morph a c
+
+instance Cat (->) where
+  identity = id
+  compose = (.)

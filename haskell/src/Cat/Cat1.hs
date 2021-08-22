@@ -41,4 +41,3 @@ instance Adjunction Exists Const (->) (~>) where
 
   rightAdj :: (f ~> Const a) -> (Exists f -> a)
   rightAdj g (Exists fx) = getConst (unNatTrans g fx)
-
