@@ -52,7 +52,7 @@ module SimpleArithmMachine = struct
   exception Error
 
   type inst = CONST | ADD | SUB | V of int
-  type 'a stack = 'a list
+  type stack = inst list
 
   (* notion of the machine *)
   let push v s = v :: s
