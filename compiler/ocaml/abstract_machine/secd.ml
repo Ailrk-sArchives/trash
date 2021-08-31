@@ -1,4 +1,4 @@
-(*
+(* ****************************************************************************
   SECD machine is a abstract machine for call-by-value semantics. It was first
   invented by Peter J Ladin in 1964 in his paper mechanical evaluation of
   expressions.
@@ -73,6 +73,7 @@ module SECDMachineNaive = struct
     in loop stk env code
 end
 
+(* (\a. 2 + a) 1 *)
 let t1 () =
   let open SECDMachineNaive in
   let p = [CLOSURE [ACCESS(0); LDV(VInt 2); ADD; RETURN]; LDV(VInt 1); APPLY]

@@ -19,6 +19,10 @@ module ProofRefinement.Refinement1 where
 --      (B ^ A) -> (A ^ B)
 --
 data Nat = Zero | Suc Nat deriving (Eq, Show)
+
+-- this is a simplified version, we put the ast into judgemnet directly
+-- if the ast is large, we make it a separate type, and judgement takes
+-- an ast and some context information to help it refines.
 data Judgement = Equal Nat Nat | Plus Nat Nat Nat deriving (Show, Eq)
 
 -- form a statement
@@ -72,7 +76,6 @@ findProof j = do
   return (ProofTree j ts)
 
 -- it's essentially a evaluator applies reduction rules.
--- let's check the result
 
 -- >>> findProof (Plus (Suc Zero) (Suc Zero) (Suc (Suc Zero)))
 -- [ProofTree (Plus (Suc Zero) (Suc Zero) (Suc (Suc Zero)))

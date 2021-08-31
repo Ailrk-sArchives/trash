@@ -1,4 +1,8 @@
-(* Krivine's machine implements call by name semantics for lambda calculus.
+
+(* ****************************************************************************
+   SPJ wrote an article about comparision between push enter and eval apply.
+   https://www.cs.tufts.edu/comp/150FP/archive/simon-peyton-jones/eval-apply-jfp.pdf
+   Krivine's machine implements call by name semantics for lambda calculus.
    It also has three stacks: S, E, C
    for SECD, S, E holds value. But for krivine machine, S, E always hold thunk
    e.g a c[e]
@@ -29,11 +33,26 @@
            @
       /         \
  a[a1[e1].e']   a2[e2]
+*)
 
+(* ****************************************************************************
   Krivine machine only suuports call by name semantics, but a realistic call
-  by name language needs to have at least two more features to be efficent:
+  by name language needs to have at least two more features to be efficient:
     1. Strict operations on primitives.
     2. Sharing with lazy evalution.
+
+  Translation:
+    C(n) = ACCESS(n)    -- get the nth thunk from the environment.
+      ^
+    C(\a) = GRAB;C(a)   -- pop one argument and add it to the environment.
+    C(a b) = PUSH(C(b));C(a)    -- push a thunk for code c.
+
+  Push Enter:
+      to evaluate (\.\.b) a1 a2:
+        push a1; push a2; enter (\.\.b);
+          grab a1; grab a2; eval b;
+  Comparing with eval-apply model,  push enter builds less intermediate
+  closures and perform less return from callee to caller.
  *)
 
 module KrivineMachine = struct
@@ -50,14 +69,9 @@ module KrivineMachine = struct
     | GRAB
     | PUSH of inst list
 
-    | CLOSURE of inst list
+    (* | CLOSURE of inst list *)
     | LET
     | ENDLET
-
-    (* function calls *)
-    | APPLY
-    | TAILAPPLY (* case for handling extra return frame *)
-    | RETURN
 
     (* basic arithmetics*)
     | ADD
@@ -79,6 +93,14 @@ module KrivineMachine = struct
     let rec loop s e c = match s, e, c with
       | s, e, LDV n::cs -> loop (n::s) e cs
 
+      (* arithmetics are strict *)
+      | VInt a::VInt b::ss, e, ADD::cs -> loop (VInt(a + b)::ss) e cs
+      | VInt a::VInt b::ss, e, SUB::cs -> loop (VInt(a - b)::ss) e cs
+
+      (* let binding works the same *)
+      | (v::s), e, LET::cs -> loop s (v::e) cs
+      | s, (_::e), ENDLET::cs -> loop s e cs
+
       (* access evaluates the nth thunk on the stack *)
       | s, e, ACCESS(n)::_ -> begin match List.nth e n with
                               | VClos(c', e') -> loop s e' c'
@@ -94,3 +116,13 @@ module KrivineMachine = struct
       | s, e, c -> VUnknown (s, e, c)
     in loop stk env code
 end
+
+(* ****************************************************************************
+   (\a. 2 + a) 1
+ *)
+let t1 () =
+  let open KrivineMachine in
+  let p = [PUSH [LDV (VInt 1)];
+           PUSH [LDV (VInt 2)];
+           ]
+  in interpreter p

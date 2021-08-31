@@ -24,7 +24,7 @@ data Expr = Var String
           | App Type Expr Expr
           deriving (Eq, Show)
 
--- type context
+-- context
 type Context = [(String, Type)]
 
 -- a judgement is made by given type context, current expression, and
@@ -35,8 +35,11 @@ data Judgement = HasType Context Expr Type deriving (Show, Eq)
 -- given a expression and a type
 decomposeHasType :: Context -> Expr -> Type -> Maybe [Judgement]
 -- type of variable need to be proofed by looking into the context.
-decomposeHasType g (Var x) a = lookup x g >>= \t ->
+decomposeHasType g (Var x) a = do
+  t <- lookup x g
   if a == t then return [] else Nothing
+
+-- further refines base on cases.
 decomposeHasType g Zero Nat = return []   -- Zero proofs itself.
 decomposeHasType g (Suc m) Nat = return [HasType g m Nat]
 decomposeHasType g (Pair m n) (Prod a b) = return [HasType g m a, HasType g n b]

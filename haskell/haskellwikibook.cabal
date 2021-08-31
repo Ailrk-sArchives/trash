@@ -119,6 +119,7 @@ library
       PL.CoroutinesWithContinuation
       PL.DenotationalSem
       PL.TypesAndAbstractInterpretation
+      PL.DeepShallowEmbedding
 
       Libs.ReadFile
       Libs.Asyncs
