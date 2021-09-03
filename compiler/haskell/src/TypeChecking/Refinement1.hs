@@ -1,7 +1,9 @@
 {-# LANGUAGE DataKinds           #-}
 {-# LANGUAGE KindSignatures      #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-module ProofRefinement.Refinement1 where
+module TypeChecking.Refinement1 where
+
+
 
 -- refinement base on a proof tree.
 -- We start from the conclusion and refine backwards. Each expression

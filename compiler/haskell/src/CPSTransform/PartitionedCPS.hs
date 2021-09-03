@@ -1,7 +1,7 @@
 {-# LANGUAGE GADTs              #-}
 {-# LANGUAGE StandaloneDeriving #-}
 
-module PartitionedCPS where
+module CPSTransform.PartitionedCPS where
 
 -- Naive cps converter
 import           Control.Monad.Trans.State

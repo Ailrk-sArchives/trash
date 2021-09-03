@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module ProofRefinement.Refinement2 where
+module TypeChecking.Refinement2 where
 
 -- a simple type checker.
 

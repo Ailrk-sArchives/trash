@@ -24,16 +24,17 @@ extra-source-files: CHANGELOG.md
 library
     exposed-modules:
       ClosureConversion
-      NaiveCPS
-      HigherOrderCPS
-      HybridCPS
-      PartitionedCPS
 
-      ProofRefinement.Refinement1
-      ProofRefinement.Refinement2
-      ProofRefinement.BidirectionalProofRefinement1
-      ProofRefinement.BidirectionalProofRefinement2
-      ProofRefinement.BidirectionalProofRefinement3
+      CPSTransform.NaiveCPS
+      CPSTransform.HigherOrderCPS
+      CPSTransform.HybridCPS
+      CPSTransform.PartitionedCPS
+
+      TypeChecking.Refinement1
+      TypeChecking.Refinement2
+      TypeChecking.BidirectionalTC.TC1
+      TypeChecking.BidirectionalTC.TC2
+      TypeChecking.BidirectionalTC.TC3
 
       DSL.Sharing
 

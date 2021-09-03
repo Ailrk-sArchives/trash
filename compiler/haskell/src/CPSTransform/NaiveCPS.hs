@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings  #-}
 {-# LANGUAGE StandaloneDeriving #-}
 
-module NaiveCPS where
+module CPSTransform.NaiveCPS where
 
 -- Naive cps converter
 import           Control.Monad.IO.Class
