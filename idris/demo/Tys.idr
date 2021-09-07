@@ -60,10 +60,18 @@ filter' p (x :: xs)
                                 else (_ ** xs')
 
 ------------------------------------------------------------------------------
+-- Record fields in their own name space.
+-- .fieldName is an accessor
 record Person where
   constructor MkPerson
   firstName, middleName, lastName : String
   age : Int
 
+
+-- you can also have nested records!
+
 main : IO ()
-main = putStrLn "good"
+main = do
+  let jojo = MkPerson "joseph" "." "josta" 10
+  putStrLn (jojo.firstName)
+  putStrLn "good"
