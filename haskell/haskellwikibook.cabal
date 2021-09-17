@@ -139,6 +139,7 @@ library
       Libs.TH.TemplateH
       Libs.TH.QQHtml
       Libs.TH.QQHtmlRunner
+      Libs.TH.Demo
       Libs.SMTPMail
 
       MiniProject.EchoServer

@@ -11,21 +11,10 @@ struct TU {
 
   union U {
 
-    struct {
-      int type;
-      int val;
-    } i;
-
-    struct {
-      int type;
-      float val;
-    } f;
-
+    struct { int type; int val; } i;
+    struct { int type; float val; } f;
     // note for struct we have a default destructor.
-    struct s_type_ {
-      int type;
-      std::string val;
-    } s;
+    struct s_type_ { int type; std::string val; } s;
 
     U(int i) : i{TU_INT, i} {}
     U(float f) : f{TU_FLOAT, f} {}
