@@ -36,6 +36,8 @@ library
       TypeChecking.BidirectionalTC.TC2
       TypeChecking.BidirectionalTC.TC3
 
+      Staging.BTA
+
       DSL.Sharing
 
     -- Modules included in this library but not exported.
