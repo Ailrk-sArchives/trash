@@ -1,3 +1,0 @@
-void nextsym(void) {
-void nextsym(void) { - cpp/parse_pl0/lr1_shift_reduce.cc
-void nextsym() { - cpp/regex_statemachine/regex.c
