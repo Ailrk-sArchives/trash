@@ -9,27 +9,13 @@
 #define MAX_SYM_NUM 128
 #define STACK_SZ 128
 
-char *code; // the input regex
-char sym;   // current symbol, for parsing only.
+int state;
+char sym;
 
-char *stack; // stack for building the table
-char *sp;    // stack pointer.
-int state;   // current state.
+char *code;
+char *stack;
+char *sp;
 
-// This regualr expression library supports matching 128 long
-// ascii string.
-//
-// A regular expression engine is essentially a regular expression to
-// state machine compiler. Given a langauge ∑ and a set of states Q,
-// we have transition function δ: ∑ × Q → Q. That is, the state machine
-// is a 2d table indexed by the current state and current symbol.
-//
-// nd Array is actually curried functions, fully applied nd array gives
-// us the final mapping. In this case is the next state the machine goes
-// to.
-//
-// So another view of regex engine is that we're building the arity 2
-// mapping functions before hand so we can use it afterwards.
 char table[MAX_SYM_NUM][MAX_STATE_NUM];
 char final_state[MAX_STATE_NUM];
 
@@ -67,8 +53,6 @@ void print_node(node *n) {
   printf("> ");
 }
 
-// pass preprocess and cb to customize action to perform on preorder
-// traversal.
 void preorder_traversal(node *n, void (*preprocess)(node *),
                         void (*cb)(node *)) {
   if (preprocess)
@@ -132,20 +116,11 @@ int expect(char s) {
   return 0;
 }
 
-// EBNF for regex:
-//   factor = char | "(" expression ")"
-//   term = factor ["*"]
-//   term1 = term { term }
-//   expression = term1 { "|" term1 }
-//
-// note: regular expression has two operations, . and |
-// . is a non comutative monoid, and | is a group. let empty string be
-// the identity then it forms a non conmutative ring.
-//
-// Here we omit . operator, so there is no need to define . as a node
-// in the syntax. However we still need to convert it into an ast node.
+// factor = char | "(" expression ")"
+// term = factor ["*"]
+// term1 = term { term }
+// expression = term1 { "|" term1 }
 
-// A recursive decent parser for regex.
 node *expression();
 
 node *factor() {
@@ -173,7 +148,7 @@ node *term() {
   node *f;
   f = factor();
   if (accept('*')) {
-    node *klenee_star = new_node('*', f, NULL);
+    node *klenee_star = new_node('*', NULL, f);
     return klenee_star;
   }
   return f;
@@ -184,7 +159,7 @@ node *term1() {
   o = term();
   while (isalpha((int)sym) || sym == '(') {
     t1 = o;
-    o = new_node('.', NULL, NULL);
+    o = new_node('^', NULL, NULL);
     t2 = term();
     if (t2) {
       o->left = t1;
@@ -226,57 +201,23 @@ node *parse() {
 
 void mark_node(node *n) {
   if (n->s == '|') {
-    // when hit a |, push | and current state.
-    // the top of the stack looks like
-    // ( -- saved_state | )
-    // next time we hit | we know | is unfinished, so we can continue
-    // to fill the table for saved_state.
     *sp++ = (char)state; // record the current state when hit a |
     *sp++ = '|';
     printf("fisrt | : %d\n", state);
   }
 
   if (n->s == '*') {
-    // when hit a *, we first save the current state. but to repeat
-    // the next child we also need to know the next symbol.
-
     *sp++ = (char)state;
     *sp++ = '*';
     printf("first * : %d\n", state);
   }
 }
 
-// A state machine table is a transtion function indexed by symbol and
-// state. Thus transitin : Sym -> State
-//   0 1 2 3 4
-// a 1 0 3 0 0
-// b 0 2 2 0 0  for regex ab*(a|c)
-// c 0 0 4 0 0
-//
-//                .
-//              /   \
-//          0 .       |
-//           / \     / \
-//          a   *   a   c
-//          1   |   3   4
-//              b
-//              2
-//
-//
 void build_from_node(node *n) {
   char sym;
   static int sig = 0;
 
   if (n->s == '|') { // hit | the second time.
-    // note: / has the shape
-    //    |
-    //   / \
-    //  A   B
-    // let state before a be x. then state after a is x + 1, after b is
-    // x + 2.
-    // we save the state x on the stack, and when the second time we
-    // visit |, where we are about to visist b, we can signal b the
-    // state s.
     --sp;
     sig = *--sp;
 
@@ -284,10 +225,9 @@ void build_from_node(node *n) {
     // note: * in the ast has the shape
     //      *
     //     / \
-    //    n   _
-    // let state at * = x. after n state = x + 1.
-    // the next time hit * we want to set table[n][x + 1] back to
-    // x, so we can repeat the process.
+    //    _   n
+    // so in a preorder traversal * will be visited twice before
+    // it visits n. Thus by the time n is visited sig is already set.
     --sp;
     sig = *--sp;
   } else if (isalnum(n->s)) {

@@ -1,3 +1,4 @@
+#pragma once
 #include <stdio.h>
 
 // regular expression is just a text encoding of finite state machine. One can
@@ -12,5 +13,12 @@
 // action.
 
 // compiling regular expresion thus becomes generating the table.
+
+typedef struct node_ {
+  char s;
+  struct node_ *left;
+  struct node_ *right;
+} node;
+
 
 int regex(char pat[], char str[]);

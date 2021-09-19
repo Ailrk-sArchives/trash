@@ -25,11 +25,9 @@ struct Inst {
   std::array<int, levmax> l;
 };
 
-
-void interp () {
+void interp() {
   const int stacksize = 500;
   int prog_reg, base_reg, topstack_reg;
   Inst i;
   std::array<int, stacksize> store;
-
 }
