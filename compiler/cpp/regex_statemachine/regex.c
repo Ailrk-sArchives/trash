@@ -9,8 +9,9 @@
 #define MAX_SYM_NUM 128
 #define STACK_SZ 128
 
-char *code; // the input regex
-char sym;   // current symbol, for parsing only.
+char const *code; // the input regex
+char sym;         // current symbol, for parsing only.
+int pos;
 
 char *stack; // stack for building the table
 char *sp;    // stack pointer.
@@ -31,18 +32,96 @@ int state;   // current state.
 // So another view of regex engine is that we're building the arity 2
 // mapping functions before hand so we can use it afterwards.
 char table[MAX_SYM_NUM][MAX_STATE_NUM];
-char final_state[MAX_STATE_NUM];
+
+// The size of final state is unkown untill we get the reuslt, so the final
+// state is a linked list.
+struct fnode {
+  int state;
+  struct fnode *next;
+} * final_states;
+
+struct fnode *new_fnode(int state, struct fnode *next) {
+  struct fnode *n = (struct fnode *)malloc(sizeof(struct fnode));
+  n->state = state;
+  n->next = next;
+  return n;
+}
+
+#define FINAL_STATE_UPDATE(state)                                              \
+  if (final_states)                                                            \
+    final_states->state = state;                                               \
+  else                                                                         \
+    final_states = new_fnode(state, NULL);
+
+#define FINAL_STATE_PUSH(state) final_states = new_fnode(state, final_states);
+
+#define FINAL_STATE_CLEAR()                                                    \
+  if (final_states)                                                            \
+    free_fnode(final_states);                                                  \
+  final_states = new_fnode(0, NULL);
+
+int member(int state, struct fnode *n) {
+  struct fnode *p = n;
+  while (p) {
+    if (p->state == state)
+      return 1;
+    else {
+      if (!p->next)
+        break;
+      else
+        p = p->next;
+    }
+  }
+  return 0;
+}
+
+void free_fnode(struct fnode *fn) {
+  if (!fn)
+    return;
+  if (fn->next)
+    free_fnode(fn->next);
+  free(fn);
+}
 
 // clear regex state.
 void regex_clear() {
   code = NULL;
   state = 0;
   sym = 0;
+  pos = 0;
+
+  if (stack)
+    free(stack);
   stack = NULL;
+
   sp = NULL;
   memset(table, 0, MAX_SYM_NUM * MAX_STATE_NUM * sizeof(char));
-  memset(final_state, 0, MAX_STATE_NUM * sizeof(char));
+  FINAL_STATE_CLEAR();
 }
+
+// init regex state
+void regex_init(char const *pat) {
+  state = 0;
+  FINAL_STATE_CLEAR();
+
+  pos = 0;
+  code = pat;
+  if (stack)
+    free(stack);
+  stack = (char *)malloc(STACK_SZ);
+  sp = stack;
+}
+
+// define node inside so it doesn't leak outside.
+// To handle regex input we first parse it into an ast. For implicity we use
+// one node type for all types of nodes. For unary operator, one child will
+// left empty (which one depends on cases).
+// For leaf node, both will left empty.
+typedef struct node_ {
+  char s;
+  struct node_ *left;
+  struct node_ *right;
+} node;
 
 node *new_node(char s, node *left, node *right) {
   node *n = (node *)malloc(sizeof(node));
@@ -50,21 +129,6 @@ node *new_node(char s, node *left, node *right) {
   n->left = left;
   n->right = right;
   return n;
-}
-
-void print_node(node *n) {
-  if (n == NULL)
-    return;
-  printf("<%c ", n->s);
-  if (n->left)
-    print_node(n->left);
-  else
-    printf(" _ ");
-  if (n->right)
-    print_node(n->right);
-  else
-    printf(" _ ");
-  printf("> ");
 }
 
 // pass preprocess and cb to customize action to perform on preorder
@@ -100,7 +164,6 @@ void error(char const msg[]) {
 }
 
 void nextsym() {
-  static int pos = 0;
   if (code[pos] != '\0')
     sym = code[pos++];
   else
@@ -173,7 +236,7 @@ node *term() {
   node *f;
   f = factor();
   if (accept('*')) {
-    node *klenee_star = new_node('*', f, NULL);
+    node *klenee_star = new_node('*', NULL, f);
     return klenee_star;
   }
   return f;
@@ -224,28 +287,6 @@ node *parse() {
 
 // callbacks for preorder traversal.
 
-void mark_node(node *n) {
-  if (n->s == '|') {
-    // when hit a |, push | and current state.
-    // the top of the stack looks like
-    // ( -- saved_state | )
-    // next time we hit | we know | is unfinished, so we can continue
-    // to fill the table for saved_state.
-    *sp++ = (char)state; // record the current state when hit a |
-    *sp++ = '|';
-    printf("fisrt | : %d\n", state);
-  }
-
-  if (n->s == '*') {
-    // when hit a *, we first save the current state. but to repeat
-    // the next child we also need to know the next symbol.
-
-    *sp++ = (char)state;
-    *sp++ = '*';
-    printf("first * : %d\n", state);
-  }
-}
-
 // A state machine table is a transtion function indexed by symbol and
 // state. Thus transitin : Sym -> State
 //   0 1 2 3 4
@@ -261,14 +302,35 @@ void mark_node(node *n) {
 //          1   |   3   4
 //              b
 //              2
-//
-//
+
+// mark nodes when the first time we enter it.
+// note in preorder traversal, each node will be visited exactly twice.
+// The first time we visit a node we can staff some information into the stack,
+// and fetch it in the next time we hit it again.
+// information we care about are the current symbol and current state.
+// ( -- saved_state | )
+void mark_node(node *n) {
+  if (n->s == '|') {
+    *sp++ = (char)state; // record the current state when hit a |
+    *sp++ = '|';
+  }
+
+  if (n->s == '*')
+    *sp++ = '*';
+
+  if (n->s == '.')
+    *sp++ = '.';
+}
+
 void build_from_node(node *n) {
   char sym;
-  static int sig = 0;
+  static struct {
+    int typ;
+    int val;
+  } sig = {0, 0};
 
   if (n->s == '|') { // hit | the second time.
-    // note: / has the shape
+    // note: | has the shape
     //    |
     //   / \
     //  A   B
@@ -277,59 +339,73 @@ void build_from_node(node *n) {
     // we save the state x on the stack, and when the second time we
     // visit |, where we are about to visist b, we can signal b the
     // state s.
-    --sp;
-    sig = *--sp;
+    sig.typ = *--sp;
+    sig.val = *--sp;
+
+    if (sig.typ != '|')
+      error("build_from_node: stack error on |");
 
   } else if (n->s == '*') {
-    // note: * in the ast has the shape
-    //      *
-    //     / \
-    //    n   _
-    // let state at * = x. after n state = x + 1.
-    // the next time hit * we want to set table[n][x + 1] back to
-    // x, so we can repeat the process.
-    --sp;
-    sig = *--sp;
-  } else if (isalnum(n->s)) {
+    sig.typ = *--sp;
+    if (sig.typ != '*')
+      error("build_from_node: stack error on *");
+  } else if (n->s == '.') {
+    sig.typ = *--sp;
+    if (sig.typ != '.')
+      error("build_from_node: stack error on .");
+  } else if (isalpha(n->s)) {
     sym = n->s;
-    if (sig) {
-      printf("sig %d\n", sig);
-      table[sym][sig] = state++;
-      sig = 0;
+    if (sig.typ == '*') {
+      // note: * in the ast has the shape
+      //      *
+      //     / \
+      //    _   n
+      // where n is the right child, so * will be hit twice before we
+      // reach n. let state before n be x. after be x + 1 without * it should
+      // naturally be:
+      //  table[n][x] = x + 1
+      // but with * we should also add entry
+      //  table[n][x + 1] = x + 1
+      // so we create a loop.
+      int prev_state = state++;
+      table[sym][prev_state] = state;
+      table[sym][state] = state;
+
+      // the final state update when we traverse along tree. If there is a
+      // new state we should update the final state.
+      FINAL_STATE_UPDATE(state);
+    } else if (sig.typ == '|') {
+      table[sym][sig.val] = ++state;
+      FINAL_STATE_PUSH(state);
     } else {
       int prev_state = state++;
       table[sym][prev_state] = state;
+      FINAL_STATE_UPDATE(state);
     }
+
+    memset(&sig, 0, sizeof(int) * 2);
   }
 }
 
-int regex(char pat[], char str[]) {
-  // a langauge with 256 state and 256 symbols maximum.
-  // state is indexed by chars.
+void compile_regex(char const pat[]) {
   node *expr;
+  regex_init(pat);
+  expr = parse();
+  preorder_traversal(expr, mark_node, build_from_node);
+  free_node(expr);
+}
+
+int regex(char const pat[], char const str[]) {
+  int match;
+  compile_regex(pat);
+
+  {
+    state = 0;
+    for (char const *p = str; *p != '\0'; ++p)
+      state = table[*p][state];
+    match = member(state, final_states);
+  }
 
   regex_clear();
-
-  {
-    state = 0;
-    code = pat;
-    stack = (char *)malloc(STACK_SZ);
-    sp = stack;
-    expr = parse();
-    preorder_traversal(expr, mark_node, build_from_node);
-    free_node(expr);
-  }
-
-  {
-    state = 0;
-    for (char *p = str; *p != '\0'; ++p) {
-      state = table[*p][state];
-    }
-
-    for (int i = 0; i < MAX_STATE_NUM && final_state[i] == state; ++i) {
-      if (final_state[i] == '\0')
-        return 0;
-    }
-  }
-  return 1;
+  return match;
 }

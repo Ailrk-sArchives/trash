@@ -40,6 +40,7 @@ int same_str(char const *stream, char const msg[]) {
   return true;
 }
 
+// no boundary check!
 void lexer(Symbol *code, char const text[]) {
   for (int i = 0; text[i] != '\0'; ++i) {
     if (isspace(text[i]))
