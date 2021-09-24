@@ -9,8 +9,10 @@
 {-# LANGUAGE TypeApplications       #-}
 {-# LANGUAGE TypeFamilies           #-}
 
+{-# LANGUAGE FlexibleContexts       #-}
 module Types.ReflectValueToType where
 
+import           Data.Kind
 import           Data.Proxy
 
 -- http://okmij.org/ftp/Haskell/tr-15-04.pdf
@@ -186,11 +188,12 @@ instance ReflectNum n => ReflectNum (Twice' n) where
 -- >>> reflectNum @(Suc' (Suc' (Suc' (Suc' Zero'))))
 -- 4
 
-reifyIntegral :: forall a w
-               . Integral a
+reifyIntegral :: forall a w . Integral a
               => a
               -- In this case we must use a proxy instead of type application
               -- becasue k is a callback,
+              -- it's a exitnetial callback, we pass an exitential quantified
+              -- varaible s just to use it in the callback to get a value w.
               -> (forall k (s :: k) . ReflectNum s => Proxy s -> w)
               -> w
 reifyIntegral j k
@@ -204,28 +207,27 @@ test5 n = reifyIntegral n $ \(p :: Proxy s) -> reflectNum @s
 ----- now, how to create instance at runtime ----------------------------------
 -- use polymorphic recursion to choose from infinite family of instances
 
-data ModulusNum s a
+data ModulusNum s a   -- a type tuple correlates s and a.
+
+-- create an instance for the tuple s a.
 instance (ReflectNum s, Num a) => Modular (ModulusNum s a) a where
   modulus = reflectNum @s
 
-withIntegralModulus :: forall a w
-                     . Integral a
+withIntegralModulus :: forall a w . Integral a
                     => a
-                    -> (forall (s :: *) . Modular s a => w)
+                    -> (forall (s :: Type) . Modular s a => Proxy s -> w)
                     -> w
 withIntegralModulus i k = reifyIntegral i
-                        $ \(p :: Proxy s)  -> k @(ModulusNum s a)
+                        $ \(p :: Proxy s) -> k (Proxy :: Proxy (ModulusNum s a))
 
 
-test6 :: forall k a (s :: k) w
-       . (Integral a, Modular s w, Integral w)
-      => a
-      -> w
-test6 n = withIntegralModulus n
-        $ unM
-        $ let a = M 3
-              b = M 5
-           in a * a + b * b
+modn n = withIntegralModulus n $ unM . m
+  where
+    -- must have this type annotation.
+    m :: forall s a . (Integral a, Modular s a)
+      => Proxy s -> M s a
+    m _ = 12 + 39
+
 
 ----- reifying lists --------------------------------------------------------
 data Nil
