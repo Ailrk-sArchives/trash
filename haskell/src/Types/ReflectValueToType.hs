@@ -216,6 +216,7 @@ withIntegralModulus :: forall a w
 withIntegralModulus i k = reifyIntegral i
                         $ \(p :: Proxy s)  -> k @(ModulusNum s a)
 
+
 test6 :: forall k a (s :: k) w
        . (Integral a, Modular s w, Integral w)
       => a
