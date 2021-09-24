@@ -1,8 +1,8 @@
 #include <array>
 #include <iostream>
 
-// usce p machine
-// an eariler stack machine with only one stack.
+// usce p-machine
+// ancient stack machine with only one stack.
 
 // three pointers for stack:
 // 1. SP (stack pointer)

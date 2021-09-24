@@ -154,6 +154,7 @@ type PublicKey = String
 data Authentication = AuthBaisc Username Password
                     | AuthSSH PublicKey
 
+-- this just counting number of elements in a adt.
 class GNumFields a where
   gnumFields :: a -> Natural
 

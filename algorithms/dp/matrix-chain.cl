@@ -27,7 +27,7 @@
 ;; 2. guess outermost multiplciation (the last operation we do)
 ;;    choose to split the chain at kth index.
 ;;    (Ai...Ak) (Ak+1 ... Aj-1)
-;;     # choices = O(j - i + 1 = O(n)
+;;     # choices = O(j - i + 1) = O(n)
 ;; 3. reccurence:
 ;;    DP(i, j) = min {
 ;;        DP(i, k) + DP(k, j) + (cost of Ai:k * Ak:j)

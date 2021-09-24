@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+// #define Debug
 #define MAX_STATE_NUM 128
 #define MAX_SYM_NUM 128
 #define STACK_SZ 128
@@ -131,6 +132,58 @@ node *new_node(char s, node *left, node *right) {
   return n;
 }
 
+#ifdef Debug
+void print_table() {
+  char n;
+  // readable ascii start from 33 to 127
+  printf("    ");
+  for (int i = 0; i < 10; ++i) {
+    printf("%d ", i);
+  }
+  printf("\n");
+  // for (int i = 0; i < MAX_STATE_NUM; ++i) {
+  for (int i = 97; i <= 'c'; ++i) {
+    printf("%c | ", i);
+    // for testing we won't use more than 10 states.
+    // for (int j = 0; j < MAX_SYM_NUM; ++j) {
+    for (int j = 0; j < 10; ++j) {
+      n = '0' + table[i][j];
+      printf("%c ", n);
+    }
+    printf("\n");
+  }
+}
+
+void print_fnode(struct fnode *fn) {
+  struct fnode *p = final_states;
+  while (p) {
+    printf("%d ", p->state);
+    p = p->next;
+  }
+  printf("\n");
+}
+
+void print_node(node *n) {
+  if (n == NULL)
+    return;
+  printf("(%c ", n->s);
+  if (n->left)
+    print_node(n->left);
+  else
+    printf(" _ ");
+  if (n->right)
+    print_node(n->right);
+  else
+    printf(" _ ");
+  printf(") ");
+}
+
+#define PRINT_NODE(msg, n)                                                     \
+  printf(msg "\n");                                                            \
+  print_node(n);                                                               \
+  printf("\n");
+#endif
+
 // pass preprocess and cb to customize action to perform on preorder
 // traversal.
 void preorder_traversal(node *n, void (*preprocess)(node *),
@@ -144,11 +197,6 @@ void preorder_traversal(node *n, void (*preprocess)(node *),
   if (n->right)
     preorder_traversal(n->right, preprocess, cb);
 }
-
-#define PRINT_NODE(msg, n)                                                     \
-  printf(msg "\n");                                                            \
-  print_node(n);                                                               \
-  printf("\n");
 
 void free_node(node *n) {
   if (n->left)
@@ -288,7 +336,7 @@ node *parse() {
 // callbacks for preorder traversal.
 
 // A state machine table is a transtion function indexed by symbol and
-// state. Thus transitin : Sym -> State
+// state. Thus transition : Sym -> State -> State
 //   0 1 2 3 4
 // a 1 0 3 0 0
 // b 0 2 2 0 0  for regex ab*(a|c)
@@ -315,8 +363,10 @@ void mark_node(node *n) {
     *sp++ = '|';
   }
 
-  if (n->s == '*')
+  if (n->s == '*') {
+    *sp++ = (char)state;
     *sp++ = '*';
+  }
 
   if (n->s == '.')
     *sp++ = '.';
@@ -344,13 +394,15 @@ void build_from_node(node *n) {
 
     if (sig.typ != '|')
       error("build_from_node: stack error on |");
-
   } else if (n->s == '*') {
     sig.typ = *--sp;
+    sig.val = *--sp;
+
     if (sig.typ != '*')
       error("build_from_node: stack error on *");
   } else if (n->s == '.') {
     sig.typ = *--sp;
+
     if (sig.typ != '.')
       error("build_from_node: stack error on .");
   } else if (isalpha(n->s)) {
@@ -360,15 +412,17 @@ void build_from_node(node *n) {
       //      *
       //     / \
       //    _   n
+      //
       // where n is the right child, so * will be hit twice before we
-      // reach n. let state before n be x. after be x + 1 without * it should
+      // reach n. let state before n be x. after be y. without * it should
       // naturally be:
-      //  table[n][x] = x + 1
+      //  table[n][x] = y
       // but with * we should also add entry
-      //  table[n][x + 1] = x + 1
+      //  table[n][y] = y
       // so we create a loop.
+      // y is saved on the stack.
       int prev_state = state++;
-      table[sym][prev_state] = state;
+      table[sym][sig.val] = state;
       table[sym][state] = state;
 
       // the final state update when we traverse along tree. If there is a
@@ -391,6 +445,12 @@ void compile_regex(char const pat[]) {
   node *expr;
   regex_init(pat);
   expr = parse();
+
+#ifdef Debug
+  print_node(expr);
+  printf("\n");
+#endif
+
   preorder_traversal(expr, mark_node, build_from_node);
   free_node(expr);
 }
@@ -405,6 +465,11 @@ int regex(char const pat[], char const str[]) {
       state = table[*p][state];
     match = member(state, final_states);
   }
+
+#ifdef Debug
+  print_table();
+  print_fnode(final_states);
+#endif
 
   regex_clear();
   return match;

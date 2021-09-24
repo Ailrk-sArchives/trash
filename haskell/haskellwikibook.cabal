@@ -82,7 +82,9 @@ library
       DataStructure.PhysicistQueue
       DataStructure.RealTimeQueue
 
+      Types.ReflectValueToType
       Types.PhantomType
+      Types.KnownNatVec
       Types.DependentType
       Types.Cardinality
       Types.LiquidHs

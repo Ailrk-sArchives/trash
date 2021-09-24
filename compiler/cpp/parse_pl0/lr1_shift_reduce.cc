@@ -18,5 +18,3 @@ void nextsym(void) {
 }
 
 void error(char const msg[]) { fprintf(stderr, msg); }
-
-
