@@ -8,8 +8,9 @@
 {-# LANGUAGE ScopedTypeVariables    #-}
 {-# LANGUAGE TypeApplications       #-}
 {-# LANGUAGE TypeFamilies           #-}
-
 {-# LANGUAGE FlexibleContexts       #-}
+{-# LANGUAGE TypeOperators          #-}
+
 module Types.ReflectValueToType where
 
 import           Data.Kind
@@ -22,15 +23,14 @@ import           Data.Proxy
 -- Goal:
 --  having part of the code change based on the global configuration.
 
--- We don't want
---  1. mutable global variable, because it's fp (dogma but take it for now)
---  2. Reader Monad, because now all computations need to be in monad.
---  3. dynamic scoped varaiable like lisp. because it's dynamic scoped...
---  4. No explicitly passing config to all functions because that's silly.
+-- What's interesting is you only need to pass a configuration once, and
+--     the config will be propagated by the type, so there is no need to
+--     1. having a global config.
+--     2. using dynamic scope to bind free variable.
+--     3. passing the configuration to every single functions.
 
--- An example program that needs configuration: Modulo arithmetics.
---  All binops need to know what modulo it's currently working on.
---  +/Z3 can't be mixed with +/Z5
+-- First example is modular arithmetics, which needs to be configured with an
+-- integer.
 
 ----- threaded modulus --------------------------------------------------------
 -- this makes sure all modulo passed are correct.
@@ -83,7 +83,6 @@ test3 = withModulus1 44 $ \m ->  -- has it's unique s
           let a = M 3
               b = M 4
            in unM $ add m (mul m a a) (mul m b b)   -- m can't be m'
-
 
 ----- type class for modulus passing
 -- avoid explicity passing modulus
@@ -194,7 +193,7 @@ reifyIntegral :: forall a w . Integral a
               -- becasue k is a callback,
               -- it's a exitnetial callback, we pass an exitential quantified
               -- varaible s just to use it in the callback to get a value w.
-              -> (forall k (s :: k) . ReflectNum s => Proxy s -> w)
+              -> (forall (s :: Type) . ReflectNum s => Proxy s -> w)
               -> w
 reifyIntegral j k
   | j == 0 = k (Proxy :: Proxy Zero')
@@ -220,16 +219,64 @@ withIntegralModulus :: forall a w . Integral a
 withIntegralModulus i k = reifyIntegral i
                         $ \(p :: Proxy s) -> k (Proxy :: Proxy (ModulusNum s a))
 
-
-modn n = withIntegralModulus n $ unM . m
+modnSimple :: Integral w => w -> w
+modnSimple n = withIntegralModulus n $ unM . m
   where
     -- must have this type annotation.
-    m :: forall s a . (Integral a, Modular s a)
-      => Proxy s -> M s a
+    m :: forall s a . (Integral a, Modular s a) => Proxy s -> M s a
     m _ = 12 + 39
 
 
------ reifying lists --------------------------------------------------------
-data Nil
-data Cons s ss
+-- in short, the type info is actually obtained by the parameter a. We pass an
+-- a, withIntegralModulus will call reifyIntergral which in turn will construct
+-- a type nat corresponding to the value, then pass it to the continuation.
+modn :: forall a . Integral a
+     => a
+     -> (forall (s :: Type) . (Integral a, Modular s a) => Proxy s -> M s a)
+     -> a
+modn n k = withIntegralModulus n $ unM . k
 
+
+{- $>
+  import Types.ReflectValueToType
+  :set -Wno-all
+  modn 3 $ \_ -> 1 + 3 * 4
+  [modn n $ \_ -> 1 + 3 * 4 | n <- [1..100]]
+  [modn 10 $ \_ -> 1 + fromIntegral n | n <- [1..100] ]
+  :set -Wall
+<$ -}
+
+--  cb with a proxy parameter can be used to mark a threaded parameter and
+--  propagate to the body of the callback.
+
+--------- Generalize this technique to other types --------------------------
+
+
+----- reifying lists --------------------------------------------------------
+
+data HList :: [Type] -> Type
+
+class ReflectNums ss where
+  reflectNums :: forall ss a . Num a => [a]
+
+instance ReflectNums '[] where
+  reflectNums = []
+
+instance (ReflectNum x, ReflectNums xs) => ReflectNums (x ': xs) where
+  reflectNums = reflectNum @x : reflectNums @xs
+
+reifyIntegrals :: Integral a
+               => [a]
+               -> (forall (ss :: [Type]) . ReflectNums ss => Proxy ss -> w)
+               -> w
+reifyIntegrals [] k = k (Proxy :: Proxy '[])
+reifyIntegrals (i:ii) k
+  = reifyIntegral  i  $ \(_ :: Proxy s)  ->
+    reifyIntegrals ii $ \(_ :: Proxy ss) ->
+      k (Proxy :: Proxy (s ': ss))
+
+{- $>
+  import Types.ReflectValueToType
+  xs = [1, 2, 3]
+  reifyIntegrals xs $ \(p :: Proxy s) -> reflectNums @s
+<$ -}

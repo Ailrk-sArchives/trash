@@ -15,6 +15,9 @@ vs = [ 08, 23, 09, 00, 12, 11, 01, 10, 13, 07, 41, 04, 14, 21, 05, 17, 03, 19
 minfree' :: [Int] -> Int
 minfree' xs = head (filter (not . (`elem` vs)) [0..])
 
+-- >>> minfree' vs
+-- 15
+
 ------------------------------------------------------------------------------
 -- Array based: use boolean array
 search :: Array Int Bool -> Int
@@ -24,8 +27,8 @@ checkList :: [Int] -> Array Int Bool
 checkList xs = accumArray (||) False (0, n) (zip (filter (<= n) xs) (repeat True))
   where n = length xs
 
-checLists' :: [Int] -> Array Int Bool
-checLists' xs = runSTArray $ do
+checkList' :: [Int] -> Array Int Bool
+checkList' xs = runSTArray $ do
   { a <- newArray (0, n) False
   ; sequence [writeArray a x True | x <- xs, x <= n]
   ; return a
@@ -33,5 +36,9 @@ checLists' xs = runSTArray $ do
   where
     n = length xs
 
-------------------------------------------------------------------------------
+minfreeArray = search . checkList'
+
+-- >>> minfreeArray vs
+-- 15
+
 -- Divide and Conquer
