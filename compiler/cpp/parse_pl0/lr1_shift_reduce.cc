@@ -1,5 +1,5 @@
-#include <iostream>
 #include "pl0_lex.h"
+#include <iostream>
 
 // Shift reduce parser:
 //
@@ -11,10 +11,13 @@
 static Symbol sym;
 static Symbol *code;
 
-void nextsym(void) {
-  static int pos = 0;
-  while (code[pos] != eof)
-    ++pos;
+void
+nextsym(void) {
+    static int pos = 0;
+    while (code[pos] != eof) ++pos;
 }
 
-void error(char const msg[]) { fprintf(stderr, msg); }
+void
+error(char const msg[]) {
+    fprintf(stderr, msg);
+}

@@ -11,13 +11,16 @@
 {-# LANGUAGE FlexibleContexts       #-}
 {-# LANGUAGE TypeOperators          #-}
 
+{-# LANGUAGE StandaloneKindSignatures #-}
 module Types.ReflectValueToType where
 
 import           Data.Kind
 import           Data.Proxy
 
--- http://okmij.org/ftp/Haskell/tr-15-04.pdf
+import Foreign.C.Types
+import Foreign.Storable
 
+-- http://okmij.org/ftp/Haskell/tr-15-04.pdf
 -- the point is to manage configuration better (configuration problem)
 
 -- Goal:
@@ -254,8 +257,6 @@ modn n k = withIntegralModulus n $ unM . k
 
 ----- reifying lists --------------------------------------------------------
 
-data HList :: [Type] -> Type
-
 class ReflectNums ss where
   reflectNums :: forall ss a . Num a => [a]
 
@@ -280,3 +281,18 @@ reifyIntegrals (i:ii) k
   xs = [1, 2, 3]
   reifyIntegrals xs $ \(p :: Proxy s) -> reflectNums @s
 <$ -}
+
+-- now we're able to reify a list of data to the type level. (s can be type
+-- list of nats)
+-- A list of numbers is a list of bytes, so we can know lift any types
+-- belongs to Storable!
+
+type Byte = CChar
+data Store s a
+
+type ReflectStorable :: (Type -> Type) -> Constraint
+class ReflectStorable s where
+  reflectStorable :: Storable a => s a -> a
+
+instance ReflectNums s => ReflectStorable (Store s) where
+

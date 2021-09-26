@@ -37,86 +37,86 @@ static Symbol sym;
 static Symbol *code;
 
 void nextsym(void) {
-  static int pos = 0;
-  if (code[pos] != eof) {
-    ++pos;
-    sym = code[pos];
-  }
+    static int pos = 0;
+    if (code[pos] != eof) {
+        ++pos;
+        sym = code[pos];
+    }
 }
 
 void error(char const msg[]) { fprintf(stderr, msg); }
 
 // accept naturally takes next symbol.
 int accept(Symbol s) {
-  if (sym == s) {
-    nextsym();
-    return 1;
-  }
-  return 0;
+    if (sym == s) {
+        nextsym();
+        return 1;
+    }
+    return 0;
 }
 
 int expect(Symbol s) {
-  if (accept(s))
-    return 1;
-  error("expect: unexpected symbol");
-  return 0;
+    if (accept(s))
+        return 1;
+    error("expect: unexpected symbol");
+    return 0;
 }
 
 void expression();
 
 // factor = ident | number | "(" expression ")";
 void factor() {
-  if (accept(ident))
-    ;
-  else if (accept(number))
-    ;
-  else if (accept(lparen)) {
-    expression();
-    expect(rparen);
-  } else {
-    error("factor: syntax error");
-    nextsym();
-  }
+    if (accept(ident))
+        ;
+    else if (accept(number))
+        ;
+    else if (accept(lparen)) {
+        expression();
+        expect(rparen);
+    } else {
+        error("factor: syntax error");
+        nextsym();
+    }
 }
 
 // term = factor {("*"|"/") factor};
 void term() {
-  factor();
-  while (sym == times || sym == slash) {
-    nextsym();
     factor();
-  }
+    while (sym == times || sym == slash) {
+        nextsym();
+        factor();
+    }
 }
 
 // expression = [ "+"|"-"] term { ("+"|"-") term};
 void expressoin() {
-  if (sym == plus || sym == minus)
-    nextsym();
-  term();
-
-  while (sym == plus || sym == minus) {
-    nextsym();
+    if (sym == plus || sym == minus)
+        nextsym();
     term();
-  }
+
+    while (sym == plus || sym == minus) {
+        nextsym();
+        term();
+    }
 }
 
 // condition = "odd" expression |
 //             expression ("="|"#"|"<"|"<="|">"|">=") expression ;
 
 void condition() {
-  if (accept(oddsym)) {
-    expression();
-  } else {
-    expression();
-    if (sym == eql || sym == neq || sym == lss || sym == leq || sym == gtr ||
-        sym == geq) {
-      nextsym();
-      expression();
+    if (accept(oddsym)) {
+        expression();
     } else {
-      error("condotion: invalid operator");
-      nextsym();
+        expression();
+        if (sym == eql || sym == neq || sym == lss || sym == leq ||
+            sym == gtr || sym == geq) {
+            nextsym();
+            expression();
+        } else {
+            error("condotion: invalid operator");
+            nextsym();
+        }
     }
-  }
 }
 
 // statement = [ ident ":=" expression | "call" ident
@@ -126,28 +126,28 @@ void condition() {
 //               | "while" condition "do" statement ];
 
 void statement() {
-  if (accept(ident)) {
-    expect(becomes);
-    expression();
-  } else if (accept(callsym)) {
-    expect(ident);
-  } else if (accept(beginsym)) {
-    do {
-      statement();
-    } while (accept(semicolon));
-    expect(endsym);
-  } else if (accept(ifsym)) {
-    condition();
-    expect(thensym);
-    statement();
-  } else if (accept(whilesym)) {
-    condition();
-    expect(dosym);
-    statement();
-  } else {
-    error("statement: syntax error");
-    nextsym();
-  }
+    if (accept(ident)) {
+        expect(becomes);
+        expression();
+    } else if (accept(callsym)) {
+        expect(ident);
+    } else if (accept(beginsym)) {
+        do {
+            statement();
+        } while (accept(semicolon));
+        expect(endsym);
+    } else if (accept(ifsym)) {
+        condition();
+        expect(thensym);
+        statement();
+    } else if (accept(whilesym)) {
+        condition();
+        expect(dosym);
+        statement();
+    } else {
+        error("statement: syntax error");
+        nextsym();
+    }
 }
 
 // block = [ "const" ident "=" number {"," ident "=" number} ";"]
@@ -155,32 +155,32 @@ void statement() {
 //         { "procedure" ident ";" block ";" } statement ;
 
 void block() {
-  if (accept(constsym)) {
-    do {
-      expect(ident);
-      expect(eql);
-      expect(number);
-    } while (accept(semicolon));
-  }
+    if (accept(constsym)) {
+        do {
+            expect(ident);
+            expect(eql);
+            expect(number);
+        } while (accept(semicolon));
+    }
 
-  if (accept(varsym)) {
-    do {
-      expect(ident);
-    } while (comma);
-    expect(semicolon);
-  }
+    if (accept(varsym)) {
+        do {
+            expect(ident);
+        } while (comma);
+        expect(semicolon);
+    }
 
-  while (accept(procsym)) {
-    expect(ident);
-    expect(semicolon);
-    block();
-    expect(semicolon);
-  }
-  statement();
+    while (accept(procsym)) {
+        expect(ident);
+        expect(semicolon);
+        block();
+        expect(semicolon);
+    }
+    statement();
 }
 
 void program() {
-  nextsym();
-  block();
-  expect(period);
+    nextsym();
+    block();
+    expect(period);
 }
