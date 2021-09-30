@@ -15,16 +15,16 @@ template <typename T> struct Return { using type = T; };
 //   @apply:  template <typename> typename F -> F<Ts...>
 //     apply type operator F on ...Ts
 template <typename... Ts> struct List {
-  // varadic ...Ts includes on or more, and it's already recursive by itself.
-  // there is no need to define a ADT style list.
+    // varadic ...Ts includes on or more, and it's already recursive by itself.
+    // there is no need to define a ADT style list.
 
-  using type = List<Ts...>;
-  static constexpr size_t size = sizeof...(Ts);
+    using type = List<Ts...>;
+    static constexpr size_t size = sizeof...(Ts);
 
-  template <typename... Us> using append = List<Ts..., Us...>;
+    template <typename... Us> using append = List<Ts..., Us...>;
 
-  // apply F with Ts...
-  template <template <typename...> typename F> using apply = F<Ts...>;
+    // apply F with Ts...
+    template <template <typename...> typename F> using apply = F<Ts...>;
 };
 
 template <typename... Ts> using List_t = typename List<Ts...>::type;
@@ -41,7 +41,7 @@ template <typename T> using IsNil = typename std::is_same<T, Nil>::type;
 template <typename> struct Head {};
 template <> struct Head<List<>> { using type = Nil; };
 template <typename T, typename... Ts> struct Head<List<T, Ts...>> {
-  using type = T;
+    using type = T;
 };
 
 // Get the tail of a list
@@ -52,7 +52,7 @@ template <typename T, typename... Ts> struct Head<List<T, Ts...>> {
 template <typename...> struct Tail {};
 template <> struct Tail<List<>> { using type = Nil; };
 template <typename T, typename... Ts> struct Tail<List<T, Ts...>> {
-  using type = List<Ts...>;
+    using type = List<Ts...>;
 };
 
 // Concat two lists.
@@ -64,7 +64,7 @@ template <typename T, typename... Ts> struct Tail<List<T, Ts...>> {
 template <typename, typename> struct Concat {};
 template <typename... Ts, typename... Us>
 struct Concat<List<Ts...>, List<Us...>> {
-  using type = typename List<Ts...>::template append<Us...>;
+    using type = typename List<Ts...>::template append<Us...>;
 };
 
 // Map over a type level list.
@@ -85,10 +85,10 @@ struct Filter : Base {};
 template <template <typename> typename Pred, typename Base, typename T,
           typename... Ts>
 struct Filter<Pred, List<T, Ts...>, Base> {
-  using type = std::conditional_t<
-      Pred<T>::value,
-      Filter<Pred, typename Base::template concat<T>::type, Ts...>,
-      Filter<Pred, Base, Ts...>>;
+    using type = std::conditional_t<
+        Pred<T>::value,
+        Filter<Pred, typename Base::template concat<T>::type, Ts...>,
+        Filter<Pred, Base, Ts...>>;
 };
 
 // Left fold on a type level list.
@@ -116,10 +116,11 @@ struct FoldeL<Op, Acc, List<T, Ts...>>
 //
 // @operations:
 //   value: bool,  the test result.
-template <typename E, typename XS> struct Elem {};
+template <typename...> struct Elem;
+template <typename E> struct Elem<E> : std::false_type {};
 template <typename E, typename... Ts>
-struct Elem<E, List<Ts...>> : std::bool_constant<(std::is_same_v<Ts> || ...)> {
-};
+struct Elem<E, List<Ts...>>
+    : std::bool_constant<(std::is_same_v<Ts, E> || ...)> {};
 
 // Return a List<typename ...> with no duplicated elements.
 // @params:
@@ -127,14 +128,14 @@ struct Elem<E, List<Ts...>> : std::bool_constant<(std::is_same_v<Ts> || ...)> {
 // @operations:
 //    type: List<typename...>
 template <typename Input> class Unique {
-  // use private type alias for local declaration.
-private:
-  template <typename Acc, typename E>
-  struct Add : std::conditional_t<Elem<E, Acc>::value, Acc,
-                                  typename Acc::template concat<E>> {};
+    // use private type alias for local declaration.
+  private:
+    template <typename Acc, typename E>
+    struct Add : std::conditional_t<Elem<E, Acc>::value, Acc,
+                                    typename Acc::template concat<E>> {};
 
-public:
-  using type = typename FoldeL<Add, List<>, Input>::type;
+  public:
+    using type = typename FoldeL<Add, List<>, Input>::type;
 };
 
 #define typeof(TYPE) static_assert(sizeof(TYPE) == -1)

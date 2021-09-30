@@ -1,0 +1,94 @@
+⍳10
+⍳10
+⍳10
+⍳10
+⍳10
+⍳10
+⍳10
+⍳10
+⍳10
+⍳10
+⍳10
+⍳10
+⍳10
+⍳10
+⍳10
+⍳10
+⍳10
+⍳10
+2 * 5 ⍝ this is multiplication
+6/2
+6÷2 ⍝ division
+6/2 ⍝ / is over
+¯2
+¯3
+¯3+3
+2×5÷3+7
+2×5÷3+7
+⍝ in APL there is no predicences, binop always assicates to
+⍝ to the right.
+2×5+1
+⍝ parenthesis still work
+(2×5)+1
+⍝ We usually read apl code from right to left.
+2×5+1
+⍝ We usually read apl code from right to left.
+2×5+5
+⍝ parenthesis still work
+(2×5)+5
+a ← (2×5)+5
+a ← (2×5)+5 ⍝ a gets 15
+a           ⍝ evaluate a
+a ← (2×5)+5 ⍝ a gets 15
+a           ⍝ evaluate a
+⊢a←42 ⍝ a gets 32, and evaluate it right away
+⊢b←(5×2)+5
+⎕←a  ⍝ quad gets a. quad is bascially stdout
+⎕←fiftySeven←57
+(a b _ d) ← 3 1 4 1   ⍝ unpack an array
+⊢(a b _ d) ← 3 1 4 1   ⍝ unpack an array
+⊢a←a+1
+⊢a←a+1,b←b+2
+1 + 1 ⍝ dyadic +
+1 + 1 ⍝ dyadic +
+!7    ⍝ monadic factorial
+7×3 ⍝ dyadic +
+×¯7 ⍝ monadic × for directoin
+7×3 ⍝ dyadic +
+×¯7 ⍝ monadic × for directoin
+7×3 ⍝ dyadic +
+7×3 ⍝ dyadic +
+×¯7 ⍝ monadic × for directoin
+1 + 1 ⍝ dyadic +
+!7    ⍝ monadic factorial
+7×3 ⍝ dyadic +
+×¯7 ⍝ monadic × for directoin
+⎕←'hello'
+⎕←'  '
+⎕ ← data ← (1 2 3 4) (5 2 3 8) (9 3 3 4) (5 3 9 4)
+⎕ ← data ← (1 2 3 4) (5 2 3 8) (9 3 3 4) (5 3 9 4)
+⊃+⌿↑data
+⍝ of the sum first array
+⎕ ← data ← (1 2 3 4) (5 2 3 8) (9 3 3 4) (5 3 9 4)
+⊃+⌿↑data
+↑data
+⍝ of the sum first array
+⎕ ← data ← (1 2 3 4) (5 2 3 8) (9 3 3 4) (5 3 9 4)
+↑data
+⊃+⌿↑data
+⍝ of the sum first array
+⎕ ← data ← (1 2 3 4) (5 2 3 8) (9 3 3 4) (5 3 9 4)
+↑data
+↑((1 2 3 4) (5 2 3 8) (9 3 3 4) (5 3 9 4))
+↑ (1 2 3 4) (5 2 3 8) (9 3 3 4) (5 3 9 4)
+⊃+⌿↑data
+⊃+⌿↑data
+⊃+⌿↑data
+⊃+⌿↑data
+⊃+⌿↑data
+⍝ of the sum first array
+⍝ ⎕ ← data ← (1 2 3 4) (5 2 3 8) (9 3 3 4) (5 3 9 4)
+⎕ ← data ← (1 2 3 4) (2 5 8 6) (8 6 2 3) (8 7 6 1)
+⊃+⌿↑data
+)_OFF
+)OFF

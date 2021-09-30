@@ -7,15 +7,16 @@
 // 1. constrain deduction of type parameters.
 // 2. if some deduction guides are provided and non are satisfied,
 //    type deduciton guide will failed.
-// 3. use type_trait + type deduction we can constraint what type a type parameter
+// 3. use type_trait + type deduction we can constraint what type a type
+// parameter
 //    get deduced to without writing sfinae.
 
 // now we defeind this template, but it's hard to deduce the type of Iter
 // in the second constructor.
 template <typename T> struct Container {
-  Container(T t) {}
+    Container(T t) {}
 
-  template <typename Iter> Container(Iter beg, Iter end);
+    template <typename Iter> Container(Iter beg, Iter end);
 };
 
 // we can write our own deduction guide.

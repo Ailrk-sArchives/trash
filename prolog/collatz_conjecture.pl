@@ -1,3 +1,5 @@
+:- use_module(library(clpfd)).
+
 % let n be integer, define
 % f(n) =  {
 %     n / 2 if n = 0 (mod 2)
@@ -14,15 +16,12 @@
 %   integer 1 appears in hailstone sequence no matter from which positive
 %   integer we start.
 
-collatz_next(N0, N) :-
-  N0 #= 2*N.
-collatz_next(N0, N) :-
-  N0 #= 2 * _ + 1,
-  N #= 3 * N0 + 1.
-
-?- collatz_next(5, N).
+collatz_next(N0, N) :- N0 #= 2*N.
+collatz_next(N0, N) :- N0 #= 2*_ + 1, N = 3*N0 + 1.
 
 collatz_reaches(N, N).
 collatz_reaches(N0, N) :-
   collatz_next(N0, N1),
   collatz_reaches(N1, N).
+
+run1(N) :- collatz_next(1, N).

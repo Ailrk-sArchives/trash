@@ -1,7 +1,5 @@
 module MiniProject.PythagoreanNTuple where
 
-
-
 -- three ways to categorize a number
 -- A: even numbers which is only powers of 2.
 -- B: odd numbers consists of powers of any primes.

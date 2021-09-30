@@ -1,4 +1,4 @@
-(* test some continuations *)
+(* continuations *)
 
 (* straightforward continuation *)
 let rec sum1 s =

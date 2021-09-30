@@ -11,29 +11,29 @@
 //
 
 template <typename T> struct PTS {
-  enum { IsPointer = 0, IsPoitnerToMember = 0 };
+    enum { IsPointer = 0, IsPoitnerToMember = 0 };
 };
 
 template <typename T> struct PTS<T *> {
-  enum { IsPointer = 1, IsPoitnerToMember = 0 };
+    enum { IsPointer = 1, IsPoitnerToMember = 0 };
 };
 
 template <typename T, typename U> struct PTS<T U::*> {
-  enum { IsPointer = 0, IsPoitnerToMember = 1 };
+    enum { IsPointer = 0, IsPoitnerToMember = 1 };
 };
 
 struct S {};
 
 int main(void) {
 
-  std::cout << "PTS<S>: " << PTS<S>::IsPointer << " "
-            << PTS<S>::IsPoitnerToMember << std::endl;
+    std::cout << "PTS<S>: " << PTS<S>::IsPointer << " "
+              << PTS<S>::IsPoitnerToMember << std::endl;
 
-  std::cout << "PTS<S*>: " << PTS<S *>::IsPointer << " "
-            << PTS<S *>::IsPoitnerToMember << std::endl;
+    std::cout << "PTS<S*>: " << PTS<S *>::IsPointer << " "
+              << PTS<S *>::IsPoitnerToMember << std::endl;
 
-  std::cout << "PTS<int S::*>" << PTS<int S::*>::IsPointer << " "<<
-    PTS<int S::*>::IsPoitnerToMember<< std::endl;
+    std::cout << "PTS<int S::*>" << PTS<int S::*>::IsPointer << " "
+              << PTS<int S::*>::IsPoitnerToMember << std::endl;
 
-  return 0;
+    return 0;
 }

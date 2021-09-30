@@ -1,4 +1,4 @@
-https://xavierleroy.org/mpri/2-4/semantics.pdf
+ttps://xavierleroy.org/mpri/2-4/semantics.pdf
 
   # PS: Normal order reduction
   The original evaluation order is normal ordedr reduction, which always

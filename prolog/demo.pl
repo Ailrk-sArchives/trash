@@ -37,12 +37,12 @@ go_to_play(ryan) :- is_closed(school), free(ryan).
 
 % knowledge base: well it's just a collection of facts and rules.
 
-girl(priya).
-girl(tiyasha).
-girl(jaya).
+pp(priya).
+pp(tiyasha).
+pp(jaya).
 can_cook(priya).
 
-who_can_cook_main :- girl(priya).
+who_can_cook_main :- pp(priya).
 
 sing_a_song(ananya).
 listen_to_music(rohit).
@@ -132,9 +132,81 @@ list_divide([], [], []).
 list_divide([X], [X], []).
 list_divide([X, Y|Tail], [X|List1], [Y|List2]) :- list_divide(Tail, List1, List2).
 
+
 max_of_two(X, Y, X) :- X >= Y.
-max_of_two(X, Y, Y) :- x < Y.
+max_of_two(X, Y, Y) :- X < Y.
 list_max_elem([X], X).
-list_max_elem([X|Y|Rest], Max) :-
+list_max_elem([X, Y|Rest], Max) :-
   list_max_elem([Y|Rest], MaxRest),
   max_of_two(X, MaxRest, Max).
+
+list_sum([], 0).
+list_sum([Head|Tail], Sum) :-
+  list_sum(Tail, SumTmp),
+  Sum is Head + SumTmp.
+
+% merge sort
+
+mergesort([], []).
+mergesort([A], [A]).
+mergesort([A, B|R], S) :-
+  split([A, B|R], L1, L2),
+  mergesort(L1, S1),
+  mergesort(L2, S2),
+  merge(S1, S2, S).
+
+split([], [], []).
+split([A], [A], []).
+split([A, B|R], [A|Ra], [B|Rb]) :- split(R, Ra, Rb).
+
+merge(A, [], A).
+merge([], B, B).
+merge([A|Ra], [B|Rb], [A|M]) :- A =< B, merge(Ra, [B|Rb], M).
+merge([A|Ra], [B|Rb], [B|M]) :- A > B, merge([A|Ra], Rb, M).
+
+%%%%% recursion structure.
+
+%%%%% back tracking.
+
+girl(priya).
+girl(tiyasha).
+girl(jaya).
+
+boy(bob).
+boy(tom).
+
+% this will need to backtrack.
+pay(X, Y) :- boy(X), girl(Y).
+
+% we can use cut to cut off back tracaking.
+
+% this three rules are mutally exclusive to each other. Once we find a solution
+% for one of them there is no need to proceed.
+we_can_cut_this(X, 0) :- X < 3, !.
+we_can_cut_this(X, 2) :- X >= 3, X < 6, !.
+we_can_cut_this(X, 4) :- X >= 6, !.
+
+animal(dog).
+animal(cat).
+animal(elephant).
+animal(tigher).
+animal(cobra).
+animal(python).
+
+snake(cobra).
+snake(python).
+
+likes(mary, X) :- snake(X), !, fail.
+likes(mary, X) :- animal(X).
+
+not(P) :- P, !, fail; true.
+
+cube :-
+  write("Write a number: "),
+  read(Number), nl,
+  process(Number).
+
+process(stop) :- !.
+process(Number) :-
+  C is Number * Number * Number,
+  write("Cube of "), write(Number), write(": "), write(C), nl, cube.

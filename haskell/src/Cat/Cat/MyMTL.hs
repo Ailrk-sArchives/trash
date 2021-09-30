@@ -1,9 +1,9 @@
-{-@ How do you write mtl like interface?
+{- How do you write mtl like interface?
     (Although it's called mtl like interface, MonadFix, MonadFail and
      MonadIO are all in the prelude. The library is so inconsistent and
      takes you extra effort to understand a simple thing...)
     Here is some little practise
-@-}
+-}
 
 -- First of all, if you want mtl you need multiparameter type classes
 -- and functional dependencies.
@@ -11,12 +11,12 @@
 {-# LANGUAGE MultiParamTypeClasses      #-}
 
 -- Of course the entire mtl is based on newtype deriving
+{-# LANGUAGE AllowAmbiguousTypes        #-}
+{-# LANGUAGE DefaultSignatures          #-}
+{-# LANGUAGE GADTs                      #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE StandaloneDeriving         #-}
-{-# LANGUAGE DefaultSignatures #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE TypeFamilies               #-}
 
 module Cat.Cat.MyMTL where
 import           Control.Monad.IO.Class     (MonadIO (liftIO))
@@ -29,15 +29,15 @@ import           Data.Functor.Classes       (Eq1 (..), Ord1 (..), Read1 (..),
 import           Data.Functor.Contravariant
 import           Data.Functor.Identity
 
-import Control.Monad.Except
-import Control.Monad.State
-import Control.Monad.Reader
-import Control.Monad.Writer
-import Control.Monad.Trans.Maybe
-import Data.List
+import           Control.Monad.Except
+import           Control.Monad.Reader
+import           Control.Monad.State
+import           Control.Monad.Trans.Maybe
+import           Control.Monad.Writer
+import           Data.List
 
-import qualified Prelude (readFile, writeFile)
-import Prelude hiding (readFile, writeFile)
+import           Prelude                    hiding (readFile, writeFile)
+import qualified Prelude                    (readFile, writeFile)
 
 -- Identity --
 -- This is probably the best example to play around with mtl facilities
@@ -142,7 +142,7 @@ instance Monad m => MonadFileSystem (InMemoryFileSystemT m) where
     vfs <- get
     case lookup path vfs of
       Just contents -> pure contents
-      Nothing -> error ("readFile: no such fille" ++ path)
+      Nothing       -> error ("readFile: no such fille" ++ path)
 
   writeFile path contents = InMemoryFileSystemT $ modify $ \vfs ->
     (path, contents) : delete (path, contents) vfs

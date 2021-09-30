@@ -34,47 +34,49 @@
 // e.g to move a linked list.
 
 struct SelfReferential {
-  std::array<char, 1024> data;
-  char *cursor = nullptr;
-  SelfReferential() : data{}, cursor{&data[0]} {}
+    std::array<char, 1024> data;
+    char *cursor = nullptr;
+    SelfReferential()
+        : data{}
+        , cursor{ &data[0] } {}
 
-  // Note here cursor points to it's own field.
-  // If we just do a member wise copy, as a true destructive move, we can't
-  // really access other's member.
-  SelfReferential(SelfReferential &&other)
-      : data{other.data}, cursor{&data[0] + (other.cursor - &(other.data[0]))} {
-  }
+    // Note here cursor points to it's own field.
+    // If we just do a member wise copy, as a true destructive move, we can't
+    // really access other's member.
+    SelfReferential(SelfReferential &&other)
+        : data{ other.data }
+        , cursor{ &data[0] + (other.cursor - &(other.data[0])) } {}
 
-  // ...
+    // ...
 
-  // Imagine this is a destructive move with bitwise copy.
-  // after move we have data == other.data, cursor == other.cursor.
-  // but cursor depends on the position of data.
-  // case 1: if data is a ptr, it's ok
-  // case 2: data is relocated, then the old cursor will be nolonger valid.
-  //         in this case we need to adjust the pointer.
+    // Imagine this is a destructive move with bitwise copy.
+    // after move we have data == other.data, cursor == other.cursor.
+    // but cursor depends on the position of data.
+    // case 1: if data is a ptr, it's ok
+    // case 2: data is relocated, then the old cursor will be nolonger valid.
+    //         in this case we need to adjust the pointer.
 };
 
 // Another example of self referential
 struct Parent {
-  int count;
+    int count;
 };
 struct Child {
-  Parent &parent;
+    Parent &parent;
 };
 struct Combined {
-  Parent parent;
-  Child chld;
+    Parent parent;
+    Child chld;
 };
 
 // force it t allocate in the stack, and place the move from mmebers into it
 // it 's not quite right because we still have move from object available
 // if t is passed by lvalue reference.
 template <typename T> std::remove_cvref_t<T> memberwise_move(T &&t) noexcept {
-  using T_ = std::remove_cvref_t<T>;
-  T_ *ptr = (T_ *)alloca(sizeof(T_));
-  std::memcpy(ptr, &t, sizeof(T_));
-  return *ptr;
+    using T_ = std::remove_cvref_t<T>;
+    T_ *ptr = (T_ *)alloca(sizeof(T_));
+    std::memcpy(ptr, &t, sizeof(T_));
+    return *ptr;
 }
 
 // what happend here?
@@ -93,28 +95,29 @@ template <typename T> std::remove_cvref_t<T> memberwise_move(T &&t) noexcept {
 // reference in child.
 void lifetime_and_self_reference() {
 
-  // lifetime
-  {                                                                     // 0
-    Parent parent{24};                                                  // 1
-    Child child{parent};                                                // 2
-    Combined combined{memberwise_move(parent), memberwise_move(child)}; // 3
-  }                                                                     // 4
+    // lifetime
+    {                          // 0
+        Parent parent{ 24 };   // 1
+        Child child{ parent }; // 2
+        Combined combined{ memberwise_move(parent),
+                           memberwise_move(child) }; // 3
+    }                                                // 4
 
-  // parent has lifetime [1-3)
-  // child has lifetime [2-3)
-  // combined has lifetime [3-4)
-  // meaning:
-  //  at [3], child is invalid, and parent is also invalid.
-  //  but child still holds a reference to the invalid parent, bad.
-  //
-  // we need to either adjust pointer or forbid this case.
+    // parent has lifetime [1-3)
+    // child has lifetime [2-3)
+    // combined has lifetime [3-4)
+    // meaning:
+    //  at [3], child is invalid, and parent is also invalid.
+    //  but child still holds a reference to the invalid parent, bad.
+    //
+    // we need to either adjust pointer or forbid this case.
 
-  // or maybe
-  {
-    Combined combined{Parent{12}, Child{combined.parent}};
+    // or maybe
+    {
+        Combined combined{ Parent{ 12 }, Child{ combined.parent } };
 
-    Combined combinded1 = memberwise_move(combined); // NO!
-  }
+        Combined combinded1 = memberwise_move(combined); // NO!
+    }
 }
 
 ////////////////////
@@ -139,78 +142,84 @@ void lifetime_and_self_reference() {
 // problem: Throwable move operations
 
 template <typename T> struct Vec {
-private:
-  T *data_;
-  size_t size_;
-  size_t capacity_;
+  private:
+    T *data_;
+    size_t size_;
+    size_t capacity_;
 
-public:
-  ~Vec() {
-    for (int i = 0; i < size_; ++i) {
-      delete data_[i];
-    }
-  }
-
-  Vec() : data_(new T[0]), size_(0), capacity_(64) {}
-
-  // a simple example of how to handle types with different semantics.
-  // given a type, we need to think about:
-  // 1. is the type trivially copyable?
-  //    - if is, we probably can go ahead with memcpy
-  // 2. is it movable?
-  //    - if is, we probably can go ahead with memcpy.
-  // 3. does it throw?
-  //    - if is, we need to deal with the throwing case.
-  Vec(Vec const &other)
-      : size_(other.size_), capacity_(other.capacity_),
-        data_(new T[capacity_]) {
-    if constexpr (std::is_trivially_copy_constructible_v<T>) {
-      std::uninitialized_copy(std::begin(other.data_), std::end(other.data_),
-                              std::begin(data_));
-    } else if constexpr (std::is_nothrow_copy_assignable_v<T> &&
-                         std::is_nothrow_copy_assignable_v<T>) {
-      for (int i = 0; i < size_; ++i) {
-        *data_[i] = *other.data_[i];
-      }
-    } else if constexpr (std::is_copy_constructible_v<T> &&
-                         std::is_copy_assignable_v<T>) {
-      int i = 0;
-      try {
-        for (; i < size_; ++i) {
-          *data_[i] = *other.data_[i];
+  public:
+    ~Vec() {
+        for (int i = 0; i < size_; ++i) {
+            delete data_[i];
         }
-      } catch (...) {
-        for (int j = 0; j < i; ++j) {
-          delete data_[j];
-        }
-      }
     }
-  }
 
-  Vec &operator=(Vec const &other) {
-    auto tmp = Vec{other};
-    std::swap(*this, tmp);
-  }
+    Vec()
+        : data_(new T[0])
+        , size_(0)
+        , capacity_(64) {}
 
-  // Simulate destructive move when you only have non destructive move.
-  // What should ptr be after moved? Nothing but nullptr otherwise it will
-  // be very weired.
-  //
-  // move simply takes the pointer of data from other, and invalidate the old
-  // ptr. Nothing really get moved, and it's a farily trivial operation.
-  // this move is exception safe, we guarantee no throw.
-  //
-  // It's really nice to mark it as noexcept because now this Vec type can
-  //  itself be deteceted and handle differently.
-  Vec(Vec &&other) noexcept : size_(other.size_), capacity_(other.capacity_) {
-    data_ = other.data_;
-    other.data_ = nullptr;
-  }
+    // a simple example of how to handle types with different semantics.
+    // given a type, we need to think about:
+    // 1. is the type trivially copyable?
+    //    - if is, we probably can go ahead with memcpy
+    // 2. is it movable?
+    //    - if is, we probably can go ahead with memcpy.
+    // 3. does it throw?
+    //    - if is, we need to deal with the throwing case.
+    Vec(Vec const &other)
+        : size_(other.size_)
+        , capacity_(other.capacity_)
+        , data_(new T[capacity_]) {
+        if constexpr (std::is_trivially_copy_constructible_v<T>) {
+            std::uninitialized_copy(std::begin(other.data_),
+                                    std::end(other.data_), std::begin(data_));
+        } else if constexpr (std::is_nothrow_copy_assignable_v<T> &&
+                             std::is_nothrow_copy_assignable_v<T>) {
+            for (int i = 0; i < size_; ++i) {
+                *data_[i] = *other.data_[i];
+            }
+        } else if constexpr (std::is_copy_constructible_v<T> &&
+                             std::is_copy_assignable_v<T>) {
+            int i = 0;
+            try {
+                for (; i < size_; ++i) {
+                    *data_[i] = *other.data_[i];
+                }
+            } catch (...) {
+                for (int j = 0; j < i; ++j) {
+                    delete data_[j];
+                }
+            }
+        }
+    }
 
-  Vec &operator=(Vec &&other) noexcept {
-    auto tmp = std::move_if_noexcept(other);
-    std::swap(this, tmp);
-  }
+    Vec &operator=(Vec const &other) {
+        auto tmp = Vec{ other };
+        std::swap(*this, tmp);
+    }
+
+    // Simulate destructive move when you only have non destructive move.
+    // What should ptr be after moved? Nothing but nullptr otherwise it will
+    // be very weired.
+    //
+    // move simply takes the pointer of data from other, and invalidate the old
+    // ptr. Nothing really get moved, and it's a farily trivial operation.
+    // this move is exception safe, we guarantee no throw.
+    //
+    // It's really nice to mark it as noexcept because now this Vec type can
+    //  itself be deteceted and handle differently.
+    Vec(Vec &&other) noexcept
+        : size_(other.size_)
+        , capacity_(other.capacity_) {
+        data_ = other.data_;
+        other.data_ = nullptr;
+    }
+
+    Vec &operator=(Vec &&other) noexcept {
+        auto tmp = std::move_if_noexcept(other);
+        std::swap(this, tmp);
+    }
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -232,32 +241,35 @@ public:
 // 67
 
 template <typename T> struct OwningPtr {
-  T *ptr_;
+    T *ptr_;
 
-  template <typename... Args>
-  explicit OwningPtr(Args &&...args)
-      : ptr_(new T{std::forward<Args>(args)...}) {}
+    template <typename... Args>
+    explicit OwningPtr(Args &&...args)
+        : ptr_(new T{ std::forward<Args>(args)... }) {}
 
-  // avoid double free.
-  ~OwningPtr() {
-    if (ptr_)
-      delete ptr_;
-  }
+    // avoid double free.
+    ~OwningPtr() {
+        if (ptr_)
+            delete ptr_;
+    }
 
-  OwningPtr(const OwningPtr &) = delete;
-  OwningPtr &operator=(const OwningPtr &) = delete;
+    OwningPtr(const OwningPtr &) = delete;
+    OwningPtr &operator=(const OwningPtr &) = delete;
 
-  // move?
-  OwningPtr(OwningPtr &&other) : ptr_(other.ptr_) { other.ptr_ = nullptr; }
-  OwningPtr &operator=(OwningPtr &&other) {
-    ptr_ = other.ptr_;
-    other.ptr_ = nullptr;
-  }
+    // move?
+    OwningPtr(OwningPtr &&other)
+        : ptr_(other.ptr_) {
+        other.ptr_ = nullptr;
+    }
+    OwningPtr &operator=(OwningPtr &&other) {
+        ptr_ = other.ptr_;
+        other.ptr_ = nullptr;
+    }
 
-  // the object can be in moved from state, and in that state these two
-  // operations are invalid.
-  T &operator*() { return *ptr_; }
-  T *operator->() { return ptr_; }
+    // the object can be in moved from state, and in that state these two
+    // operations are invalid.
+    T &operator*() { return *ptr_; }
+    T *operator->() { return ptr_; }
 };
 
 static_assert(std::is_move_constructible_v<OwningPtr<int>>);
@@ -278,26 +290,27 @@ static_assert(std::is_move_constructible_v<OwningPtr<int>>);
 
 template <typename T> struct List {
 
-  // a node owns it's content.
-  struct Node {
-    std::unique_ptr<T> content_;
-    T *next;
+    // a node owns it's content.
+    struct Node {
+        std::unique_ptr<T> content_;
+        T *next;
 
-    static std::unique_ptr<Node> make_sentinel() {
-      return std::make_unique<Node>({nullptr, nullptr});
+        static std::unique_ptr<Node> make_sentinel() {
+            return std::make_unique<Node>({ nullptr, nullptr });
+        }
+
+        bool is_sentinel() const {
+            return content_ == nullptr && next == nullptr;
+        }
+    };
+
+    static_assert(std::is_copy_constructible_v<Node>);
+
+    std::unique_ptr<Node> node;
+
+    List()
+        : node(std::move(Node::make_sentinel())) {}
+    List(List const &list) {
+        // TODO
     }
-
-    bool is_sentinel() const { return content_ == nullptr && next == nullptr; }
-  };
-
-  static_assert(std::is_copy_constructible_v<Node>);
-
-  std::unique_ptr<Node> node;
-
-  List() : node(std::move(Node::make_sentinel())) {}
-  List(List const &list) {
-    // TODO
-  }
 };
-
-

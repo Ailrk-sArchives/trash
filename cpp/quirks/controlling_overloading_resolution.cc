@@ -14,9 +14,9 @@ void func1(float) = delete;
 void func1(long double) = delete;
 
 void test1() {
-  func1(5);
-  // nonono
-  // func1(5.5);
+    func1(5);
+    // nonono
+    // func1(5.5);
 }
 
 // or use sfinae
@@ -30,8 +30,8 @@ void func2(T) = delete;
 template <> void func2(int) { std::cout << "int" << std::endl; }
 
 void test2() {
-  func2(1);
-  // func2((double)2.2);
+    func2(1);
+    // func2((double)2.2);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -40,34 +40,34 @@ void func3(const std::string &str);
 void func3(const char *) = delete;
 
 void test3() {
-  // func3("no implicit conversion");
-  func3(std::string("explicit"));
+    // func3("no implicit conversion");
+    func3(std::string("explicit"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // avoid rvalue binds to const reference
 //
 template <typename T> void func4(T const &obj) {
-  std::cout << "yes" << std::endl;
+    std::cout << "yes" << std::endl;
 }
 template <typename T> void func4(T const &&) = delete;
 
 void test4() {
-  // no
-  // func4(1);
+    // no
+    // func4(1);
 
-  int const a = 10;
-  func4(a);
+    int const a = 10;
+    func4(a);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // constumize error messages
 
 template <typename T> void func5(T const &obj) {
-  std::cout << "yes" << std::endl;
+    std::cout << "yes" << std::endl;
 }
 template <typename T> void func5(T const &&) {
-  static_assert(false, "should never call with a temporary");
+    static_assert(false, "should never call with a temporary");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -77,43 +77,43 @@ template <typename T> void func5(T const &&) {
 // this is not exception safe. once T() throws exceptions memory in *being is
 // screwed.
 template <typename T> void construct_0(T *begin, T *end) {
-  for (auto cur = begin; cur != end; ++cur) {
-    ::new (static_cast<void *>(cur)) T();
-  }
+    for (auto cur = begin; cur != end; ++cur) {
+        ::new (static_cast<void *>(cur)) T();
+    }
 }
 
 // this will destruct the memory if T() throws.
 template <typename T> void construct_1(T *begin, T *end) {
-  auto cur = begin;
-  try {
-    for (; cur != end; ++cur) {
-      ::new (static_cast<void *>(cur)) T();
+    auto cur = begin;
+    try {
+        for (; cur != end; ++cur) {
+            ::new (static_cast<void *>(cur)) T();
+        }
+    } catch (...) {
+        for (auto p = begin; p != cur; ++p) {
+            p->~T();
+            throw;
+        }
     }
-  } catch (...) {
-    for (auto p = begin; p != cur; ++p) {
-      p->~T();
-      throw;
-    }
-  }
 }
 
 // or maybe we don't want a throwable type T at all?
 
 template <typename T> void construct(std::true_type, T *begin, T *end) {
-  construct_0(begin, end);
+    construct_0(begin, end);
 }
 template <typename T> void construct(std::false_type, T *begin, T *end) {
-  construct_1(begin, end);
+    construct_1(begin, end);
 }
 
 void test_construct() {
-  int *begin = (int *)malloc(1024 * sizeof(int));
-  int *end = begin + 1024;
+    int *begin = (int *)malloc(1024 * sizeof(int));
+    int *end = begin + 1024;
 
-  // wow a compile time proove.
-  construct(std::conjunction<std::is_nothrow_default_constructible<int>,
-                             std::is_trivially_default_constructible<int>>{},
-            begin, end);
+    // wow a compile time proove.
+    construct(std::conjunction<std::is_nothrow_default_constructible<int>,
+                               std::is_trivially_default_constructible<int>>{},
+              begin, end);
 }
 
 template <int N> struct priority_tag : priority_tag<N - 1> {};
@@ -131,54 +131,53 @@ template <typename T,
           typename std::enable_if<
               std::is_nothrow_default_constructible<T>::value, int>::type = 0>
 void construct_sfinae(T *begin, T *end) {
-  for (auto cur = begin; cur != end; ++cur)
-    ::new (static_cast<void *>(cur)) T();
+    for (auto cur = begin; cur != end; ++cur)
+        ::new (static_cast<void *>(cur)) T();
 }
 
 template <typename T,
           typename std::enable_if<
               !std::is_nothrow_default_constructible<T>::value, int>::type = 0>
 void construct_sfinae(T *begin, T *end) {
-  auto cur = begin;
-  try {
-    for (; cur != end; ++cur)
-      ::new (static_cast<void *>(cur)) T();
-  } catch (...) {
-    for (auto new_cur = begin; new_cur != cur; ++new_cur)
-      new_cur->~T();
-    throw;
-  }
+    auto cur = begin;
+    try {
+        for (; cur != end; ++cur) ::new (static_cast<void *>(cur)) T();
+    } catch (...) {
+        for (auto new_cur = begin; new_cur != cur; ++new_cur) new_cur->~T();
+        throw;
+    }
 }
 static_assert(std::is_nothrow_default_constructible_v<int>);
 
 struct ThrowDefaultConstructbleFoo {
-  int n;
-  ThrowDefaultConstructbleFoo() {
-    n = random() % 100;
-    if (n > 90)
-      throw;
-  }
+    int n;
+    ThrowDefaultConstructbleFoo() {
+        n = random() % 100;
+        if (n > 90)
+            throw;
+    }
 };
 
 static_assert(
     !std::is_nothrow_default_constructible_v<ThrowDefaultConstructbleFoo>);
 
 void test_construct_sfinae() {
-  {
+    {
 
-    // use the nothrow default constructible overload.
-    int *begin = (int *)malloc(1024 * sizeof(int));
-    int *end = begin + 1024;
-    construct_sfinae(begin, end);
-  }
+        // use the nothrow default constructible overload.
+        int *begin = (int *)malloc(1024 * sizeof(int));
+        int *end = begin + 1024;
+        construct_sfinae(begin, end);
+    }
 
-  {
-    // use the other overload, may throw.
-    ThrowDefaultConstructbleFoo *begin1 = (ThrowDefaultConstructbleFoo *)malloc(
-        1024 * sizeof(ThrowDefaultConstructbleFoo));
-    ThrowDefaultConstructbleFoo *end1 = begin1 + 1024;
-    construct_sfinae(begin1, end1);
-  }
+    {
+        // use the other overload, may throw.
+        ThrowDefaultConstructbleFoo *begin1 =
+            (ThrowDefaultConstructbleFoo *)malloc(
+                1024 * sizeof(ThrowDefaultConstructbleFoo));
+        ThrowDefaultConstructbleFoo *end1 = begin1 + 1024;
+        construct_sfinae(begin1, end1);
+    }
 }
 
 // conclusion:

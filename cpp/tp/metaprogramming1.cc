@@ -14,36 +14,37 @@ template <typename T> struct identity { using type = T; };
 // Box value into type so it works with our convention.
 // use curisou recurring pattern to add ::type refer to itself.
 template <int N> struct int_ : identity<int_<N>> {
-  static const int value = N;
+    static const int value = N;
 };
 template <bool N> struct bool_ : std::integral_constant<bool, N> {};
 template <char N> struct char_ : std::integral_constant<char, N> {};
 
 template <typename A, typename B> struct times {
-  using type = int_<A::type::value * B::type::value>;
+    using type = int_<A::type::value * B::type::value>;
 };
 template <typename A, typename B> struct add {
-  using type = int_<A::type::value + B::type::value>;
+    using type = int_<A::type::value + B::type::value>;
 };
 template <typename A, typename B> struct minus {
-  using type = int_<A::type::value - B::type::value>;
+    using type = int_<A::type::value - B::type::value>;
 };
 
 constexpr bool H_less_then_(int a, int b) { return a < b; }
 constexpr bool H_greater_then_(int a, int b) { return a > b; }
 
 template <typename A, typename B> struct less {
-  using type = int_<H_less_then_(A::type::value, B::type::value)>;
+    using type = int_<H_less_then_(A::type::value, B::type::value)>;
 };
 
 template <typename A, typename B> struct greater {
-  using type = int_ < A::value<H_greater_then_(A::type::value, B::type::value)>;
+    using type =
+        int_ < A::value<H_greater_then_(A::type::value, B::type::value)>;
 };
 
 template <typename A, typename B> struct equal {
-  using type =
-      int_ < A::value<A::type::value == B::type::value ? A::type::value
-                                                       : B::type::value>;
+    using type =
+        int_ < A::value<A::type::value == B::type::value ? A::type::value
+                                                         : B::type::value>;
 };
 
 constexpr int c = times<int_<1>, int_<2>>::type::value;
@@ -61,13 +62,13 @@ static_assert(c1 == 4);
 // templates, not type. to work around we box them in another type.
 
 struct make_const_volatile { // a template meta function class.
-  using type = make_const_volatile;
-  template <typename T> struct apply { using type = const volatile T; };
+    using type = make_const_volatile;
+    template <typename T> struct apply { using type = const volatile T; };
 };
 
 struct make_const {
-  using type = make_const;
-  template <typename T> struct apply { using type = const T; };
+    using type = make_const;
+    template <typename T> struct apply { using type = const T; };
 };
 
 // taking higher order function
@@ -85,10 +86,10 @@ template <typename C, typename T, typename F> struct if_;
 // use lazyness for conditiona
 template <bool C, typename T, typename F> struct if_impl_ { using type = T; };
 template <typename T, typename F> struct if_impl_<true, T, F> {
-  using type = T;
+    using type = T;
 };
 template <typename T, typename F> struct if_impl_<false, T, F> {
-  using type = F;
+    using type = F;
 };
 
 // we pass T and F without evaluate them.

@@ -144,6 +144,7 @@ library
       Libs.TH.Demo
       Libs.SMTPMail
 
+      MiniProject.TypeclassHornClausesTuringMachine
       MiniProject.EchoServer
       MiniProject.Haskell99
       MiniProject.LensPong

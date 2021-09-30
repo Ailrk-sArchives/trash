@@ -5,7 +5,7 @@
 
 // template that holds a value and make it a type
 template <typename T, T v> struct integral_const_ {
-  static constexpr T value = v;
+    static constexpr T value = v;
 };
 
 // type family indexed by true and false.
@@ -46,10 +46,10 @@ template <typename T> struct add_lvalue_reference_bad_ { using type = T &; };
 template <> struct add_lvalue_reference_bad_<void> { using type = void; };
 template <> struct add_lvalue_reference_bad_<const void> { using type = void; };
 template <> struct add_lvalue_reference_bad_<volatile void> {
-  using type = void;
+    using type = void;
 };
 template <> struct add_lvalue_reference_bad_<const volatile void> {
-  using type = void;
+    using type = void;
 };
 
 static_assert(std::is_same_v<add_lvalue_reference_bad_<int>::type, int &>);
@@ -66,7 +66,7 @@ static_assert(std::is_same_v<add_lvalue_reference_bad_<void>::type, void>);
 template <typename T, typename Enable> struct ALR_impl1 { using type = T; };
 
 template <typename T> struct ALR_impl1<T, std::remove_reference_t<T &>> {
-  using type = T &;
+    using type = T &;
 };
 
 template <typename T>
