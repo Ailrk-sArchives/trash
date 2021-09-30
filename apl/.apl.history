@@ -92,3 +92,6 @@ a           ⍝ evaluate a
 ⊃+⌿↑data
 )_OFF
 )OFF
+r ← (3 3⍴⍳9)∊1 2 3 4 7
+5 7 ↑ r   ⍝ scale up r to 5x7
+)OFF
