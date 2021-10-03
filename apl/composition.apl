@@ -48,5 +48,3 @@ ab←'AB'⋄⍎ '2 2∘⍴¨ab'  ⍝ can splice easily to work as a quasi quote.
 
 ⍝ [Format] ⍕
 6 2 ⍕ 3.125 0.002
-
-
