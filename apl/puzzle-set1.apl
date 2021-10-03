@@ -63,16 +63,6 @@ z←1↓⍳1000 ⋄ z{(~⍺∊⍵)/⍺}z∘.×z
 ⍝ -- conway's game of life
 )copy dfns display
 ⎕IO←0
-⍝ first, reshape
-3 3⍴⍳9
-⍝ monadic veritical rotate
-⌽(3 3⍴⍳9)
-⍝ dyadic vertical rotate. last rank rotate one to the right
-1⌽(3 3⍴⍳9)
-⍝ dyadic vertical rotate. first rank rotate one to the right
-1⌽[0](3 3⍴⍳9)
-⍝ dyadic vertical rotate. last rank rotate one to the left.
-¯1⌽(3 3⍴⍳9)
 ⍝ the original shape
 r←(3 3 ⍴⍳9)∊1 2 3 4 7
 ⍝ center
@@ -92,8 +82,3 @@ display +/+⌿C
 display 3 4=+/+⌿C
 ⍝ rule: and the cell is occupied
 display 1R∧3 4=+/+⌿C
-
-R ∧ (5 7⍴⍳35)
-
-display ≢⍴R
-display (⍴⍴R)[0]
