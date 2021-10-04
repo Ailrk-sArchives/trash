@@ -1,5 +1,18 @@
 open List;;
+module Play = struct
+  let rec power (f: 'a -> 'a) (n : int) =
+    if n <= 0 then (fun x -> x) else (fun x -> x |> (power f (n - 1)) |> f)
 
+  let derivative dx f = function x -> (f (x +. dx) -. f x) /. dx
+
+  let run () =
+    let sin''' = power (derivativ 1e-5) 3 sin
+    in sin''' 3.1415926535
+
+end
+
+
+e
 (* basic structures *)
 let averate a b =
   let sum = a +. b in
