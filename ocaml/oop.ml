@@ -2,7 +2,7 @@
 
 (* polymorphic class *)
 class ['a] stack =
-  object (self)
+  object
     val mutable the_list = ([] : 'a list)
 
     method push x =
@@ -32,7 +32,7 @@ let drain_stack (s : 'a stack) =
 
 (* superclass for all widgets *)
 class virtual widget (name : string) =
-  object (self)
+  object
     method get_name =
       name
 
@@ -44,7 +44,7 @@ class virtual widget (name : string) =
  * virtual to prevent people from creating an instance for it.
  * *)
 class virtual container name =
-  object(self)
+  object
     inherit widget name
     val mutable widgets = ([] : widget list)
     method add w =
@@ -62,7 +62,7 @@ type button_state = Released | Pressed;;
  * class definition.
  * *)
 class button ?callback name =
-  object (self)
+  object
     inherit container name as super
     val mutable state = Released
     method press =
@@ -72,17 +72,17 @@ class button ?callback name =
       | Some f -> f ()
     method release =
       state <- Released
-    method repaint =
+    method! repaint =
       super#repaint;
       print_endline("Button being repainted, state is " ^
                     (match state with
                     | Pressed -> "Pressed"
                     | Released -> "Released"))
-  end;;
+  end
 
 (* create a new object *)
 class label name text =
-  object (self)
+  object
     inherit widget name
     method repaint =
       print_endline ("Label " ^ text ^ " from " ^ name)

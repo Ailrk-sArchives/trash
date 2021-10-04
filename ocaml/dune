@@ -1,12 +1,14 @@
-; (library
-;   (name ocaml_demo_lib)
-;   (modules "dfs" "gadt" "gdemo" "modules" "oop")
-;   )
-
-; (library
-;   (name ocaml_demolib)
-;   (modules ("dfs" "gadt" "oop" "gdemo" "modules")))
-
+(library
+  (name ocaml_demo_lib)
+  (modules "dfs"
+           "gadt"
+           "modules"
+           "oop"
+           "obj"
+           "row_poly"
+           "hellosig"
+           "hellosig_use")
+  )
 
 (executable
  (name ocaml_demo)
