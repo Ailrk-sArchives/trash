@@ -13,6 +13,14 @@ import           Control.Monad.Trans
 -- if the action is finished, there is nothing left to do.
 -- if it's paused, it has some undone computation left, which itself can
 -- be another pausable action.
+
+
+-- How to yield in the middle of an action programmatically?
+-- The pause type is a defunctionalized operation that separated into stages.
+-- Each time a step is done the rest of operation is represented by a value
+-- Run which you can use as a first order value.
+
+
 data Pause m
  = Run (m (Pause m))    -- holds another pause with the same effect.
  | Done
@@ -42,12 +50,10 @@ runAll' :: Monad m => Pause m -> m ()
 runAll' Done    = return ()
 runAll' (Run m) = m >>= runAll'
 
-
 -- build an action that can run for a while, pause, and resume
 -- from where it paused last time.
 --
 -- This is a preamble of coroutine.
-
 
 data PauseT m r
   = RunT (m (PauseT m r))

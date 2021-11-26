@@ -338,6 +338,7 @@ type family PairUp as where
 
 -- pairup elements in a HList
 -- Even as proofs that as must be even
+--
 -- note how it's passed as the first paramter
 pairUp' :: Even as -> HList as -> HList (PairUp as)
 pairUp' EvenNil HNil                             = HNil

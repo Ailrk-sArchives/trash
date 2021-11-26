@@ -11,6 +11,7 @@
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-}
 {-# LANGUAGE UndecidableInstances  #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 module Types.Gadts where
 
 import           Cat.Cat.Arrows   ((>>>))

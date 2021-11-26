@@ -28,4 +28,3 @@ interactiveConcatenating :: IO ()
 interactiveConcatenating = do
   sz <- putStrLn "Concat two Strings" *> ((++) <$> getLine <*> getLine)
   putStrLn "Result:" *> putStrLn sz
-

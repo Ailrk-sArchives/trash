@@ -211,7 +211,7 @@ divExcept x y handler = callCC $ \ok -> do
     ok $ x `div` y
   handler err
 
-indexExcept :: [a] -> Int -> (String -> Cont r a) -> Cont r a
+indexExcept :: MonadCont f => [a] -> Int -> ([Char] -> f a) -> f a
 indexExcept xs idx handler = callCC $ \ok -> do
   err <- callCC $ \notok -> do
     when (length xs - 1 < idx) $ notok "out of bound"

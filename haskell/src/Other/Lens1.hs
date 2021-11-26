@@ -160,11 +160,3 @@ type Traversal' s a = forall f. Applicative f => (a -> f a) -> s -> f s
 
 addr_strs :: Traversal' Address String
 addr_strs fn (A r c p) = (\r' c' -> A r' c' p) <$> (fn r) <*> (fn c)
-
-
-{-@  Iso
-@-}
-
--- TODO
-{-@ Conclusion
-@-}

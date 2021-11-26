@@ -8,5 +8,3 @@ class Extract container elem | container -> elem where
 
 instance Extract (a, b) a where
   extract (x, _) = x
-
-

@@ -22,7 +22,7 @@ say = S8.putStrLn . encodeUtf8
 -- Note here we are not using monad transformer so everthing needs to be lifted mannually.
 
 -- break the loop of arbitrary applicative.
--- a nice little use csae of polymorphism.
+-- a nice little use of polymorphism.
 
 -- m can be any monads.
 loop :: Monad m => ExceptT e m a -> m e

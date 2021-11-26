@@ -35,6 +35,7 @@ instance Monad m => Monad (MaybeT m) where
 instance MonadTrans MaybeT where
   lift = MaybeT . (fmap Just)
 
+
 instance Monad m => Applicative (MaybeT m) where
   pure = return
   (<*>) = ap
